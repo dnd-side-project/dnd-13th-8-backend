@@ -1,5 +1,5 @@
 ## dnd-13th-8-backend
-음악 공유 플랫폼
+🎧 나만의 플레이리스트 스튜디오(서비스명 : 들락)  : 음악 공유 플랫폼
 
 #### Commit Message Convention
 <div align="center">
