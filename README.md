@@ -11,3 +11,5 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/0c258c70-6eac-4308-80e3-04516a657d81" alt="CI/CD 흐름도" width="600"/>
 </div>
+
+#### Module and Package Structure
