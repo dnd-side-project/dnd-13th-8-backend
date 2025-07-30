@@ -13,7 +13,7 @@ env:
   ECR_REPOSITORY: deullak/repository
   ECS_CLUSTER: deullak-cluster
   ECS_SERVICE: deullak-api-task-service-fa9x5qgh
-  ECS_TASK_DEFINITION: ecs-task-definition.json
+  ECS_TASK_DEFINITION: api-server/ecs-task-definition.json
   IMAGE_TAG: latest
 
 jobs:
