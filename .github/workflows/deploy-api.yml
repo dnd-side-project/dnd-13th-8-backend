@@ -15,6 +15,7 @@ env:
   ECS_SERVICE: deullak-api-task-service-fa9x5qgh
   ECS_TASK_DEFINITION: deullak-api-task-revision1.json
   IMAGE_TAG: latest
+  S3_ENV_PATH: s3://deullek-bucket/configs/.env
 
 jobs:
   deploy:
@@ -50,9 +51,15 @@ jobs:
 
       - name: .env 파일 생성
         run: |
-          echo "DB_URL=jdbc:mysql://${{ secrets.RDS_HOST }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB }}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8" >> .env
+          echo "DB_URL=jdbc:mysql://${{ secrets.RDS_HOST }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB }}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8" > .env
           echo "DB_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
+          echo "S3_BUCKET=deullek-bucket" >> .env
+          echo "S3_REGION=ap-northeast-2" >> .env
+          echo "S3_BASE_URL=https://deullek-bucket.s3.ap-northeast-2.amazonaws.com" >> .env
+
+      - name: .env 파일 S3에 업로드
+        run: aws s3 cp .env ${{ env.S3_ENV_PATH }} --region ${{ env.AWS_REGION }}
 
       - name: Docker 이미지 빌드 및 푸시
         run: |
