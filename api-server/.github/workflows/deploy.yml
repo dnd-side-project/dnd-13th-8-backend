@@ -1,0 +1,76 @@
+name: Amazon ECS 배포 - 메인 브랜치
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  CONTAINER_NAME: api-server
+  ECR_REPOSITORY: deullak/repository
+  ECS_CLUSTER: deullak-cluster
+  ECS_SERVICE: deullak-api-task-service-fa9x5qgh
+  ECS_TASK_DEFINITION: ecs-task-definition.json
+  IMAGE_TAG: latest
+
+jobs:
+  deploy:
+    name: Amazon ECS에 배포
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 코드 체크아웃
+        uses: actions/checkout@v3
+
+      - name: JDK 21 설정
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Gradle 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: Gradle 빌드
+        run: ./gradlew clean build -x test
+
+      - name: AWS 자격 증명 구성
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Amazon ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: .env 파일 생성
+        run: |
+          echo "DB_URL=jdbc:mysql://${{ secrets.RDS_HOST }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB }}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8" >> .env
+          echo "DB_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
+
+      - name: Docker 이미지 빌드 및 푸시
+        run: |
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: ECS 태스크 정의 렌더링
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: ECS 서비스에 배포
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
