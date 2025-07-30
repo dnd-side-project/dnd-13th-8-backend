@@ -56,6 +56,7 @@ jobs:
 
       - name: Docker 이미지 빌드 및 푸시
         run: |
+          cd api-server
           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
