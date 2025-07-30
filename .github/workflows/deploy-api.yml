@@ -31,6 +31,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: application.yml 생성
+        run: |
+          echo "${{ secrets.APPLICATION_YML_BASE64 }}" | base64 -d > ./api-server/src/main/resources/application.yml
+
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
