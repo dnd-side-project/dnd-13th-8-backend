@@ -74,6 +74,8 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          environment-files: |
+            arn:aws:s3:::deullek-bucket/configs/.env
 
       - name: ECS 서비스에 배포
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
