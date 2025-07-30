@@ -15,7 +15,6 @@ env:
   ECS_SERVICE: deullak-api-task-service-fa9x5qgh
   ECS_TASK_DEFINITION: deullak-api-task-revision1.json
   IMAGE_TAG: latest
-  S3_ENV_PATH: s3://deullek-bucket/configs/env.json
 
 jobs:
   deploy:
@@ -49,20 +48,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: env.json 파일 생성
-        run: |
-          echo '[
-            { "name": "DB_URL", "value": "jdbc:mysql://${{ secrets.RDS_HOST }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB }}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8" },
-            { "name": "DB_USERNAME", "value": "${{ secrets.RDS_USERNAME }}" },
-            { "name": "DB_PASSWORD", "value": "${{ secrets.RDS_PASSWORD }}" },
-            { "name": "S3_BUCKET", "value": "deullek-bucket" },
-            { "name": "S3_REGION", "value": "ap-northeast-2" },
-            { "name": "S3_BASE_URL", "value": "https://deullek-bucket.s3.ap-northeast-2.amazonaws.com" }
-          ]' > env.json
-
-      - name: env.json 파일 S3에 업로드
-        run: aws s3 cp env.json ${{ env.S3_ENV_PATH }} --region ${{ env.AWS_REGION }}
-
       - name: Docker 이미지 빌드 및 푸시
         run: |
           cd api-server
@@ -76,8 +61,13 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-          environment-files: |
-            arn:aws:s3:::deullek-bucket/configs/env.json
+          environment-variables: |
+            DB_URL=jdbc:mysql://${{ secrets.RDS_HOST }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB }}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+            DB_USERNAME=${{ secrets.RDS_USERNAME }}
+            DB_PASSWORD=${{ secrets.RDS_PASSWORD }}
+            S3_BUCKET=deullek-bucket
+            S3_REGION=ap-northeast-2
+            S3_BASE_URL=https://deullek-bucket.s3.ap-northeast-2.amazonaws.com
 
       - name: ECS 서비스에 배포
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
