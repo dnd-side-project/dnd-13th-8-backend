@@ -34,8 +34,8 @@ jobs:
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: Gradle 빌드
-        run: ./gradlew clean build -x test
+      - name: Gradle 빌드 (api-server만)
+        run: ./gradlew :api-server:clean :api-server:build -x test
 
       - name: AWS 자격 증명 구성
         uses: aws-actions/configure-aws-credentials@v1
