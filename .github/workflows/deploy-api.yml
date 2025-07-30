@@ -9,7 +9,7 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  CONTAINER_NAME: api-server
+  CONTAINER_NAME: api-task
   ECR_REPOSITORY: deullak/repository
   ECS_CLUSTER: deullak-cluster
   ECS_SERVICE: deullak-api-task-service-fa9x5qgh
