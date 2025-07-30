@@ -85,6 +85,5 @@
     },
     "registeredAt": "2025-07-30T06:12:47.159Z",
     "registeredBy": "arn:aws:iam::365499268631:user/junyeop.lee",
-    "enableFaultInjection": false,
     "tags": []
 }
