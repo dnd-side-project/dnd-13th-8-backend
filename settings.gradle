@@ -1,0 +1,5 @@
+rootProject.name = 'Deullak'
+include 'chat-server'
+include 'main-server'
+include 'api-server'
+include 'common'
