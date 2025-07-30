@@ -80,7 +80,7 @@ jobs:
             arn:aws:s3:::deullek-bucket/configs/env.json
 
       - name: ECS 서비스에 배포
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
