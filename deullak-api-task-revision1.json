@@ -22,7 +22,7 @@
             "environmentFiles": [
                 {
                     "type": "s3",
-                    "value": "arn:aws:s3:::deullek-bucket/configs/.env"
+                    "value": "arn:aws:s3:::deullek-bucket/configs/env.json"
                 }
             ],
             "mountPoints": [],
