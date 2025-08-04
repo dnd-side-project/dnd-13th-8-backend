@@ -1,10 +1,5 @@
 {
-    "family": "api-server",
-    "networkMode": "awsvpc",
-    "requiresCompatibilities": ["EC2"],
-    "cpu": "512",
-    "memory": "1024",
-    "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/deulak-api-server:1",
     "containerDefinitions": [
         {
             "name": "api-server",
@@ -14,28 +9,84 @@
                 {
                     "name": "api-server-80-tcp",
                     "containerPort": 80,
-                    "hostPort": 80,
+                    "hostPort": 0,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 },
                 {
-                    "name": "api-server-443-tcp",
-                    "containerPort": 443,
-                    "hostPort": 443,
+                    "name": "api-server-8081-tcp",
+                    "containerPort": 8081,
+                    "hostPort": 0,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
             ],
             "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/api-server",
+                    "awslogs-group": "/ecs/deulak-api-server",
                     "awslogs-create-group": "true",
                     "awslogs-region": "ap-northeast-2",
                     "awslogs-stream-prefix": "ecs"
-                }
-            }
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
         }
-    ]
+    ],
+    "family": "deulak-api-server",
+    "taskRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
+    "networkMode": "bridge",
+    "revision": 1,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2"
+    ],
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "256",
+    "memory": "1024",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2025-08-04T09:26:25.616Z",
+    "registeredBy": "arn:aws:iam::814022331893:root",
+    "tags": []
 }
