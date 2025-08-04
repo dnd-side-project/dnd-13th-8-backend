@@ -1,8 +1,11 @@
-name: Amazon ECS 배포 - 메인 브랜치
+name: api server 만 Amazon ECS 배포
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'api-server/**'
+      - '.github/workflows/deploy-api-server.yml'
 
 permissions:
   contents: read
@@ -13,7 +16,7 @@ env:
   ECR_REPOSITORY: dulakreposiotry
   ECS_CLUSTER: monumental-penguin-yeofk3
   ECS_SERVICE: api-server-service-ilflt23f
-  ECS_TASK_DEFINITION: deullak-api-task-revision1.json
+  ECS_TASK_DEFINITION: api-server/deullak-api-task-revision1.json
   IMAGE_TAG: latest
 
 jobs:
