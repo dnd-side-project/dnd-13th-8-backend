@@ -15,7 +15,7 @@ env:
   CONTAINER_NAME: api-server
   ECR_REPOSITORY: dulakreposiotry
   ECS_CLUSTER: monumental-penguin-yeofk3
-  ECS_SERVICE: deluak-api-main-service-3h85u9iy
+  ECS_SERVICE: deulak-api-server-service-v71rtb06
   ECS_TASK_DEFINITION: api-server/deullak-api-task-revision1.json
   IMAGE_TAG: latest
 
