@@ -10,9 +10,9 @@ permissions:
 env:
   AWS_REGION: ap-northeast-2
   CONTAINER_NAME: api-task
-  ECR_REPOSITORY: deullak/repository
-  ECS_CLUSTER: deullak-cluster
-  ECS_SERVICE: deullak-api-task-service-fa9x5qgh
+  ECR_REPOSITORY: deulakrepository
+  ECS_CLUSTER: monumental-penguin-yeofk3
+  ECS_SERVICE: api-server-service-ilflt23f
   ECS_TASK_DEFINITION: deullak-api-task-revision1.json
   IMAGE_TAG: latest
 
