@@ -9,7 +9,7 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  CONTAINER_NAME: api-task
+  CONTAINER_NAME: api-server
   ECR_REPOSITORY: dulakreposiotry
   ECS_CLUSTER: monumental-penguin-yeofk3
   ECS_SERVICE: api-server-service-ilflt23f
