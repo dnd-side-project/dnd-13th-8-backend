@@ -34,7 +34,7 @@ jobs:
       - name: application.yml 생성
         run: |
           mkdir -p ./api-server/src/main/resources
-          echo "${{ secrets.APPLICATION_YML_BASE64 }}" > ./api-server/src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML_API }}" > ./api-server/src/main/resources/application-api.yml
 
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
