@@ -14,8 +14,8 @@ env:
   AWS_REGION: ap-northeast-2
   CONTAINER_NAME: api-server
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: monumental-penguin-yeofk3
-  ECS_SERVICE: deulak-api-server-service-v71rtb06
+  ECS_CLUSTER: powerful-hamster-zs44ne
+  ECS_SERVICE: api-server-service-0yk16l59
   ECS_TASK_DEFINITION: api-server/deullak-api-task-revision1.json
   IMAGE_TAG: latest
 

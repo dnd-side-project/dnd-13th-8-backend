@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/deulak-api-server:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/api-server:8",
     "containerDefinitions": [
         {
             "name": "api-server",
@@ -14,8 +14,8 @@
                     "appProtocol": "http"
                 },
                 {
-                    "name": "api-server-8081-tcp",
-                    "containerPort": 8081,
+                    "name": "api-server-443-tcp",
+                    "containerPort": 443,
                     "hostPort": 0,
                     "protocol": "tcp",
                     "appProtocol": "http"
@@ -30,7 +30,7 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/deulak-api-server",
+                    "awslogs-group": "/ecs/api-server",
                     "awslogs-create-group": "true",
                     "awslogs-region": "ap-northeast-2",
                     "awslogs-stream-prefix": "ecs"
@@ -40,11 +40,11 @@
             "systemControls": []
         }
     ],
-    "family": "deulak-api-server",
+    "family": "api-server",
     "taskRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
     "networkMode": "bridge",
-    "revision": 1,
+    "revision": 8,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -86,7 +86,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-08-04T09:26:25.616Z",
+    "registeredAt": "2025-08-04T11:55:42.708Z",
     "registeredBy": "arn:aws:iam::814022331893:root",
     "tags": []
 }
