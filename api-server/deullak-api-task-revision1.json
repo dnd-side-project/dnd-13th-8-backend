@@ -9,14 +9,14 @@
                 {
                     "name": "api-server-80-tcp",
                     "containerPort": 80,
-                    "hostPort": 0,
+                    "hostPort": 80,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 },
                 {
                     "name": "api-server-443-tcp",
                     "containerPort": 443,
-                    "hostPort": 0,
+                    "hostPort": 80,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
