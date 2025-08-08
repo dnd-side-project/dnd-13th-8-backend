@@ -1,22 +1,15 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/api-server:8",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/api-server-tesk:1",
     "containerDefinitions": [
         {
-            "name": "api-server",
+            "name": "api-server-container",
             "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
             "cpu": 0,
             "portMappings": [
                 {
-                    "name": "api-server-80-tcp",
+                    "name": "api-server-container-80-tcp",
                     "containerPort": 80,
                     "hostPort": 80,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
-                },
-                {
-                    "name": "api-server-443-tcp",
-                    "containerPort": 443,
-                    "hostPort": 443,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
@@ -30,7 +23,7 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/api-server",
+                    "awslogs-group": "/ecs/api-server-tesk",
                     "awslogs-create-group": "true",
                     "awslogs-region": "ap-northeast-2",
                     "awslogs-stream-prefix": "ecs"
@@ -40,11 +33,11 @@
             "systemControls": []
         }
     ],
-    "family": "api-server",
+    "family": "api-server-tesk",
     "taskRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
-    "networkMode": "bridge",
-    "revision": 8,
+    "networkMode": "awsvpc",
+    "revision": 1,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -70,23 +63,27 @@
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
         },
         {
+            "name": "ecs.capability.task-eni"
+        },
+        {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
         }
     ],
     "placementConstraints": [],
     "compatibilities": [
-        "EC2"
+        "EC2",
+        "FARGATE"
     ],
     "requiresCompatibilities": [
         "EC2"
     ],
-    "cpu": "256",
+    "cpu": "512",
     "memory": "1024",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-08-04T11:55:42.708Z",
+    "registeredAt": "2025-08-08T09:40:06.543Z",
     "registeredBy": "arn:aws:iam::814022331893:root",
     "tags": []
 }
