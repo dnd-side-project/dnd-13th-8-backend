@@ -45,6 +45,15 @@ jobs:
       - name: Gradle 빌드 (api-server만)
         run: ./gradlew :api-server:clean :api-server:build -x test
 
+      - name: JAR 파일 존재 여부 확인
+        run: |
+          echo "JAR 파일 확인:"
+          ls -al ./api-server/build/libs
+          if [ ! -f ./api-server/build/libs/api-server.jar ]; then
+            echo "JAR 파일이 생성되지 않았습니다!"
+            exit 1
+          fi
+
       - name: AWS 자격 증명 구성
         uses: aws-actions/configure-aws-credentials@v1
         with:
