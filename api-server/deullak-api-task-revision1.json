@@ -1,15 +1,15 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/api-server-tesk:1",
+    "family": "api-server-tesk",
+    "networkMode": "awsvpc",
     "containerDefinitions": [
         {
             "name": "api-server-container",
             "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
             "cpu": 0,
+            "memory": null,
             "portMappings": [
                 {
-                    "name": "api-server-container-80-tcp",
                     "containerPort": 80,
-                    "hostPort": 80,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
@@ -33,47 +33,8 @@
             "systemControls": []
         }
     ],
-    "family": "api-server-tesk",
     "taskRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
-    "networkMode": "awsvpc",
-    "revision": 1,
-    "volumes": [],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.task-iam-role"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
-        }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "EC2",
-        "FARGATE"
-    ],
     "requiresCompatibilities": [
         "EC2"
     ],
@@ -82,8 +43,5 @@
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
-    },
-    "registeredAt": "2025-08-08T09:40:06.543Z",
-    "registeredBy": "arn:aws:iam::814022331893:root",
-    "tags": []
+    }
 }
