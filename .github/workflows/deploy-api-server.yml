@@ -12,10 +12,10 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  CONTAINER_NAME: api-server-container
+  CONTAINER_NAME: api-container
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: talkative-tiger-u4ffiz
-  ECS_SERVICE: api-server-tesk-service-rc66sstc
+  ECS_CLUSTER: victorious-elephant-mrbysh
+  ECS_SERVICE: api-server-service-yxo3psrc
   ECS_TASK_DEFINITION: api-server/deullak-api-task-revision1.json
   IMAGE_TAG: latest
 
