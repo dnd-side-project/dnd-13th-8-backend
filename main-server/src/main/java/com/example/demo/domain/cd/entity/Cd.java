@@ -11,11 +11,11 @@ public class Cd {
     @Column(name = "id", updatable = false )
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "playlist_id")
     private Playlist playlist;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prop_id")
     private Prop prop;
 

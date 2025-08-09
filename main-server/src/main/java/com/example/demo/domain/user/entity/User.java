@@ -19,7 +19,7 @@ public class User {
     private String profileUrl;
 
     @Column(name = "role")
-    private String Role;
+    private String role;
 
 
 }

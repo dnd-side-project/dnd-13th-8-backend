@@ -10,7 +10,7 @@ public class Song {
     @Column(name = "id", updatable = false )
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "playlist_id")
     private Playlist playlist;
 

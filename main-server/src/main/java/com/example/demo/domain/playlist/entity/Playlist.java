@@ -10,7 +10,7 @@ public class Playlist {
     @Column(name = "id", updatable = false )
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -18,7 +18,7 @@ public class Playlist {
     private String name;
 
     @Column(name = "visit_count")
-    private Long visitCount;
+    private Long visitCount = 0L;
 
 
 }
