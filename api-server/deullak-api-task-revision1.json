@@ -1,105 +1,22 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/api-server:14",
-    "containerDefinitions": [
-        {
-            "name": "api-container",
-            "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "name": "api-container-80-tcp",
-                    "containerPort": 80,
-                    "hostPort": 0,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
-                },
-                {
-                    "name": "api-container-8081-tcp",
-                    "containerPort": 8081,
-                    "hostPort": 0,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
-                },
-                {
-                    "name": "api-container-8080-tcp",
-                    "containerPort": 8080,
-                    "hostPort": 0,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
-                }
-            ],
-            "essential": true,
-            "environment": [],
-            "environmentFiles": [],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "ulimits": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/api-server",
-                    "awslogs-create-group": "true",
-                    "awslogs-region": "ap-northeast-2",
-                    "awslogs-stream-prefix": "ecs"
-                },
-                "secretOptions": []
-            },
-            "healthCheck": {
-                "command": [
-                    "CMD-SHELL",
-                    "curl -f http://localhost:8081/health || exit 1"
-                ],
-                "interval": 10,
-                "timeout": 5,
-                "retries": 3,
-                "startPeriod": 30
-            },
-            "systemControls": []
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "api-container",
+      "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
+      "portMappings": [
+        { "containerPort": 8081, "hostPort": 8081, "protocol": "tcp" }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/api-server",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
         }
-    ],
-    "family": "api-server",
-    "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
-    "networkMode": "bridge",
-    "revision": 14,
-    "volumes": [],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
-        }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "EC2"
-    ],
-    "requiresCompatibilities": [
-        "EC2"
-    ],
-    "cpu": "256",
-    "memory": "206",
-    "runtimePlatform": {
-        "cpuArchitecture": "X86_64",
-        "operatingSystemFamily": "LINUX"
-    },
-    "registeredAt": "2025-08-09T10:33:39.263Z",
-    "registeredBy": "arn:aws:iam::814022331893:root",
-    "tags": []
+      }
+    }
+  ]
 }
