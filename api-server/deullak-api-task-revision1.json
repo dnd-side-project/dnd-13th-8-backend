@@ -1,13 +1,22 @@
 {
+  "family": "api-server",
   "networkMode": "bridge",
+  "requiresCompatibilities": ["EC2"],
+  "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
+  "cpu": "256",
+  "memory": "206",
   "containerDefinitions": [
     {
       "name": "api-container",
       "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
-      "portMappings": [
-        { "containerPort": 8081, "hostPort": 8081, "protocol": "tcp" }
-      ],
       "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8081,
+          "hostPort": 8081,
+          "protocol": "tcp"
+        }
+      ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
