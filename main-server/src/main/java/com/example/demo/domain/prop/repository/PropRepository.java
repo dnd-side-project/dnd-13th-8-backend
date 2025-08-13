@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface PropRepository extends JpaRepository<Prop, Long> {
 
-    public List<Prop> findAllByUser_Id(Long userId);
+    public List<Prop> findAllByUsers_Id(Long userId);
 }

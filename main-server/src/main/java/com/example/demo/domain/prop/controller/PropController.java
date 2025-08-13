@@ -1,10 +1,9 @@
 package com.example.demo.domain.prop.controller;
 
-import com.example.common.error.ErrorResponse;
+import com.example.common.error.exception.DomainException;
 import com.example.demo.domain.prop.dto.request.UploadPropRequestDto;
 import com.example.demo.domain.prop.dto.response.GetPropListResponseDto;
 import com.example.demo.domain.prop.service.PropService;
-import com.example.demo.global.r2.R2Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,8 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/prop")
@@ -64,7 +61,7 @@ public class PropController {
                     @ApiResponse(
                             responseCode = "404",
                             content = @Content(
-                                    schema = @Schema (implementation = ErrorResponse.class)
+                                    schema = @Schema (implementation = DomainException.class)
                             )
                     )
             }

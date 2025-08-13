@@ -51,7 +51,7 @@ public class PropService {
         if (!usersRepository.existsById(userId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
-        List<Prop> propList = propRepository.findAllByUser_Id(userId);
+        List<Prop> propList = propRepository.findAllByUsers_Id(userId);
         List<PropResponse> propResponsesList = propList.stream()
                 .map(p -> new PropResponse(
                     p.getId(),
