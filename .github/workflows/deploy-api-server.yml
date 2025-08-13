@@ -14,8 +14,8 @@ env:
   AWS_REGION: ap-northeast-2
   CONTAINER_NAME: api-container
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: victorious-elephant-mrbysh
-  ECS_SERVICE: api-server-service-yxo3psrc
+  ECS_CLUSTER: joyful-eagle-kco6mk
+  ECS_SERVICE: api-server-service-xojhseb1
   ECS_TASK_DEFINITION: api-server/deullak-api-task-revision1.json
   IMAGE_TAG: latest
 
