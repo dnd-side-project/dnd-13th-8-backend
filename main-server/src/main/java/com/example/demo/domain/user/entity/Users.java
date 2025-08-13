@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 public class Users {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false )
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, updatable = false, length = 15)
+    private String id;
 
     private String kakaoId;
 
