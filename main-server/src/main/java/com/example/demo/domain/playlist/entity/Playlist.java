@@ -1,6 +1,6 @@
 package com.example.demo.domain.playlist.entity;
 
-import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.Users;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,7 +12,7 @@ public class Playlist {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users users;
 
     @Column(name = "name")
     private String name;

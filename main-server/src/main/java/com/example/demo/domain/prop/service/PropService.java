@@ -1,13 +1,15 @@
 package com.example.demo.domain.prop.service;
 
-import com.example.common.error.exception.NotFoundException;
+import com.example.common.error.code.CommonErrorCode;
+import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.R2Exception;
+import com.example.common.error.exception.UserException;
 import com.example.demo.domain.prop.dto.response.GetPropListResponseDto;
 import com.example.demo.domain.prop.dto.response.PropResponse;
 import com.example.demo.domain.prop.entity.Prop;
 import com.example.demo.domain.prop.repository.PropRepository;
-import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.domain.user.entity.Users;
+import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.r2.R2Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,18 +26,18 @@ public class PropService {
 
     private final R2Service r2Service;
     private final PropRepository propRepository;
-    private final UserRepository userRepository;
+    private final UsersRepository usersRepository;
 
     @Transactional
     public void saveProp(Long userId, MultipartFile file) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(()-> new NotFoundException("회원 정보가 없습니다"));
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         String imageKey = r2Service.newKey(file.getOriginalFilename());     // 버킷 키 생성
         try {
             r2Service.upload(file.getBytes(), file.getContentType(), imageKey); // R2에 저장
         } catch (IOException e) {
-            throw new R2Exception("이미지 업로드 실패하였습니다");
+            throw new R2Exception("R2 서버 오류입니다", CommonErrorCode.INTERNAL_ERROR);
         }
 
         Prop prop = Prop.builder()
@@ -46,8 +48,8 @@ public class PropService {
     }
 
     public GetPropListResponseDto findPropListByUserId (Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("회원 정보가 없습니다.");
+        if (!usersRepository.existsById(userId)) {
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
         List<Prop> propList = propRepository.findAllByUser_Id(userId);
         List<PropResponse> propResponsesList = propList.stream()

@@ -1,0 +1,88 @@
+name: api server 만 Amazon ECS 배포
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'api-server/**'
+      - '.github/workflows/deploy-api-server.yml'
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  CONTAINER_NAME: api-container
+  ECR_REPOSITORY: dulakreposiotry
+  ECS_CLUSTER: joyful-eagle-kco6mk
+  ECS_SERVICE: api-server-service-xojhseb1
+  ECS_TASK_DEFINITION: api-server/deullak-api-task-revision1.json
+  IMAGE_TAG: latest
+
+jobs:
+  deploy:
+    name: Amazon ECS에 배포
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 코드 체크아웃
+        uses: actions/checkout@v3
+
+      - name: JDK 21 설정
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: application.yml 생성
+        run: |
+          mkdir -p ./api-server/src/main/resources
+          echo "${{ secrets.APPLICATION_YML_API }}" > ./api-server/src/main/resources/application.yml
+
+      - name: Gradle 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: Gradle 빌드 (api-server만)
+        run: ./gradlew :api-server:clean :api-server:build -x test
+
+      - name: JAR 파일 존재 여부 확인
+        run: |
+          echo "JAR 파일 확인:"
+          ls -al ./api-server/build/libs
+          if [ ! -f ./api-server/build/libs/api-server.jar ]; then
+            echo "JAR 파일이 생성되지 않았습니다!"
+            exit 1
+          fi
+
+      - name: AWS 자격 증명 구성
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Amazon ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Docker 이미지 빌드 및 푸시
+        run: |
+          cd api-server
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: ECS 태스크 정의 렌더링
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: ECS 서비스에 배포
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

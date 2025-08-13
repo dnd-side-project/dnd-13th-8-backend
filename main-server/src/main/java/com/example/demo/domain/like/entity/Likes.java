@@ -1,7 +1,7 @@
 package com.example.demo.domain.like.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.Users;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,7 +9,7 @@ import jakarta.persistence.*;
         uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "playlist_id"}) // user_id와 playlist_id가 unique해야함
 })
-public class Like {
+public class Likes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
@@ -17,7 +17,7 @@ public class Like {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users users;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "playlist_id")

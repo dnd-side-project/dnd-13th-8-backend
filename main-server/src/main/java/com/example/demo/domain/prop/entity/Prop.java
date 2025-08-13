@@ -1,6 +1,6 @@
 package com.example.demo.domain.prop.entity;
 
-import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,14 +18,14 @@ public class Prop {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users users;
 
     @Column(name = "image_key") // Bucket Key 값 저장
     private String imageKey;
 
     @Builder
-    public Prop(User user, String imageKey) {
-        this.user = user;
+    public Prop(Users user, String imageKey) {
+        this.users = user;
         this.imageKey = imageKey;
     }
 
