@@ -12,10 +12,10 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  CONTAINER_NAME: chat-server
+  CONTAINER_NAME: chat-container
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: monumental-penguin-yeofk3
-  ECS_SERVICE: chat-server-service-vd41q7ey
+  ECS_CLUSTER: joyful-eagle-kco6mk
+  ECS_SERVICE: chat-server-service-03ciwwyj
   ECS_TASK_DEFINITION: chat-server/chat-server-revision1.json
   IMAGE_TAG: latest
 
