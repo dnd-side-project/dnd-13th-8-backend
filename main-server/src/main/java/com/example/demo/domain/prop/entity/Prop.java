@@ -1,6 +1,6 @@
 package com.example.demo.domain.prop.entity;
 
-import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.Users;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,7 +12,7 @@ public class Prop {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users users;
 
     @Column(name = "image_url")
     private String imageUrl;
