@@ -12,7 +12,7 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  CONTAINER_NAME: main-server
+  CONTAINER_NAME: main-container
   ECR_REPOSITORY: dulakreposiotry
   ECS_CLUSTER: joyful-eagle-kco6mk
   ECS_SERVICE: main-server-service-z4k60m2s
