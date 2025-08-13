@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
-    NOT_FOUND
-
+    NOT_FOUND,
+    R2_ERROR
 }

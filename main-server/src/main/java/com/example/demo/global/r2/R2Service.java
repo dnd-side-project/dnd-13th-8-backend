@@ -46,7 +46,7 @@ public class R2Service {
                 RequestBody.fromBytes(bytes));
     }
 
-    public String presignGetUrl(String key) {
+    public String getPresignedUrl(String key) {
         var get = GetObjectRequest.builder().bucket(bucket).key(key).build();
         PresignedGetObjectRequest pre = presigner.presignGetObject(
                 GetObjectPresignRequest.builder()
