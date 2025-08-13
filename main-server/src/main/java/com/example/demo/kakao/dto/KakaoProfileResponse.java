@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.dto;
+package com.example.demo.kakao.dto;
 
 
 public record KakaoProfileResponse(
