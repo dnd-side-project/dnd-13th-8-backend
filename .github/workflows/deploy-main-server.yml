@@ -14,8 +14,8 @@ env:
   AWS_REGION: ap-northeast-2
   CONTAINER_NAME: main-server
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: monumental-penguin-yeofk3
-  ECS_SERVICE: main-server-service-y0hp8vtu
+  ECS_CLUSTER: joyful-eagle-kco6mk
+  ECS_SERVICE: main-server-service-z4k60m2s
   ECS_TASK_DEFINITION: main-server/main-server-revision1.json
   IMAGE_TAG: latest
 

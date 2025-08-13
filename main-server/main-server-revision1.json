@@ -1,22 +1,29 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/main-server:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:814022331893:task-definition/main-server:6",
     "containerDefinitions": [
         {
-            "name": "main-server",
+            "name": "main-container",
             "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
             "cpu": 0,
             "portMappings": [
                 {
-                    "name": "main-server-80-tcp",
+                    "name": "main-container-80-tcp",
                     "containerPort": 80,
                     "hostPort": 80,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 },
                 {
-                    "name": "main-server-443-tcp",
-                    "containerPort": 443,
-                    "hostPort": 443,
+                    "name": "main-container-8083-tcp",
+                    "containerPort": 8083,
+                    "hostPort": 8083,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                },
+                {
+                    "name": "main-container-8080-tcp",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
                     "protocol": "tcp",
                     "appProtocol": "http"
                 }
@@ -41,9 +48,10 @@
         }
     ],
     "family": "main-server",
+    "taskRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::814022331893:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 1,
+    "revision": 6,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -58,6 +66,9 @@
         },
         {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
         },
         {
             "name": "ecs.capability.execution-role-ecr-pull"
@@ -78,15 +89,15 @@
         "FARGATE"
     ],
     "requiresCompatibilities": [
-        "EC2"
+        "FARGATE"
     ],
     "cpu": "256",
-    "memory": "1024",
+    "memory": "512",
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2025-08-04T04:01:43.421Z",
+    "registeredAt": "2025-08-13T05:32:40.927Z",
     "registeredBy": "arn:aws:iam::814022331893:root",
     "tags": []
 }
