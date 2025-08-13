@@ -1,21 +1,23 @@
-name: Amazon ECS 배포 - 메인 브랜치
+name: chat-server만 Amazon ECS 배포
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'chat-server/**'
+      - '.github/workflows/deploy-chat-server.yml'
 
 permissions:
   contents: read
 
 env:
   AWS_REGION: ap-northeast-2
-  CONTAINER_NAME: api-task
-  ECR_REPOSITORY: deullak/repository
-  ECS_CLUSTER: deullak-cluster
-  ECS_SERVICE: deullak-api-task-service-fa9x5qgh
-  ECS_TASK_DEFINITION: deullak-api-task-revision1.json
+  CONTAINER_NAME: chat-container
+  ECR_REPOSITORY: dulakreposiotry
+  ECS_CLUSTER: joyful-eagle-kco6mk
+  ECS_SERVICE: chat-server-service-03ciwwyj
+  ECS_TASK_DEFINITION: chat-server/chat-server-revision1.json
   IMAGE_TAG: latest
-  S3_ENV_PATH: s3://deullek-bucket/configs/env.json
 
 jobs:
   deploy:
@@ -32,11 +34,16 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: application.yml 생성
+        run: |
+          mkdir -p ./chat-server/src/main/resources
+          echo "${{ secrets.APPLICATION_YML_CHAT }}" > ./chat-server/src/main/resources/application.yml
+
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: Gradle 빌드 (api-server만)
-        run: ./gradlew :api-server:clean :api-server:build -x test
+      - name: Gradle 빌드 (chat-server만)
+        run: ./gradlew :chat-server:clean :chat-server:build -x test
 
       - name: AWS 자격 증명 구성
         uses: aws-actions/configure-aws-credentials@v1
@@ -49,23 +56,9 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: env.json 파일 생성
-        run: |
-          echo '[
-            { "name": "DB_URL", "value": "jdbc:mysql://${{ secrets.RDS_HOST }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB }}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8" },
-            { "name": "DB_USERNAME", "value": "${{ secrets.RDS_USERNAME }}" },
-            { "name": "DB_PASSWORD", "value": "${{ secrets.RDS_PASSWORD }}" },
-            { "name": "S3_BUCKET", "value": "deullek-bucket" },
-            { "name": "S3_REGION", "value": "ap-northeast-2" },
-            { "name": "S3_BASE_URL", "value": "https://deullek-bucket.s3.ap-northeast-2.amazonaws.com" }
-          ]' > env.json
-
-      - name: env.json 파일 S3에 업로드
-        run: aws s3 cp env.json ${{ env.S3_ENV_PATH }} --region ${{ env.AWS_REGION }}
-
       - name: Docker 이미지 빌드 및 푸시
         run: |
-          cd api-server
+          cd chat-server
           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
@@ -76,11 +69,9 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-          environment-files: |
-            arn:aws:s3:::deullek-bucket/configs/env.json
 
       - name: ECS 서비스에 배포
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
