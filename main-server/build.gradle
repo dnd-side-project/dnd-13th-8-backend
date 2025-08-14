@@ -9,6 +9,15 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
 	runtimeOnly  'io.jsonwebtoken:jjwt-impl:0.12.5'
 	runtimeOnly  'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Swagger
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9"
+
+	// R2
+	implementation platform("software.amazon.awssdk:bom:2.25.55")
+	implementation "software.amazon.awssdk:s3"
 }
 
 bootJar {
