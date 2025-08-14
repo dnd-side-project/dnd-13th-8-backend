@@ -18,10 +18,10 @@ public class KakaoAuthService {
     private final KakaoAuthHttp kakaoAuthHttp;
     private final KakaoApiHttp kakaoApiHttp;
 
-    @Value("${dulak.kakao.client-id}")
+    @Value("${deulak.kakao.client-id}")
     private String clientId;
 
-    @Value("${dulak.kakao.redirect-uri}")
+    @Value("${deulak.kakao.redirect-uri}")
     private String redirectUri;
 
     /**

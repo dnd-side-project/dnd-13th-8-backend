@@ -29,7 +29,7 @@ public class PropService {
     private final UsersRepository usersRepository;
 
     @Transactional
-    public void saveProp(Long userId, MultipartFile file) {
+    public void saveProp(String userId, MultipartFile file) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -47,7 +47,7 @@ public class PropService {
         propRepository.save(prop);
     }
 
-    public GetPropListResponseDto findPropListByUserId (Long userId) {
+    public GetPropListResponseDto findPropListByUserId (String userId) {
         if (!usersRepository.existsById(userId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }

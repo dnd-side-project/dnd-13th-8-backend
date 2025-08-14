@@ -3,7 +3,7 @@ package com.example.demo.global.jwt;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "dulak.jwt")
+@ConfigurationProperties(prefix = "deulak.jwt")
 public record JwtProps(
         String issuer,
         String audience,
