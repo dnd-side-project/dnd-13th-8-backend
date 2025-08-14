@@ -5,5 +5,5 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.springframework.web.multipart.MultipartFile;
 
-public record UploadPropRequestDto(Long userId, @NotEmptyFile MultipartFile file) {
+public record UploadPropRequestDto(@NotEmptyFile MultipartFile file) {
 }

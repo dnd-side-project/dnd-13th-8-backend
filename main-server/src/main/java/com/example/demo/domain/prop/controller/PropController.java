@@ -4,6 +4,8 @@ import com.example.common.error.exception.DomainException;
 import com.example.demo.domain.prop.dto.request.UploadPropRequestDto;
 import com.example.demo.domain.prop.dto.response.GetPropListResponseDto;
 import com.example.demo.domain.prop.service.PropService;
+import com.example.demo.domain.user.repository.UsersRepository;
+import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,13 +40,12 @@ public class PropController {
                     )
             }
     )
-    public ResponseEntity<String> uploadImage(@ModelAttribute @Valid UploadPropRequestDto uploadPropRequestDto) {
+    public ResponseEntity<String> uploadImage(@ModelAttribute @Valid UploadPropRequestDto uploadPropRequestDto,
+    @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         MultipartFile file = uploadPropRequestDto.file();
-        Long userId = uploadPropRequestDto.userId(); // security 적용 시 AuthenticationPrincipal 변경
-
+        String userId = customUserDetails.getUsername();
         propService.saveProp(userId, file);
-
         return ResponseEntity.ok().body("사진을 업로드하였습니다");
     }
 
@@ -66,8 +68,8 @@ public class PropController {
                     )
             }
     )
-    public ResponseEntity<GetPropListResponseDto> getPropList(@RequestParam Long userId) { // security 적용 시 AuthenticationPrincipal 변경
-        return ResponseEntity.ok(propService.findPropListByUserId(userId));
+    public ResponseEntity<GetPropListResponseDto> getPropList(@AuthenticationPrincipal CustomUserDetails customUserDetails) { // security 적용 시 AuthenticationPrincipal 변경
+        return ResponseEntity.ok(propService.findPropListByUserId(customUserDetails.getUsername()));
     }
 
 
