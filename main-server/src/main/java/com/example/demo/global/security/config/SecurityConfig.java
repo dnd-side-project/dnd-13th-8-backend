@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**")) // refresh 붙이기 전 단계
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(reg -> reg
+                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/healthz").permitAll()
                         .requestMatchers("/auth/kakao/**").permitAll()
                         .requestMatchers("/auth/session").permitAll()
