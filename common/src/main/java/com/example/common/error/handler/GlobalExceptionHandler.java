@@ -55,7 +55,6 @@ public class GlobalExceptionHandler {
     }
 
 
-
     @ExceptionHandler({ MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception e, HttpServletRequest req) {
         ErrorResponse body = ErrorResponse.of(
