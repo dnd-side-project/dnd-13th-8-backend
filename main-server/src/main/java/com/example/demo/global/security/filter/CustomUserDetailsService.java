@@ -22,11 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (username == null || username.isBlank()) {
             throw new UsernameNotFoundException("사용자명이 비어 있습니다.");
         }
-        Users opt = userRepository.findByUserId(username);
-        if (opt == null) {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
-        }
-
+        Users opt = userRepository.findById(username).orElseThrow(()-> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
         return new CustomUserDetails(opt);
     }
 }
