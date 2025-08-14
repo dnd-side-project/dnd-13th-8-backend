@@ -1,0 +1,18 @@
+package com.example.demo.kakao.controller;
+
+import com.example.demo.kakao.dto.KakaoTokenResponse;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
+
+@HttpExchange(accept = "application/json")
+public interface KakaoAuthHttp {
+
+    @PostExchange(url = "/oauth/token", contentType = "application/x-www-form-urlencoded")
+    KakaoTokenResponse token(
+            @RequestParam("grant_type") String grantType,        // "authorization_code"
+            @RequestParam("client_id") String clientId,
+            @RequestParam("code") String code,
+            @RequestParam("code_verifier") String codeVerifier   // PKCE
+    );
+}
