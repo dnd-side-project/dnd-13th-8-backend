@@ -1,8 +1,9 @@
 package com.example.demo.domain.prop.service;
 
 import com.example.common.error.code.CommonErrorCode;
+import com.example.common.error.code.PropErrorCode;
 import com.example.common.error.code.UserErrorCode;
-import com.example.common.error.exception.R2Exception;
+import com.example.common.error.exception.PropException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.prop.dto.response.GetPropListResponseDto;
 import com.example.demo.domain.prop.dto.response.PropResponse;
@@ -37,7 +38,7 @@ public class PropService {
         try {
             r2Service.upload(file.getBytes(), file.getContentType(), imageKey); // R2에 저장
         } catch (IOException e) {
-            throw new R2Exception("R2 서버 오류입니다", CommonErrorCode.INTERNAL_ERROR);
+            throw new PropException(PropErrorCode.PROP_R2_ERROR);
         }
 
         Prop prop = Prop.builder()
@@ -59,6 +60,15 @@ public class PropService {
                 )).toList();
 
         return new GetPropListResponseDto(propResponsesList);
+    }
+
+    @Transactional
+    public void deletePropById (String userId, Long propId) {
+        Prop prop = propRepository.findByIdAndUsers_Id(propId, userId)
+                .orElseThrow(()-> new PropException(PropErrorCode.PROP_NOT_FOUND));
+
+        r2Service.delete(prop.getImageKey());
+        propRepository.delete(prop);
     }
 
     public String getPropImageUrl (String imageKey) {

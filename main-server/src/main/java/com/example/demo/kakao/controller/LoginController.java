@@ -23,7 +23,7 @@ public class LoginController {
     private final JwtProvider jwtProvider;
     private final JwtProps jwtProps;
 
-
+    /*
     @PostMapping("/auth/login")
     public ResponseEntity<String> kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
         KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier());
@@ -38,4 +38,5 @@ public class LoginController {
                 .header(HttpHeaders.SET_COOKIE, cookieUtil.refreshCookie(refresh).toString())
                 .body(out.userId());
     }
+     */
 }
