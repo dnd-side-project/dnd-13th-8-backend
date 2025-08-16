@@ -73,6 +73,24 @@ public class PropController {
     }
 
     @DeleteMapping("/delete")
+    @Operation(
+            summary = "사용자의 Prop 삭제",
+            description = "사용자가 요청한 Prop (단일) 을 삭제합니다",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            content = @Content(
+                                    schema = @Schema (implementation = String.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            content = @Content(
+                                    schema = @Schema (implementation = DomainException.class)
+                            )
+                    )
+            }
+    )
     public ResponseEntity<String> deleteProp(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam Long propId) {
         propService.deletePropById(customUserDetails.getId(), propId);
         return ResponseEntity.ok().body("이미지를 삭제했습니다");
