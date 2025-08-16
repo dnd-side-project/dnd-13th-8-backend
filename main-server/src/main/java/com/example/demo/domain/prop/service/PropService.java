@@ -1,6 +1,5 @@
 package com.example.demo.domain.prop.service;
 
-import com.example.common.error.code.CommonErrorCode;
 import com.example.common.error.code.PropErrorCode;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PropException;
