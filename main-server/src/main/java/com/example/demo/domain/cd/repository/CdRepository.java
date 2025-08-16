@@ -12,6 +12,7 @@ public interface CdRepository extends JpaRepository<Cd, Long> {
     @Query("""
         select
           c.id as cdId,
+          c.playlist.id as playlistId,
           p.id as propId,
           c.xCoordinate as xCoordinate,
           c.yCoordinate as yCoordinate,
@@ -22,5 +23,22 @@ public interface CdRepository extends JpaRepository<Cd, Long> {
           join c.prop p
         where c.playlist.id = :playlistId
     """)
-    List<CdItemView> findAllWithImageKeys(Long playlistId);
+    List<CdItemView> findAllByPlaylistWithImageKeys(Long playlistId);
+
+    @Query("""
+       select
+        c.id as cdId,
+        c.playlist.id as playlistId,
+        p.id as propId,
+        c.xCoordinate as xCoordinate,
+        c.yCoordinate as yCoordinate,
+        c.zCoordinate as zCoordinate,
+        c.angle as angle,
+        p.imageKey as imageKey
+       from Cd c
+        join c.prop p
+       where c.playlist.id in :playlistIdList
+    order by c.playlist.id asc, c.zCoordinate asc, c.id asc
+    """)
+    List<CdItemView> findAllByPlaylistIdWithImageKeysIn(@Param("playlistIdList") List<Long> playlistIdList);
 }
