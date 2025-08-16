@@ -39,4 +39,10 @@ public class LoginController {
                 .body(out.userId());
     }
      */
+
+    @GetMapping("/auth/super")
+    public ResponseEntity<String> superLogin () {
+        String superToken = jwtProvider.issueAccess("test");
+        return ResponseEntity.ok().body(superToken);
+    }
 }
