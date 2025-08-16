@@ -38,7 +38,7 @@ public class CdController {
         return ResponseEntity.ok().body(cdService.getCdByPlaylistId(playListId));
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     @Operation(
             summary = "CD 리스트 조회",
             description = "요청한 CD들 (다중) 을 조회합니다",
