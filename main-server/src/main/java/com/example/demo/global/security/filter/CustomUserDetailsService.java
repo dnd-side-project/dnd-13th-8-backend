@@ -1,7 +1,7 @@
 package com.example.demo.global.security.filter;
 
-import com.example.demo.domain.user.UserRepository;
 import com.example.demo.domain.user.entity.Users;
+import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UsersRepository usersRepository;
 
     /**
      * username 파라미터를 우선 userId로 보고 조회, 없으면 email로 재조회
@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (username == null || username.isBlank()) {
             throw new UsernameNotFoundException("사용자명이 비어 있습니다.");
         }
-        Users opt = userRepository.findById(username).orElseThrow(()-> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+        Users opt = usersRepository.findById(username).orElseThrow(()-> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
         return new CustomUserDetails(opt);
     }
 }
