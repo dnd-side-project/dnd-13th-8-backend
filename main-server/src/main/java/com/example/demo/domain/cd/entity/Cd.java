@@ -25,6 +25,9 @@ public class Cd {
     @Column(name = "y_coordinate")
     private Long yCoordinate;
 
+    @Column(name = "z_coordinate")
+    private Long zCoordinate;
+
     @Column(name = "angle")
     private Long angle;
 
