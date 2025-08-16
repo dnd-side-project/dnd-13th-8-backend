@@ -5,5 +5,5 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record CdResponse(Long playListId, List<CdItemResponse> cdItems) {
+public record CdResponse(Long playlistId, List<CdItemResponse> cdItems) {
 }
