@@ -1,6 +1,8 @@
 package com.example.demo.domain.cd.controller;
 
+import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.dto.request.GetCdListRequestDto;
+import com.example.demo.domain.cd.dto.request.SaveCdRequestDto;
 import com.example.demo.domain.cd.dto.response.CdListResponseDto;
 import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.cd.service.CdService;
@@ -54,5 +56,31 @@ public class CdController {
     public ResponseEntity<CdListResponseDto> getCdList (@RequestBody GetCdListRequestDto getCdListRequestDto) {
         List<Long> playListIdList = getCdListRequestDto.playlistIds();
         return ResponseEntity.ok().body(cdService.getAllCdByPlaylistIdList(playListIdList));
+    }
+
+    @PostMapping("/{playlistId}")
+    @Operation(
+            summary = "CD 저장",
+            description = "커스터마이징 한 CD를 저장합니다",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "playlistId, cdItems",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = SaveCdRequestDto.class)
+                    )
+            ),
+
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            content = @Content(
+                                    schema = @Schema(implementation = String.class)
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<String> saveCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequestDto saveCdRequestDto) {
+        cdService.saveCdItemList(playlistId, saveCdRequestDto.cdItems());
+        return ResponseEntity.ok().body("CD가 저장되었습니다");
     }
 }

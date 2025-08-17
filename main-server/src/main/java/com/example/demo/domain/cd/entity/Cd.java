@@ -3,6 +3,7 @@ package com.example.demo.domain.cd.entity;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.prop.entity.Prop;
 import jakarta.persistence.*;
+import lombok.Builder;
 
 @Entity
 public class Cd {
@@ -31,4 +32,15 @@ public class Cd {
     @Column(name = "angle")
     private Long angle;
 
+    @Builder
+    public Cd(Playlist playlist, Prop prop,
+              Long xCoordinate, Long yCoordinate,
+              Long zCoordinate, Long angle) {
+        this.playlist = playlist;
+        this.prop = prop;
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+        this.zCoordinate = zCoordinate;
+        this.angle = angle;
+    }
 }
