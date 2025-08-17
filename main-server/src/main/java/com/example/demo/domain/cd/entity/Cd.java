@@ -4,8 +4,10 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.prop.entity.Prop;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class Cd {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
