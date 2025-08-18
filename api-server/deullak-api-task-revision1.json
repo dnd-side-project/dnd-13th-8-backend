@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "api-container",
-      "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry",
+      "image": "814022331893.dkr.ecr.ap-northeast-2.amazonaws.com/dulakreposiotry:api-latest",
       "cpu": 0,
       "portMappings": [
         {

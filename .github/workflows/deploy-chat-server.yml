@@ -17,7 +17,7 @@ env:
   ECS_CLUSTER: joyful-eagle-kco6mk
   ECS_SERVICE: chat-server-service-03ciwwyj
   ECS_TASK_DEFINITION: chat-server/chat-server-revision1.json
-  IMAGE_TAG: latest
+  IMAGE_TAG: chat-latest
 
 jobs:
   deploy:
