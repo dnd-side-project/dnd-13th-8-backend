@@ -1,6 +1,5 @@
 package com.example.demo.kakao.service;
 
-import com.example.demo.domain.user.UserRepository;
 import com.example.demo.global.jwt.JwtProvider;
 import com.example.demo.kakao.dto.KakaoLoginResponse;
 import com.example.demo.kakao.dto.KakaoProfileMapper;
