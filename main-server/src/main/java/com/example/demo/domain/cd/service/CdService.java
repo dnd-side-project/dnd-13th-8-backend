@@ -127,4 +127,13 @@ public class CdService {
 
         cdRepository.saveAll(cdList);
     }
+
+    @Transactional
+    public void replaceCdItemList(Long playlistId, List<CdItemRequest> cdItemRequestList) {
+        playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+
+        cdRepository.deleteByPlaylistId(playlistId);
+        saveCdItemList(playlistId, cdItemRequestList);
+    }
 }

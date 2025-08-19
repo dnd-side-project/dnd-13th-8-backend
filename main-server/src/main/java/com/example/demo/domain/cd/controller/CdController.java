@@ -1,6 +1,5 @@
 package com.example.demo.domain.cd.controller;
 
-import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.dto.request.GetCdListRequestDto;
 import com.example.demo.domain.cd.dto.request.SaveCdRequestDto;
 import com.example.demo.domain.cd.dto.response.CdListResponseDto;
@@ -82,5 +81,23 @@ public class CdController {
     public ResponseEntity<String> saveCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequestDto saveCdRequestDto) {
         cdService.saveCdItemList(playlistId, saveCdRequestDto.cdItems());
         return ResponseEntity.ok().body("CD가 저장되었습니다");
+    }
+
+    @PutMapping("/{playlistId}")
+    @Operation(
+            summary = "CD 수정 (Replace)",
+            description = "수정 시 이전 CdItem은 삭제하고 요청 받은 CdItem을 저장합니다",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            content = @Content(
+                                    schema = @Schema(implementation = String.class)
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<String> replaceCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequestDto saveCdRequestDto) {
+        cdService.replaceCdItemList(playlistId,saveCdRequestDto.cdItems());
+        return  ResponseEntity.ok().body("CD가 수정되었습니다");
     }
 }
