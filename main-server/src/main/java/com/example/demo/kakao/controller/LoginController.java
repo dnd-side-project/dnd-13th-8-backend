@@ -10,7 +10,6 @@ import com.example.demo.kakao.service.AuthService;
 import com.example.demo.global.http.service.AccessTokenCookieService;
 import com.example.demo.global.http.service.RefreshTokenCookieService;
 import java.time.Duration;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -53,11 +52,12 @@ public class LoginController {
                 .header(HttpHeaders.SET_COOKIE, refreshCookies.create(refresh).toString())
                 .body(out.userId());
     }
-     */
+
 
     @GetMapping("/auth/super")
     public ResponseEntity<String> superLogin () {
-        String superToken = jwtProvider.issueAccess("test");
+        Users users = new Users();
+        String superToken = jwtProvider.issueAccess(users.getId());
         return ResponseEntity.ok().body(superToken);
     }
 }

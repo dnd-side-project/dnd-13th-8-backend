@@ -27,7 +27,7 @@ public class LogoutController {
         }
 
         var ctx = result.context();
-        logoutService.logout(customUserDetails.getUsername());
+        logoutService.logout(customUserDetails.getId());
         return ResponseEntity.ok().build();
     }
 }
