@@ -21,10 +21,10 @@ public class CookieBuilder {
     /**
      * 쿠키 생성
      */
-    public ResponseCookie build(String name, String value, Duration maxAge, String path) {
-        validateName(name);
+    public ResponseCookie build(String sessionId, String value, Duration maxAge, String path) {
+        validateName(sessionId);
 
-        ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(name, value);
+        ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(sessionId, value);
 
         b.httpOnly(props.common().httpOnly());
         b.secure(effectiveSecure());
@@ -46,8 +46,8 @@ public class CookieBuilder {
     /**
      * 쿠키 만료 (즉시 삭제)
      */
-    public ResponseCookie expire(String name, String path) {
-        return build(name, "", Duration.ZERO, path);
+    public ResponseCookie expire(String sessionId, String path) {
+        return build(sessionId,"", Duration.ZERO, path);
     }
 
     /* ===== 내부 유틸 메서드 ===== */
