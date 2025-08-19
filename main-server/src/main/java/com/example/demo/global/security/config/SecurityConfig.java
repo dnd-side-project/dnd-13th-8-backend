@@ -1,6 +1,7 @@
 package com.example.demo.global.security.config;
 
-import com.example.demo.global.http.HttpOnlyCookieUtil;
+import com.example.demo.global.http.dto.CookieProps;
+import com.example.demo.global.http.util.CookieReader;
 import com.example.demo.global.jwt.JwtProvider;
 import com.example.demo.global.security.filter.CustomUserDetailsService;
 import com.example.demo.global.security.filter.JwtAuthenticationFilter;
@@ -19,7 +20,8 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
-    private final HttpOnlyCookieUtil cookieUtil;
+    private final CookieReader cookieReader;
+    private final CookieProps props;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,7 +38,7 @@ public class SecurityConfig {
                 )
                 .anonymous(Customizer.withDefaults());
 
-        var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService, cookieUtil);
+        var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService,cookieReader, props);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
