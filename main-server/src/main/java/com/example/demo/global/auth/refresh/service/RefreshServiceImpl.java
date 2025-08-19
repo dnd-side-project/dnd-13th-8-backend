@@ -39,10 +39,10 @@ public class RefreshServiceImpl implements RefreshService {
         if (code == 0L) {
             return new RefreshFailure(RefreshFailure.Reason.NOT_FOUND);
         }
-//        if (code == -1L) {
-//            reuseHandler.onSuspiciousReuse(v.getUserId());
-//            return new RefreshFailure(RefreshFailure.Reason.MISMATCH);
-//        }
+        if (code == -1L) {
+            reuseHandler.onSuspiciousReuse(v.getUserId());
+            return new RefreshFailure(RefreshFailure.Reason.MISMATCH);
+        }
         return new RefreshFailure(RefreshFailure.Reason.ERROR);
     }
 }
