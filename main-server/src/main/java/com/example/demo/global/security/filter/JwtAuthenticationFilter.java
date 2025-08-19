@@ -1,7 +1,8 @@
 package com.example.demo.global.security.filter;
 
 import com.example.common.error.exception.JwtException;
-import com.example.demo.global.http.HttpOnlyCookieUtil;
+import com.example.demo.global.http.dto.CookieProps;
+import com.example.demo.global.http.util.CookieReader;
 import com.example.demo.global.jwt.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,13 +20,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
-    private final HttpOnlyCookieUtil cookieUtil;
+    private final CookieReader cookieReader;
+    private final CookieProps props;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        var accessOpt = cookieUtil.readAccess(req);
+        var accessOpt = cookieReader.read(req, props.access().name());
         if (accessOpt.isPresent()) {
             try {
                 var jws = jwtProvider.validateAccess(accessOpt.get());

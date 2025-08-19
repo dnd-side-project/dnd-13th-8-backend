@@ -19,7 +19,7 @@ public class Users {
 
     @Column(name = "username")
     private String username;
-
+//
 //    @Column(name = "nickname")
 //    private String nickname;
 //
