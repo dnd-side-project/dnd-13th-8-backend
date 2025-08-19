@@ -2,8 +2,13 @@ package com.example.demo.domain.playlist.entity;
 
 import com.example.demo.domain.user.entity.Users;
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
+@NoArgsConstructor
 public class Playlist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,5 +25,13 @@ public class Playlist {
     @Column(name = "visit_count")
     private Long visitCount = 0L;
 
+    private Boolean isRepresentative;
 
+    @Builder
+    public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative) {
+        this.users = users;
+        this.name = name;
+        this.visitCount = visitCount;
+        this.isRepresentative = isRepresentative;
+    }
 }
