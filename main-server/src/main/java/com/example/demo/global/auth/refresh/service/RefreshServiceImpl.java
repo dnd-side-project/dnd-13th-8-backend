@@ -15,6 +15,7 @@ public class RefreshServiceImpl implements RefreshService {
     private final RefreshValidator validator;
     private final TokenIssuer issuer;
     private final RotationService rotation;
+    private final ReuseHandler reuseHandler;
 
     @Override
     public RefreshResult refresh(String presentedRefreshJwt, String userId, String sessionId) {
@@ -40,7 +41,7 @@ public class RefreshServiceImpl implements RefreshService {
             return new RefreshFailure(RefreshFailure.Reason.NOT_FOUND);
         }
         if (code == -1L) {
-            reuseHandler.onSuspiciousReuse(v.getUserId());
+            reuseHandler.onSuspiciousReuse(v.userId(),sessionId);
             return new RefreshFailure(RefreshFailure.Reason.MISMATCH);
         }
         return new RefreshFailure(RefreshFailure.Reason.ERROR);
