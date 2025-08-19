@@ -4,4 +4,6 @@ public record RefreshTokenCookieProps(
         String name,
         String path,
         Long ttlDays
-) {}
+) {
+
+}

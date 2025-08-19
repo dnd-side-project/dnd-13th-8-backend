@@ -18,9 +18,9 @@ public class RefreshServiceImpl implements RefreshService {
     private final ReuseHandler reuseHandler;
 
     @Override
-    public RefreshResult refresh(String presentedRefreshJwt, String userId, String sessionId) {
+    public RefreshResult refresh(String presentedRefreshJwt) {
         // 1) 검증
-        var v = validator.validate(presentedRefreshJwt, userId);
+        var v = validator.validate(presentedRefreshJwt);
         if (!v.valid()) {
             return new RefreshFailure(RefreshFailure.Reason.INVALID);
         }
@@ -29,7 +29,7 @@ public class RefreshServiceImpl implements RefreshService {
         var issued = issuer.preIssue(v.userId());
 
         // 3) 회전 시도
-        long code = rotation.rotate(v.userId(), sessionId, v.presentedJti(), issued.nextJti(), issued.refreshTtlSeconds());
+        long code = rotation.rotate(v.userId(), v.presentedJti(), issued.nextJti(), issued.refreshTtlSeconds());
 
         // 4) 결과 매핑
         if (code == 1L) {
@@ -41,7 +41,7 @@ public class RefreshServiceImpl implements RefreshService {
             return new RefreshFailure(RefreshFailure.Reason.NOT_FOUND);
         }
         if (code == -1L) {
-            reuseHandler.onSuspiciousReuse(v.userId(),sessionId);
+            reuseHandler.onSuspiciousReuse(v.userId());
             return new RefreshFailure(RefreshFailure.Reason.MISMATCH);
         }
         return new RefreshFailure(RefreshFailure.Reason.ERROR);

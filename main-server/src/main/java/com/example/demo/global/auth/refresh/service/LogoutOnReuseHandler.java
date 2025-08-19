@@ -13,11 +13,11 @@ public class LogoutOnReuseHandler implements ReuseHandler {
     private final LogoutService logoutService;
 
     @Override
-    public void onSuspiciousReuse(String userId, String sessionId) {
-        logoutService.logout(userId, sessionId);
+    public void onSuspiciousReuse(String userId) {
+        logoutService.logout(userId);
 
-        log.warn("❗ Refresh 재사용 탐지 → 해당 세션 로그아웃 처리 완료 (userId={}, sessionId={})",
-                userId, sessionId);
+        log.warn("❗ Refresh 재사용 탐지 → 해당 세션 로그아웃 처리 완료 (userId={})",
+                userId);
     }
 }
 

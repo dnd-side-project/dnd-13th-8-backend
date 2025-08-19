@@ -36,7 +36,7 @@ public class RefreshController {
 
         // 2) 서비스 호출
         var c = ctx.context();
-        RefreshResult result = refreshService.refresh(c.refreshJwt(), c.userId(), c.sessionId());
+        RefreshResult result = refreshService.refresh(c.refreshJwt());
 
         // 3) 성공/실패 분기
         if (result instanceof RefreshSuccess s) {
