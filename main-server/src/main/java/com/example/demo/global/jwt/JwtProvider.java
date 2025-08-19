@@ -80,31 +80,16 @@ public class JwtProvider {
         return jws;
     }
 
-    /** subject(userId) */
-    public String subject(String jwt) {
-        return parse(jwt).getPayload().getSubject();
+    /** refresh/access 공통 JTI(claims.getId()) 추출 */
+    public String jti(String jwt) {
+        var jws = parse(jwt);
+        String id = jws.getPayload().getId();
+        if (id == null || id.isBlank()) {
+            throw new JwtException("토큰에 JTI가 없습니다.", JwtErrorCode.JWT_INVALID);
+        }
+        return id;
     }
 
-    /** 만료 여부만 확인 */
-    public boolean isExpired(String jwt) {
-        try {
-            parse(jwt);
-            return false;
-        } catch (BaseException ex) {
-            if (ex.getErrorCode() != null && ex.getErrorCode().equals(JwtErrorCode.JWT_EXPIRED)) {
-                return true;
-            }
-            throw ex;
-        }
-    }
-
-    /** 임의 클레임 조회 */
-    public Object claim(String jwt, String name) {
-        if (name == null || name.isBlank()) {
-            throw new JwtException("클레임 이름이 비어 있습니다.", JwtErrorCode.JWT_INVALID);
-        }
-        return parse(jwt).getPayload().get(name);
-    }
 
     /* ========== 내부 구현 ========== */
 
