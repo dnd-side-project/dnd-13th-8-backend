@@ -133,7 +133,7 @@ public class CdService {
         playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
-        cdRepository.deleteByPlaylist_Id(playlistId);
+        cdRepository.deleteByPlaylistId(playlistId);
         saveCdItemList(playlistId, cdItemRequestList);
     }
 }

@@ -42,5 +42,5 @@ public interface CdRepository extends JpaRepository<Cd, Long> {
     """)
     List<CdItemView> findAllByPlaylistIdWithImageKeysIn(@Param("playlistIdList") List<Long> playlistIdList);
 
-    void deleteByPlaylist_Id(Long playlistId);
+    void deleteByPlaylistId(Long playlistId);
 }
