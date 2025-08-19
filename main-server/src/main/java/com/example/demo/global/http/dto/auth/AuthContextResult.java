@@ -1,4 +1,4 @@
-package com.example.demo.global.http.dto;
+package com.example.demo.global.http.dto.auth;
 
 
 public final class AuthContextResult {

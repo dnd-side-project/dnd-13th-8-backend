@@ -1,4 +1,4 @@
-package com.example.demo.global.http.dto;
+package com.example.demo.global.http.dto.refresh;
 
 public record RefreshTokenCookieProps(
         String name,

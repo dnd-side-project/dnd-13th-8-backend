@@ -1,7 +1,7 @@
 package com.example.demo.global.http.util;
 
-import com.example.demo.global.http.dto.AuthContextResult;
-import com.example.demo.global.http.dto.AuthContext;
+import com.example.demo.global.http.dto.auth.AuthContextResult;
+import com.example.demo.global.http.dto.auth.AuthContext;
 import com.example.demo.global.http.dto.CookieProps;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.demo.global.http;
+package com.example.demo.global.http.config;
 
 import com.example.demo.global.http.dto.CookieProps;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
