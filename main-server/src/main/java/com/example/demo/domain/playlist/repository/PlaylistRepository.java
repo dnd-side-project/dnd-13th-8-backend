@@ -33,6 +33,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 """)
     List<Playlist> findByUserIdRecent(@Param("userId") String userId);
 
-
+    Optional<Playlist> findByIdAndUsers_Id(Long playlistId, String userId);
 
 }

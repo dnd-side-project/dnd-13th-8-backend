@@ -2,8 +2,12 @@ package com.example.demo.domain.song.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
+@NoArgsConstructor
 public class Song {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
