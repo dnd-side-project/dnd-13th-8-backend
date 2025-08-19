@@ -53,4 +53,11 @@ public class LoginController {
                 .header(HttpHeaders.SET_COOKIE, refreshCookies.create(refresh).toString())
                 .body(out.userId());
     }
+     */
+
+    @GetMapping("/auth/super")
+    public ResponseEntity<String> superLogin () {
+        String superToken = jwtProvider.issueAccess("test");
+        return ResponseEntity.ok().body(superToken);
+    }
 }

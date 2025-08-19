@@ -44,7 +44,7 @@ public class PropController {
     @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         MultipartFile file = uploadPropRequestDto.file();
-        String userId = customUserDetails.getUsername();
+        String userId = customUserDetails.getId();
         propService.saveProp(userId, file);
         return ResponseEntity.ok().body("사진을 업로드하였습니다");
     }
@@ -69,9 +69,32 @@ public class PropController {
             }
     )
     public ResponseEntity<GetPropListResponseDto> getPropList(@AuthenticationPrincipal CustomUserDetails customUserDetails) { // security 적용 시 AuthenticationPrincipal 변경
-        return ResponseEntity.ok(propService.findPropListByUserId(customUserDetails.getUsername()));
+        return ResponseEntity.ok(propService.findPropListByUserId(customUserDetails.getId()));
     }
 
+    @DeleteMapping("/delete")
+    @Operation(
+            summary = "사용자의 Prop 삭제",
+            description = "사용자가 요청한 Prop (단일) 을 삭제합니다",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            content = @Content(
+                                    schema = @Schema (implementation = String.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            content = @Content(
+                                    schema = @Schema (implementation = DomainException.class)
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<String> deleteProp(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam Long propId) {
+        propService.deletePropById(customUserDetails.getId(), propId);
+        return ResponseEntity.ok().body("이미지를 삭제했습니다");
+    }
 
     @GetMapping("/check")
     @Operation(

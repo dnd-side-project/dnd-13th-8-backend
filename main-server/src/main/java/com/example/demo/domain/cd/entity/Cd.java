@@ -3,8 +3,11 @@ package com.example.demo.domain.cd.entity;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.prop.entity.Prop;
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class Cd {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +28,21 @@ public class Cd {
     @Column(name = "y_coordinate")
     private Long yCoordinate;
 
+    @Column(name = "z_coordinate")
+    private Long zCoordinate;
+
     @Column(name = "angle")
     private Long angle;
 
+    @Builder
+    public Cd(Playlist playlist, Prop prop,
+              Long xCoordinate, Long yCoordinate,
+              Long zCoordinate, Long angle) {
+        this.playlist = playlist;
+        this.prop = prop;
+        this.xCoordinate = xCoordinate;
+        this.yCoordinate = yCoordinate;
+        this.zCoordinate = zCoordinate;
+        this.angle = angle;
+    }
 }
