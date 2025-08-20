@@ -41,7 +41,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     // 기존 대표 플레이리스트 해제
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Playlist p SET p.isRepresentative = false WHERE p.userId = :userId AND p.isRepresentative = true")
+    @Query("UPDATE Playlist p SET p.isRepresentative = false WHERE p.users.id = :userId AND p.isRepresentative = true")
     void clearPreviousRepresentative(String userId);
 
     boolean existsByShareCode(String shareCode);
