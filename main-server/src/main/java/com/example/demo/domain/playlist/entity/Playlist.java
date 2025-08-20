@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.entity;
 
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.user.entity.Users;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -25,13 +26,20 @@ public class Playlist {
     @Column(name = "visit_count")
     private Long visitCount = 0L;
 
+    @Enumerated(EnumType.STRING)
+    private PlaylistGenre genre;
+
     private Boolean isRepresentative;
 
+    private String theme;
+
     @Builder
-    public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative) {
-        this.users = users;
+    public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre, String theme) {
+        this.theme = theme;
+        this.genre = genre;
         this.name = name;
         this.visitCount = visitCount;
         this.isRepresentative = isRepresentative;
+        this.users = users;
     }
 }
