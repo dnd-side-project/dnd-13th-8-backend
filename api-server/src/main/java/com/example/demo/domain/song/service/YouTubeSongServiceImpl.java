@@ -2,8 +2,10 @@ package com.example.demo.domain.song.service;
 
 import com.example.demo.domain.song.controller.YouTubeApiHttp;
 import com.example.demo.domain.song.dto.SongMapper;
+import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
-import java.time.Duration;
+import com.example.demo.domain.song.entity.Song;
+import com.example.demo.domain.song.repository.SongRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,15 +15,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class YouTubeSongServiceImpl implements YouTubeSongService {
 
     private final YouTubeApiHttp youTubeApiHttp;
+    private final SongRepository songRepository;
 
     @Value("${youtube.api.key}")
     private String apiKey;
+
+    public Mono<List<SongResponseDto>> saveReactiveSongs(List<YouTubeVideoInfoDto> links, Long playlistId) {
+        List<Song> songs = links.stream()
+                .map(link -> SongMapper.toEntity(link, playlistId))
+                .toList();
+
+        return songRepository.saveAll(songs)
+                .map(SongMapper::toDto) // 저장된 각 Song → DTO로 변환
+                .collectList();         // Flux<SongResponseDto> → Mono<List<SongResponseDto>>
+    }
+
 
     /**
      * 여러 유튜브 링크를 받아 영상 정보를 조회합니다.

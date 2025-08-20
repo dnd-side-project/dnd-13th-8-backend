@@ -66,7 +66,17 @@ public  class PlaylistServiceImpl implements PlaylistService {
         return playlistRepository.save(playlist);
     }
 
-   
+    @Override
+    public PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request, String theme) {
+        // 1. blocking 저장 (JPA)
+        Playlist savedPlaylist = saveBlockingPlaylist(users, request, theme);
+
+        // 2. 비동기 저장 (R2DBC)
+        List<SongResponseDto> savedSongs = songService.saveReactiveSongs(request.songs(), savedPlaylist.getId())
+                .block();// <- 혼합 시점에서 불가피하게 block 사용
+
+        return new PlaylistWithSongsResponse(savedPlaylist.getId(), savedSongs);
+    }
 
     @Transactional
     @Override
