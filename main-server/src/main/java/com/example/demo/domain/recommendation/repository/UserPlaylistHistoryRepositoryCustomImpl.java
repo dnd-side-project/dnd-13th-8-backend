@@ -1,25 +1,22 @@
 package com.example.demo.domain.recommendation.repository;
 
 import com.example.demo.domain.playlist.entity.QPlaylist;
-import com.example.demo.domain.user.entity.QUsers;
 import com.example.demo.domain.recommendation.dto.QRecommendedPlaylistResponseDto;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponseDto;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
+
 @RequiredArgsConstructor
-public class RecommendationRepositoryImpl implements RecommendationRepositoryCustom {
+public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHistoryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
     private final QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
     private final QPlaylist playlist = QPlaylist.playlist;
-    private final QUsers user = QUsers.users;
 
     /**
      * 사용자가 최근 가장 많이 들은 장르 기반 추천
