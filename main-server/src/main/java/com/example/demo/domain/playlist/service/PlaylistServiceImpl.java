@@ -154,4 +154,17 @@ public  class PlaylistServiceImpl implements PlaylistService {
         return shareCode;
     }
 
+    @Override
+    @Transactional
+    public void updateRepresentative(String userId, Long playlistId) {
+        Playlist playlist = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() -> new IllegalStateException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다."));
+
+        // 기존 대표 해제
+        playlistRepository.clearPreviousRepresentative(userId);
+
+        // 새 대표로 지정 (setter 금지 → 도메인 메서드)
+        playlist.changeToRepresentative();
+    }
+
 }

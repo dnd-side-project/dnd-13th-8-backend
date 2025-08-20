@@ -18,4 +18,6 @@ public interface PlaylistService {
     void deletePlaylist(String userId, Long playlistId);
 
     String sharePlaylist(String userId, Long playlistId);
+
+    void updateRepresentative(String userId, Long playlistId);
 }

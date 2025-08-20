@@ -47,6 +47,11 @@ public class Playlist {
         this.users = users;
     }
 
+    /**  대표로 변경 */
+    public void changeToRepresentative() {
+        this.isRepresentative = true;
+    }
+
     public void startShare(String shareCode) {
         if (this.isShared) {
             throw new IllegalStateException("이미 공유 중인 플레이리스트입니다.");
