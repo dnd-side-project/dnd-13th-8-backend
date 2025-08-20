@@ -11,6 +11,7 @@ import com.example.demo.domain.playlist.dto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.util.ShareCodeGenerator;
 import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
@@ -127,5 +128,30 @@ public  class PlaylistServiceImpl implements PlaylistService {
         playlistRepository.delete(playlist);
     }
 
+    @Transactional
+    public String sharePlaylist(String userId, Long playlistId) {
+        Playlist playlist = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() -> new IllegalStateException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다."));
+
+        //  대표 플레이리스트가 아닌 경우 예외 처리
+        if (!playlist.getIsRepresentative()) {
+            throw new IllegalStateException("대표 플레이리스트만 공유할 수 있습니다.");
+        }
+
+        // 이미 공유된 경우 기존 코드 반환
+        if (playlist.getIsShared()) {
+            return playlist.getShareCode();
+        }
+
+        // UUID 기반 8자리 공유코드 생성 (중복 방지)
+        String shareCode;
+        do {
+            shareCode = ShareCodeGenerator.generate(); // e.g., "a3f9b8c1"
+        } while (playlistRepository.existsByShareCode(shareCode));
+
+        playlist.startShare(shareCode);
+
+        return shareCode;
+    }
 
 }

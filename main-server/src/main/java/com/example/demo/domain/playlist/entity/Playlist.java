@@ -33,6 +33,10 @@ public class Playlist {
 
     private String theme;
 
+    private Boolean isShared;
+
+    private String shareCode;
+
     @Builder
     public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre, String theme) {
         this.theme = theme;
@@ -41,5 +45,13 @@ public class Playlist {
         this.visitCount = visitCount;
         this.isRepresentative = isRepresentative;
         this.users = users;
+    }
+
+    public void startShare(String shareCode) {
+        if (this.isShared) {
+            throw new IllegalStateException("이미 공유 중인 플레이리스트입니다.");
+        }
+        this.isShared = true;
+        this.shareCode = shareCode;
     }
 }

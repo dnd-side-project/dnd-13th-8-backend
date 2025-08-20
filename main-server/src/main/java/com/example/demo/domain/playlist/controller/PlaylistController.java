@@ -82,5 +82,14 @@ public class PlaylistController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/me/{playlistId}/share")
+    public ResponseEntity<String> sharePlaylist(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long playlistId
+    ) {
+        String shareCode = playlistService.sharePlaylist(user.getId(), playlistId);
+        return ResponseEntity.ok(shareCode);
+    }
+
 
 }

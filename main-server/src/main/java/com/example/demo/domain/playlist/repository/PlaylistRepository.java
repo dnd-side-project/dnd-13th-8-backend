@@ -44,4 +44,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("UPDATE Playlist p SET p.isRepresentative = false WHERE p.userId = :userId AND p.isRepresentative = true")
     void clearPreviousRepresentative(String userId);
 
+    boolean existsByShareCode(String shareCode);
+
 }

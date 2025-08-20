@@ -16,4 +16,6 @@ public interface PlaylistService {
     PlaylistDetailResponse getPlaylistDetail(String id, Long playlistId);
 
     void deletePlaylist(String userId, Long playlistId);
+
+    String sharePlaylist(String userId, Long playlistId);
 }
