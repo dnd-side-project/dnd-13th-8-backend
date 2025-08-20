@@ -46,4 +46,9 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     boolean existsByShareCode(String shareCode);
 
+    @Modifying
+    @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
+    int incrementVisitCount(@Param("id") Long id);
+
+
 }
