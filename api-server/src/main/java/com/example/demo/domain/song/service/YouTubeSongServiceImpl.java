@@ -76,7 +76,8 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
         if (url.contains("youtube.com")) {
             return UriComponentsBuilder.fromUriString(url).build().getQueryParams().getFirst("v");
         } else if (url.contains("youtu.be")) {
-            return url.substring(url.lastIndexOf("/") + 1);
+            String path = UriComponentsBuilder.fromUriString(url).build().getPath(); // /VIDEO_ID
+            return path != null ? path.replaceFirst("/", "") : null;
         }
         return null;
     }
