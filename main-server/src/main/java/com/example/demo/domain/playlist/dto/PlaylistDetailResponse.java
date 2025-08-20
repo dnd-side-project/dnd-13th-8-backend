@@ -7,14 +7,16 @@ public record PlaylistDetailResponse(
         Long id,
         String name,
         boolean isRepresentative,
-        List<SongDto> tracks
+        List<SongDto> tracks,
+        PlaylistGenre genre
 ) {
     public static PlaylistDetailResponse from(Playlist playlist, List<SongDto> tracks) {
         return new PlaylistDetailResponse(
                 playlist.getId(),
                 playlist.getName(),
                 playlist.getIsRepresentative(),
-                tracks
+                tracks,
+                playlist.getGenre()
         );
     }
 }

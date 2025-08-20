@@ -64,7 +64,7 @@ public class PlaylistController {
         return ResponseEntity.ok(myPlaylistsSorted);
     }
 
-    @GetMapping("/{playlistId}")
+    @GetMapping("/me/{playlistId}")
     public ResponseEntity<PlaylistDetailResponse> getPlaylistDetail(
             @PathVariable Long playlistId,
             @AuthenticationPrincipal CustomUserDetails user
