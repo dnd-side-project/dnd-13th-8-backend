@@ -104,7 +104,10 @@ public  class PlaylistServiceImpl implements PlaylistService {
         Playlist playlist = playlistRepository.findByIdAndUsers_Id(playlistId, userId).
                 orElseThrow(() -> new IllegalStateException("대표 플레이리스트가 존재하지 않습니다."));
 
-        List<Song> songs = songRepository.findByPlaylistId(playlistId);
+        List<Song> songs = songRepository.findAllByPlaylistId(playlistId)
+                .collectList()
+                .block(); // 비동기 Flux → 동기 List<Song> 변환
+
 
         List<SongDto> songDtos = songs.stream()
                 .map(SongDto::from)
