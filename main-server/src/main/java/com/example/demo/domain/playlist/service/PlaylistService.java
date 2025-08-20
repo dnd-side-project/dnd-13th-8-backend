@@ -14,4 +14,6 @@ public interface PlaylistService {
     List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
     PlaylistDetailResponse getPlaylistDetail(String id, Long playlistId);
+
+    void deletePlaylist(String userId, Long playlistId);
 }

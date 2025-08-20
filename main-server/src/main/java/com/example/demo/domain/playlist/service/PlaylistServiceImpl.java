@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.controller;
+package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
@@ -11,7 +11,6 @@ import com.example.demo.domain.playlist.dto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.playlist.service.PlaylistService;
 import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
@@ -114,6 +113,18 @@ public  class PlaylistServiceImpl implements PlaylistService {
                 .toList();
 
         return PlaylistDetailResponse.from(playlist, songDtos);
+    }
+
+    @Override
+    public void deletePlaylist(String userId, Long playlistId) {
+        Playlist playlist = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() -> new IllegalStateException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다."));
+
+        // 연관된 Song 먼저 삭제 (R2DBC)
+        songRepository.deleteAllByPlaylistId(playlistId).then().block();
+
+        // 플레이리스트 삭제
+        playlistRepository.delete(playlist);
     }
 
 

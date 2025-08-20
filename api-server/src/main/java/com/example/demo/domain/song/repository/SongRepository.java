@@ -13,6 +13,8 @@ public interface SongRepository extends ReactiveCrudRepository<Song, Long> {
      */
     Flux<Song> findAllByPlaylistId(Long playlistId);
 
+    Flux<Song> deleteAllByPlaylistId(Long playlistId);
+
     // 필요한 경우 추가 쿼리 메서드 선언 가능
 }
 
