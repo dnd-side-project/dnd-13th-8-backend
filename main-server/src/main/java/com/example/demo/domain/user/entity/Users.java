@@ -1,6 +1,11 @@
 package com.example.demo.domain.user.entity;
 
+import com.example.demo.domain.playlist.entity.Playlist;
+import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +30,15 @@ public class Users {
 //
 //    @Column(name = "profile_url")
 //    private String profileUrl;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<UserPlaylistHistory> playlistHistories = new ArrayList<>();
+
+    public void play(Playlist playlist) {
+        UserPlaylistHistory history = new UserPlaylistHistory(this, playlist, LocalDateTime.now());
+        this.playlistHistories.add(history);
+    }
+
 
     private boolean enabled;
 
