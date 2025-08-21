@@ -3,8 +3,13 @@ package com.example.demo.domain.playlist.service;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.dto.search.SearchItem;
+import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -39,23 +44,17 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<PlaylistSearchResponse> searchByTitle(String query, PlaylistSortOption sort, Integer limit) {
-        int finalLimit = 10;
-        if (limit != null && limit > 0 && limit <= 50) {
-            finalLimit = limit;
+    @Override
+    public CombinedSearchResponse searchAll(String query, PlaylistSortOption sort, int limit) {
+            Pageable pageable = Pageable.ofSize(limit);
+            List<PlaylistSearchDto> playlists = playlistRepository.searchPlaylists(query, sort, pageable);
+            List<UserSearchDto> users = playlistRepository.searchUsersWithRepresentativePlaylist(query);
+
+            List<SearchItem> combined = new ArrayList<>();
+            combined.addAll(users);      // type = "USER"
+            combined.addAll(playlists);  // type = "PLAYLIST"
+
+            return new CombinedSearchResponse(combined);
         }
 
-        Pageable pageable = PageRequest.of(0, finalLimit);
-        List<Playlist> results = playlistRepository.findByTitleLikeSorted(query, sort, pageable);
-
-        return results.stream()
-                .map(p -> new PlaylistSearchResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getUsers().getUsername(),
-                        p.getVisitCount()
-                ))
-                .toList();
-    }
 }
