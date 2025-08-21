@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.demo.domain.playlist.dto.LikedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistResponse;
@@ -20,4 +21,6 @@ public interface PlaylistService {
     String sharePlaylist(String userId, Long playlistId);
 
     void updateRepresentative(String userId, Long playlistId);
+
+    LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort);
 }

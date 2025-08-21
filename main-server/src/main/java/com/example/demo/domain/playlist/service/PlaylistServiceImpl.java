@@ -14,6 +14,8 @@ import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
     private final UsersRepository usersRepository;
+    private static final int DEFAULT_LIMIT = 20;
 
     @Transactional
     public Playlist saveBlockingPlaylist(String usersId, PlaylistCreateRequest request, String theme) {
@@ -137,5 +140,12 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         playlistRepository.clearPreviousRepresentative(userId);
         playlist.changeToRepresentative();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort) {
+        List<LikedPlaylistDto> result = playlistRepository.findLikedPlaylistsWithMeta(userId, sort, 20);
+        return new LikedPlaylistsResponse(result.size(), result);
     }
 }

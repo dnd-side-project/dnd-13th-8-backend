@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.controller;
 
+import com.example.demo.domain.playlist.dto.LikedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistResponse;
@@ -95,6 +96,16 @@ public class PlaylistMyPageController {
         List<PlaylistResponse> myPlaylistsSorted = playlistService.getMyPlaylistsSorted(user.getId(), sort);
         return ResponseEntity.ok(myPlaylistsSorted);
     }
+
+    @GetMapping("/likes")
+    public ResponseEntity<LikedPlaylistsResponse> getLikedPlaylists(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
+    ) {
+        return ResponseEntity.ok(playlistService.getLikedPlaylists(user.getId(), sort));
+    }
+
+
 
     @Operation(
             summary = "내 플레이리스트 상세 조회",

@@ -6,6 +6,7 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -76,6 +77,20 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
         """)
     List<Playlist> findByTitleLikeSorted(
             @Param("query") String query,
+            @Param("sort") PlaylistSortOption sort,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT p FROM Likes pl
+        JOIN pl.playlist p
+        WHERE pl.users.id = :userId
+        ORDER BY 
+            CASE WHEN :sort = 'POPULAR' THEN p.visitCount END DESC,
+            CASE WHEN :sort = 'RECENT' THEN p.id END DESC
+        """)
+    List<Playlist> findLikedPlaylists(
+            @Param("userId") String userId,
             @Param("sort") PlaylistSortOption sort,
             Pageable pageable
     );
