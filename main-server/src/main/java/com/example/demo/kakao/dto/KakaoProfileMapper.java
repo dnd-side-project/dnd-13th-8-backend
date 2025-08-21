@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class KakaoProfileMapper {
 
     /** kakao 프로필 → 내부 userId 규칙 */
-    public String userIdFrom(KakaoProfileResponse profileResponse) {
+    public String kakaoIdFrom(KakaoProfileResponse profileResponse) {
         if (profileResponse == null) {
             throw new KakoException(KakaoErrorCode.KAKAO_BAD_REQUEST);
         }
@@ -39,10 +39,10 @@ public class KakaoProfileMapper {
 
     /** 새 User 엔티티 생성(Builder) */
     public Users newUserFromProfile(KakaoProfileResponse p) {
-        String userId = userIdFrom(p);
+        String kakaoId = kakaoIdFrom(p);
         String nickname = nicknameFrom(p);
         return Users.builder()
-                .kakaoId(userId)
+                .kakaoId(kakaoId)
                 .username(nickname)
                 .enabled(true)
                 .build();

@@ -51,7 +51,7 @@ public class PropService {
         if (!usersRepository.existsById(userId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
-        List<Prop> propList = propRepository.findAllByUsers_Id(userId);
+        List<Prop> propList = propRepository.findAllByUsersId(userId);
         List<PropResponse> propResponsesList = propList.stream()
                 .map(p -> new PropResponse(
                     p.getId(),
@@ -63,7 +63,7 @@ public class PropService {
 
     @Transactional
     public void deletePropById (String userId, Long propId) {
-        Prop prop = propRepository.findByIdAndUsers_Id(propId, userId)
+        Prop prop = propRepository.findByIdAndUsersId(propId, userId)
                 .orElseThrow(()-> new PropException(PropErrorCode.PROP_NOT_FOUND));
 
         r2Service.delete(prop.getImageKey());

@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public interface PropRepository extends JpaRepository<Prop, Long> {
 
-    List<Prop> findAllByUsers_Id(String userId);
+    List<Prop> findAllByUsersId(String userId);
 
-    Optional<Prop> findByIdAndUsers_Id(Long propId, String userId);
+    Optional<Prop> findByIdAndUsersId(Long propId, String userId);
 
 }

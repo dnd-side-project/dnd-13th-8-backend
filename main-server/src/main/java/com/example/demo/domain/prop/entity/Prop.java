@@ -1,6 +1,7 @@
 package com.example.demo.domain.prop.entity;
 
 import com.example.demo.domain.user.entity.Users;
+import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Prop {
+public class Prop extends BaseTimeEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false )

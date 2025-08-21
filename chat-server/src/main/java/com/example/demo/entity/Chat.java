@@ -7,6 +7,7 @@ import lombok.*;
 
 @DynamoDbBean
 @Getter
+@Setter
 @NoArgsConstructor
 public class Chat {
 
@@ -28,8 +29,8 @@ public class Chat {
     }
 
     @Builder
-    public Chat(String sentAt, String messageId, String senderId, String content,
-                boolean systemMessage) {
+    public Chat(String roomId, String sentAt, String messageId, String senderId, String content, boolean systemMessage) {
+        this.roomId = roomId;
         this.sentAt = sentAt;
         this.messageId = messageId;
         this.senderId = senderId;
