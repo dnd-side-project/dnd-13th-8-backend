@@ -1,10 +1,12 @@
 package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 
 import com.example.demo.domain.recommendation.dto.PlaylistRecommendationDto;
 import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistsWithSongsResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -51,6 +53,14 @@ public class PlaylistsMainPageController {
             @AuthenticationPrincipal CustomUserDetails user) {
         List<RecommendedPlaylistCard> recommended = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
         return ResponseEntity.ok(new RecommendedPlaylistsWithSongsResponse(recommended));
+    }
+
+    @GetMapping("/recommendations/genre")
+    public ResponseEntity<RecommendedGenreResponse> getRecommendedGenre(
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        PlaylistGenre genre = playlistMainPageService.recommendGenreByPopularityOrUser(user.getId());
+        return ResponseEntity.ok(new RecommendedGenreResponse(genre));
     }
 
 }
