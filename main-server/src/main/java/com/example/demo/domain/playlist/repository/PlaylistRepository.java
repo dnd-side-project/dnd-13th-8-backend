@@ -1,6 +1,5 @@
 package com.example.demo.domain.playlist.repository;
 
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.entity.Playlist;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
+public interface PlaylistRepository extends JpaRepository<Playlist, Long>, PlaylistRecommendationRepositoryCustom {
 
     @Query("""
     SELECT p FROM Playlist p
@@ -49,6 +48,5 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Modifying
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
     int incrementVisitCount(@Param("id") Long id);
-
 
 }

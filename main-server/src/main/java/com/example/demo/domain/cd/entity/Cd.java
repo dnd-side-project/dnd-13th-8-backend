@@ -2,13 +2,14 @@ package com.example.demo.domain.cd.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.prop.entity.Prop;
+import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-public class Cd {
+public class Cd extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false )

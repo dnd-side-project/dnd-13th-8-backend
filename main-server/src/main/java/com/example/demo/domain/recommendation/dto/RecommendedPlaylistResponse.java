@@ -3,13 +3,13 @@ package com.example.demo.domain.recommendation.dto;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.querydsl.core.annotations.QueryProjection;
 
-public record RecommendedPlaylistResponseDto(
+public record RecommendedPlaylistResponse(
         Long playlistId,
         String title,
-        String nickaName,
+        String nickName,
         PlaylistGenre genres,
         Long visitCount
 ) {
     @QueryProjection
-    public RecommendedPlaylistResponseDto {}
+    public RecommendedPlaylistResponse {}
 }

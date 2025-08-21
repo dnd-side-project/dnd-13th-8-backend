@@ -3,15 +3,19 @@ package com.example.demo.domain.playlist.controller;
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 
+import com.example.demo.domain.recommendation.dto.PlaylistRecommendationDto;
 import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
+import com.example.demo.domain.recommendation.dto.RecommendedPlaylistsWithSongsResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/playlists")
+@RequestMapping("/main/playlists")
 @RequiredArgsConstructor
 public class PlaylistsMainPageController {
 
@@ -30,13 +34,23 @@ public class PlaylistsMainPageController {
     }
 
     /**
-     * 메인 추천용 플레이리스트 목록 조회
+     *  최근 들은 장르 기반 플레이리스트 추천
      */
-    @GetMapping("/recommendations")
+    @GetMapping("/recommendations/genre")
     public ResponseEntity<PlaylistRecommendationResponse> getRecommendations(
-            @AuthenticationPrincipal CustomUserDetails user
-    ) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         PlaylistRecommendationResponse response = playlistMainPageService.getRecommendations(user.getId());
         return ResponseEntity.ok(response);
     }
+
+    /**
+     *  좋아요 누른 플레이리스트의 제작자 기반 추천
+     */
+    @GetMapping("/recommendations/friend")
+    public ResponseEntity<RecommendedPlaylistsWithSongsResponse> getOwnerBasedRecommendations(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        List<RecommendedPlaylistCard> recommended = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
+        return ResponseEntity.ok(new RecommendedPlaylistsWithSongsResponse(recommended));
+    }
+
 }

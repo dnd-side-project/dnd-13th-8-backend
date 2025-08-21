@@ -1,8 +1,8 @@
 package com.example.demo.domain.recommendation.repository;
 
 import com.example.demo.domain.playlist.entity.QPlaylist;
-import com.example.demo.domain.recommendation.dto.QRecommendedPlaylistResponseDto;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponseDto;
+import com.example.demo.domain.recommendation.dto.QRecommendedPlaylistResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
      * 사용자가 최근 가장 많이 들은 장르 기반 추천
      */
     @Override
-    public List<RecommendedPlaylistResponseDto> findByUserRecentGenre(String userId, int limit) {
+    public List<RecommendedPlaylistResponse> findByUserRecentGenre(String userId, int limit) {
         // 사용자가 가장 많이 들은 장르 하나 찾기
         var topGenre = queryFactory
                 .select(history.playlist.genre)
@@ -39,7 +39,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
 
         // 해당 장르 기반 추천 플레이리스트
         return queryFactory
-                .select(new QRecommendedPlaylistResponseDto(
+                .select(new QRecommendedPlaylistResponse(
                         playlist.id,
                         playlist.name,
                         playlist.users.username,
@@ -56,9 +56,9 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
      * 좋아요 수가 많은 플레이리스트 추천
      */
     @Override
-    public List<RecommendedPlaylistResponseDto> findByLikeCount(int limit) {
+    public List<RecommendedPlaylistResponse> findByLikeCount(int limit) {
         return queryFactory
-                .select(new QRecommendedPlaylistResponseDto(
+                .select(new QRecommendedPlaylistResponse(
                         playlist.id,
                         playlist.name,
                         playlist.users.username,
@@ -71,3 +71,4 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .fetch();
     }
 }
+

@@ -35,6 +35,9 @@ public class Song {
 
     private String youtubeThumbnail;
 
+    public void setPlaylist(Playlist playlist) {
+        this.playlist = playlist;
+    }
 
     @Builder
     public Song(Playlist playlist, Long youtubeLength, String youtubeUrl, String youtubeTitle,
