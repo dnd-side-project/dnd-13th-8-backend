@@ -1,6 +1,6 @@
 package com.example.demo.global.webclient;
 
-import com.example.demo.domain.song.controller.YouTubeApiHttp;
+import com.example.demo.domain.songs.controller.YouTubeApiHttp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

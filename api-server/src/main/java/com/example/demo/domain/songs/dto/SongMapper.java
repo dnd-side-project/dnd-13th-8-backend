@@ -1,7 +1,7 @@
-package com.example.demo.domain.song.dto;
+package com.example.demo.domain.songs.dto;
 
 
-import com.example.demo.domain.song.entity.Song;
+import com.example.demo.domain.songs.entity.Song;
 import java.time.Duration;
 
 public class SongMapper {
