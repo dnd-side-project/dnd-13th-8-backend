@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
