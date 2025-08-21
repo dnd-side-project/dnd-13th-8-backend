@@ -1,7 +1,10 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
+import com.example.demo.domain.recommendation.dto.PlaylistRecommendationDto;
 import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
+import java.util.List;
 
 public interface PlaylistMainPageService {
 
@@ -14,4 +17,6 @@ public interface PlaylistMainPageService {
      * 사용자 맞춤 추천 목록 조회
      */
     PlaylistRecommendationResponse getRecommendations(String userId);
+
+    List<RecommendedPlaylistCard> recommendFromLikedPlaylists(String myUserId);
 }
