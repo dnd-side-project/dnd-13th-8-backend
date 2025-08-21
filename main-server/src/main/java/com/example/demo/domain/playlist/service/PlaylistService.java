@@ -23,4 +23,6 @@ public interface PlaylistService {
     void updateRepresentative(String userId, Long playlistId);
 
     LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort);
+
+    List<PlaylistDetailResponse> getPlaylistsByCreatorId(String creatorId);
 }

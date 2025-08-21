@@ -16,6 +16,7 @@ import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,5 +148,11 @@ public class PlaylistServiceImpl implements PlaylistService {
     public LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort) {
         List<LikedPlaylistDto> result = playlistRepository.findLikedPlaylistsWithMeta(userId, sort, 20);
         return new LikedPlaylistsResponse(result.size(), result);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PlaylistDetailResponse> getPlaylistsByCreatorId(String creatorId) {
+        return playlistRepository.findPlaylistsWithSongsByCreatorId(creatorId);
     }
 }

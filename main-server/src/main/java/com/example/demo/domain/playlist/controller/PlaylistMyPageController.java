@@ -106,6 +106,15 @@ public class PlaylistMyPageController {
     }
 
 
+    @GetMapping
+    public ResponseEntity<List<PlaylistDetailResponse>> getPlaylistsByCreator(
+            @RequestParam String creatorId,
+            @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
+    ) {
+        List<PlaylistDetailResponse> playlists = playlistService.getPlaylistsByCreatorId(creatorId);
+        return ResponseEntity.ok(playlists);
+    }
+
 
     @Operation(
             summary = "내 플레이리스트 상세 조회",
