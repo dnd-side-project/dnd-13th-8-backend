@@ -1,8 +1,11 @@
 package com.example.demo.domain.playlist.repository;
 
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.entity.Playlist;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -49,4 +52,17 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
     int incrementVisitCount(@Param("id") Long id);
 
+    @Query("""
+        SELECT p
+        FROM Playlist p
+        WHERE p.genre = :genre
+        ORDER BY
+            CASE WHEN :sort = 'POPULAR' THEN p.visitCount END DESC,
+            CASE WHEN :sort = 'RECENT' THEN p.createdAt END DESC
+        """)
+    List<Playlist> findByGenreSorted(
+            @Param("genre") PlaylistGenre genre,
+            @Param("sort") PlaylistSortOption sort,
+            Pageable pageable
+    );
 }
