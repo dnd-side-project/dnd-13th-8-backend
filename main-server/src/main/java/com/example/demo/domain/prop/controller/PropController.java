@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/prop")
+@RequestMapping("/main/prop")
 @RequiredArgsConstructor
 @Tag(name = "Prop", description = "CD 커스터마이징 Prop API")
 public class PropController {
