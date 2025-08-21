@@ -30,7 +30,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final UsersRepository usersRepository;
     private static final int DEFAULT_LIMIT = 20;
 
-    @Transactional
     public Playlist saveBlockingPlaylist(String usersId, PlaylistCreateRequest request, String theme) {
         Users users = usersRepository.findById(usersId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -47,6 +46,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     }
 
     @Override
+    @Transactional
     public PlaylistWithSongsResponse savePlaylistWithSongs(String usersId, PlaylistCreateRequest request, String theme) {
         // 1. playlist 저장
         Playlist savedPlaylist = saveBlockingPlaylist(usersId, request, theme);
