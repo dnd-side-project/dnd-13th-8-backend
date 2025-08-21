@@ -1,8 +1,20 @@
 package com.example.demo.domain.song.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "유튜브 영상 정보 DTO")
 public record YouTubeVideoInfoDto(
-        String link,          // 사용자가 입력한 유튜브 링크
-        String title,         // 영상 제목
-        String thumbnailUrl,  // 썸네일 URL (high)
-        String duration       // 영상 길이 (예: "03:22")
+
+        @Schema(description = "사용자가 입력한 유튜브 링크", example = "https://www.youtube.com/watch?v=abc123")
+        String link,
+
+        @Schema(description = "유튜브 영상 제목", example = "Lofi Jazz - 집중용 음악")
+        String title,
+
+        @Schema(description = "유튜브 썸네일 URL", example = "https://img.youtube.com/vi/abc123/hqdefault.jpg")
+        String thumbnailUrl,
+
+        @Schema(description = "영상 길이 (MM:SS)", example = "03:22")
+        String duration
+
 ) {}

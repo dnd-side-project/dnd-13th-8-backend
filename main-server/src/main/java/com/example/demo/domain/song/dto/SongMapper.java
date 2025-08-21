@@ -27,7 +27,7 @@ public class SongMapper {
     public static SongResponseDto toDto(Song song) {
         return new SongResponseDto(
                 song.getId(),
-                song.getPlaylist(),
+                song.getPlaylist().getId(),
                 song.getYoutubeUrl(),
                 song.getYoutubeTitle(),
                 song.getYoutubeThumbnail(),
