@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cd")
+@RequestMapping("/main/cd")
 @RequiredArgsConstructor
 public class CdController {
 
