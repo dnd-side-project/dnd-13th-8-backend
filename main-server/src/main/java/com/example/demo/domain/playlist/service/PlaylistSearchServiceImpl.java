@@ -38,4 +38,24 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 ))
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<PlaylistSearchResponse> searchByTitle(String query, PlaylistSortOption sort, Integer limit) {
+        int finalLimit = 10;
+        if (limit != null && limit > 0 && limit <= 50) {
+            finalLimit = limit;
+        }
+
+        Pageable pageable = PageRequest.of(0, finalLimit);
+        List<Playlist> results = playlistRepository.findByTitleLikeSorted(query, sort, pageable);
+
+        return results.stream()
+                .map(p -> new PlaylistSearchResponse(
+                        p.getId(),
+                        p.getName(),
+                        p.getUsers().getUsername(),
+                        p.getVisitCount()
+                ))
+                .toList();
+    }
 }

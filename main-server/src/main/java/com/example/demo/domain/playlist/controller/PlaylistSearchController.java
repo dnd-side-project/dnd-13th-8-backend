@@ -26,4 +26,13 @@ public class PlaylistSearchController {
     ) {
         return playlistSearchService.searchByGenre(genre,sort, limit);
     }
+
+    @GetMapping("/title")
+    public List<PlaylistSearchResponse> searchByTitle(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort,
+            @RequestParam(required = false) Integer limit
+    ) {
+        return playlistSearchService.searchByTitle(query, sort, limit);
+    }
 }

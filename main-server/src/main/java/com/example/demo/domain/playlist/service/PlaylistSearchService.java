@@ -9,4 +9,6 @@ public interface PlaylistSearchService {
 
     List<PlaylistSearchResponse> searchByGenre(PlaylistGenre genre, PlaylistSortOption sort, Integer limit);
 
+    List<PlaylistSearchResponse> searchByTitle(String query, PlaylistSortOption sort, Integer limit);
+
 }
