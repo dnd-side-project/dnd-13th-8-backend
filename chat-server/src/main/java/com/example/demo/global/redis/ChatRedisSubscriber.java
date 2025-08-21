@@ -4,7 +4,6 @@ import com.example.demo.dto.ChatOutbound;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,9 +15,6 @@ public class ChatRedisSubscriber implements MessageListener {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
-
-    @Value("${chat.redis.topic-prefix:chat.room.}") // 없으면 기본값 chat.room.
-    private String topicPrefix;
 
     //Redis Pub/Sub으로 메시지를 받았을 때 실행됨
     public void onMessage(Message message, byte[] pattern) {
