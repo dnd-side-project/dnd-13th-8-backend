@@ -2,6 +2,7 @@ package com.example.demo.domain.like.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.user.entity.Users;
+import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,7 +10,7 @@ import jakarta.persistence.*;
         uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "playlist_id"}) // user_id와 playlist_id가 unique해야함
 })
-public class Likes {
+public class Likes extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)

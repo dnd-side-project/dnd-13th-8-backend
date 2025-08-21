@@ -2,6 +2,7 @@ package com.example.demo.domain.user.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
+import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Users {
+public class Users extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,7 +39,6 @@ public class Users {
         UserPlaylistHistory history = new UserPlaylistHistory(this, playlist, LocalDateTime.now());
         this.playlistHistories.add(history);
     }
-
 
     private boolean enabled;
 
