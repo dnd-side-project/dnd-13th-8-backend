@@ -1,3 +1,5 @@
 dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }

@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/cd/**")) // refresh 붙이기 전 단계
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(reg -> reg
-                        // .requestMatchers("/**").permitAll() // 개발용 임시
+                        .requestMatchers("/**").permitAll() // 개발용 임시
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/super").permitAll()
                         .requestMatchers("/health").permitAll()
