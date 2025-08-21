@@ -14,9 +14,6 @@ import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +22,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PlaylistServiceImpl implements PlaylistService {
+public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;

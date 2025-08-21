@@ -6,7 +6,7 @@ import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.PlaylistWithSongsResponse;
-import com.example.demo.domain.playlist.service.PlaylistService;
+import com.example.demo.domain.playlist.service.PlaylistMyPageService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class PlaylistMyPageController {
 
-    private final PlaylistService playlistService;
+    private final PlaylistMyPageService playlistMyPageService;
 
     @Operation(
             summary = "임시 플레이리스트 저장(세션)",
@@ -72,7 +72,7 @@ public class PlaylistMyPageController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistService.savePlaylistWithSongs(user.getId(), request, theme);
+        PlaylistWithSongsResponse response = playlistMyPageService.savePlaylistWithSongs(user.getId(), request, theme);
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
     }
@@ -93,7 +93,7 @@ public class PlaylistMyPageController {
             @Parameter(description = "정렬 옵션 (기본 POPULAR)", example = "POPULAR")
             @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort
     ) {
-        List<PlaylistResponse> myPlaylistsSorted = playlistService.getMyPlaylistsSorted(user.getId(), sort);
+        List<PlaylistResponse> myPlaylistsSorted = playlistMyPageService.getMyPlaylistsSorted(user.getId(), sort);
         return ResponseEntity.ok(myPlaylistsSorted);
     }
 
@@ -114,7 +114,7 @@ public class PlaylistMyPageController {
             @Parameter(description = "정렬 옵션 (RECENT or POPULAR)", example = "RECENT")
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
     ) {
-        return ResponseEntity.ok(playlistService.getLikedPlaylists(user.getId(), sort));
+        return ResponseEntity.ok(playlistMyPageService.getLikedPlaylists(user.getId(), sort));
     }
 
     @Operation(
@@ -131,7 +131,7 @@ public class PlaylistMyPageController {
             @Parameter(description = "제작자 ID", example = "user-1234")
             @RequestParam String creatorId
     ) {
-        List<PlaylistDetailResponse> playlists = playlistService.getPlaylistsByCreatorId(creatorId);
+        List<PlaylistDetailResponse> playlists = playlistMyPageService.getPlaylistsByCreatorId(creatorId);
         return ResponseEntity.ok(playlists);
     }
 
@@ -154,7 +154,7 @@ public class PlaylistMyPageController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        PlaylistDetailResponse response = playlistService.getPlaylistDetail(user.getId(), playlistId);
+        PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), playlistId);
         return ResponseEntity.ok(response);
     }
 
@@ -171,7 +171,7 @@ public class PlaylistMyPageController {
             @Parameter(description = "플레이리스트 ID", example = "123")
             @PathVariable Long playlistId
     ) {
-        playlistService.deletePlaylist(user.getId(), playlistId);
+        playlistMyPageService.deletePlaylist(user.getId(), playlistId);
         return ResponseEntity.noContent().build();
     }
 
@@ -193,7 +193,7 @@ public class PlaylistMyPageController {
             @Parameter(description = "플레이리스트 ID", example = "123")
             @PathVariable Long playlistId
     ) {
-        String shareCode = playlistService.sharePlaylist(user.getId(), playlistId);
+        String shareCode = playlistMyPageService.sharePlaylist(user.getId(), playlistId);
         return ResponseEntity.ok(shareCode);
     }
 
@@ -209,7 +209,7 @@ public class PlaylistMyPageController {
             @Parameter(description = "플레이리스트 ID", example = "123")
             @PathVariable Long playlistId
     ) {
-        playlistService.updateRepresentative(user.getId(), playlistId);
+        playlistMyPageService.updateRepresentative(user.getId(), playlistId);
         return ResponseEntity.noContent().build();
     }
 }

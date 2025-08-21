@@ -1,8 +1,11 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.demo.domain.like.entity.Likes;
+import com.example.demo.domain.like.repository.LikesRepository;
 import com.example.demo.domain.playlist.dto.GenreDto;
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.PlaylistLikeResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
@@ -34,6 +37,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     private final UsersRepository userRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
+    private final LikesRepository likesRepository;
 
     @Override
     @Transactional
@@ -139,4 +143,29 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
                 .map(g -> new GenreDto(g.name(), g.getDisplayName()))
                 .toList();
     }
+
+    @Transactional
+    @Override
+    public PlaylistLikeResponse toggleLike(String userId, Long playlistId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new IllegalArgumentException("플레이리스트를 찾을 수 없습니다."));
+
+        Optional<Likes> existing = likesRepository.findByUsersAndPlaylist(user, playlist);
+        boolean liked;
+
+        if (existing.isPresent()) {
+            // 좋아요 취소
+            likesRepository.delete(existing.get());
+            liked = false;
+        } else {
+            // 좋아요 추가
+            Likes like = new Likes(user, playlist);
+            likesRepository.save(like);
+            liked = true;
+        }
+        return new PlaylistLikeResponse(liked);
+    }
 }
+

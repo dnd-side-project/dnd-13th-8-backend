@@ -8,7 +8,7 @@ import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.PlaylistWithSongsResponse;
 import java.util.List;
 
-public interface PlaylistService {
+public interface PlaylistMyPageService {
 
     PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request, String theme);
 
