@@ -19,6 +19,8 @@ dependencies {
     // R2DBC + MySQL
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     runtimeOnly 'io.asyncer:r2dbc-mysql'
+
+    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.9"
 }
 
 bootJar {
