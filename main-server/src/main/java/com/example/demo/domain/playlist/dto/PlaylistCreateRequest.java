@@ -1,14 +1,28 @@
 package com.example.demo.domain.playlist.dto;
 
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
+@Schema(description = "플레이리스트 생성 요청 DTO")
 public record PlaylistCreateRequest(
-        @NotBlank String name, // 플레이리스트 이름
-        @NotNull PlaylistGenre genre,
+
+        @Schema(description = "플레이리스트 이름", example = "비 오는 날 집중용")
+        @NotBlank
+        String name,
+
+        @Schema(description = "플레이리스트 장르", example = "SLEEP")
+        @NotNull
+        PlaylistGenre genre,
+
+        @Schema(description = "대표 플레이리스트 여부", example = "true")
         boolean isRepresentative,
-        @NotEmpty List<YouTubeVideoInfoDto> songs
+
+        @Schema(description = "포함할 유튜브 영상 목록")
+        @NotEmpty
+        List<YouTubeVideoInfoDto> songs
+
 ) {}

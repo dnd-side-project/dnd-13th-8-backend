@@ -22,11 +22,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PlaylistServiceImpl implements PlaylistService {
+public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
     private final UsersRepository usersRepository;
+    private static final int DEFAULT_LIMIT = 20;
 
     @Transactional
     public Playlist saveBlockingPlaylist(String usersId, PlaylistCreateRequest request, String theme) {
@@ -137,5 +138,18 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         playlistRepository.clearPreviousRepresentative(userId);
         playlist.changeToRepresentative();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort) {
+        List<LikedPlaylistDto> result = playlistRepository.findLikedPlaylistsWithMeta(userId, sort, 20);
+        return new LikedPlaylistsResponse(result.size(), result);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PlaylistDetailResponse> getPlaylistsByCreatorId(String creatorId) {
+        return playlistRepository.findPlaylistsWithSongsByCreatorId(creatorId);
     }
 }

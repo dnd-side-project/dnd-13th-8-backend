@@ -2,61 +2,72 @@ package com.example.demo.kakao.controller;
 
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.global.auth.refresh.store.RedisRefreshTokenStore;
+import com.example.demo.global.http.service.AccessTokenCookieService;
+import com.example.demo.global.http.service.RefreshTokenCookieService;
 import com.example.demo.global.jwt.JwtProps;
 import com.example.demo.global.jwt.JwtProvider;
 import com.example.demo.kakao.dto.KakaoLoginRequest;
 import com.example.demo.kakao.dto.KakaoLoginResponse;
 import com.example.demo.kakao.service.AuthService;
-import com.example.demo.global.http.service.AccessTokenCookieService;
-import com.example.demo.global.http.service.RefreshTokenCookieService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "소셜 로그인 API (카카오)")
 public class LoginController {
 
     private final AuthService authService;
     private final JwtProvider jwtProvider;
     private final JwtProps jwtProps;
-
     private final AccessTokenCookieService accessCookies;
     private final RefreshTokenCookieService refreshCookies;
     private final RedisRefreshTokenStore redisRefreshTokenStore;
 
-
+    @Operation(
+            summary = "카카오 로그인",
+            description = "인가 코드(code) + code_verifier를 통해 카카오 인증을 처리하고 JWT 토큰을 쿠키로 발급합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "로그인 성공 (Set-Cookie로 토큰 전송)")
     @PostMapping("/auth/login")
-    public ResponseEntity<String> kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
-        // 1) 카카오 인증 후 우리 쪽 사용자 컨텍스트 획득
+    public ResponseEntity<String> kakaoLogin(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = KakaoLoginRequest.class))
+            )
+            @Valid @RequestBody KakaoLoginRequest request
+    ) {
         KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier());
-
-        // 2) 새 Refresh 토큰 발급 (Access는 서비스에서 이미 생성해 돌려줬다고 가정: out.jwtAccessToken())
         String refresh = jwtProvider.issueRefresh(out.userId());
         String jti = jwtProvider.jti(refresh);
 
-        // 3) Refresh 토큰 상태 저장소(예: Redis) 등록
         redisRefreshTokenStore.putSessionJti(
                 out.userId(),
                 jti,
                 Duration.ofDays(jwtProps.refreshTtlDays())
         );
 
-        // 4) Set-Cookie 헤더에 Access/Refresh 쿠키 내려주기
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookies.create(out.jwtAccessToken()).toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookies.create(refresh).toString())
                 .body(out.userId());
     }
 
-
+    @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급")
+    @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
     @GetMapping("/auth/super")
-    public ResponseEntity<String> superLogin () {
-        Users users = new Users();
+    public ResponseEntity<String> superLogin() {
+        Users users = new Users(); // userId는 실제 환경에서는 유효 값이어야 함
         String superToken = jwtProvider.issueAccess(users.getId());
         return ResponseEntity.ok().body(superToken);
     }

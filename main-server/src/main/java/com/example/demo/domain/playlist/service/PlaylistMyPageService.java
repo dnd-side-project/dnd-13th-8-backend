@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.demo.domain.playlist.dto.LikedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistResponse;
@@ -7,7 +8,7 @@ import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.PlaylistWithSongsResponse;
 import java.util.List;
 
-public interface PlaylistService {
+public interface PlaylistMyPageService {
 
     PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request, String theme);
 
@@ -20,4 +21,8 @@ public interface PlaylistService {
     String sharePlaylist(String userId, Long playlistId);
 
     void updateRepresentative(String userId, Long playlistId);
+
+    LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort);
+
+    List<PlaylistDetailResponse> getPlaylistsByCreatorId(String creatorId);
 }

@@ -1,6 +1,4 @@
 dependencies {
-    implementation project(':common')
-
     // WebFlux 기반 HTTP Interface 지원
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
@@ -20,7 +18,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     runtimeOnly 'io.asyncer:r2dbc-mysql'
 
-    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.9"
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 }
 
 bootJar {
