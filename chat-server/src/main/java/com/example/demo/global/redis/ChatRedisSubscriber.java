@@ -17,7 +17,7 @@ public class ChatRedisSubscriber implements MessageListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${chat.redis.topic-prefix}") // 없으면 기본값 chat.room.
+    @Value("${chat.redis.topic-prefix:chat.room.}") // 없으면 기본값 chat.room.
     private String topicPrefix;
 
     //Redis Pub/Sub으로 메시지를 받았을 때 실행됨

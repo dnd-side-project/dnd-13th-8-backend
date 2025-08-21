@@ -21,7 +21,7 @@ public class ChatService {
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepository;
 
-    @Value("${chat.redis.topic-prefix}")
+    @Value("${chat.redis.topic-prefix:chat.room.}")
     private String topicPrefix;
 
     public void handleInbound(String roomId, ChatInbound chatInbound) {
