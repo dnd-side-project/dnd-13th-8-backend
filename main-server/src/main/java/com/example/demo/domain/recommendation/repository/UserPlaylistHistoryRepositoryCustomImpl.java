@@ -1,10 +1,14 @@
 package com.example.demo.domain.recommendation.repository;
 
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.recommendation.dto.QRecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
+import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -53,7 +57,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
     }
 
     /**
-     * 좋아요 수가 많은 플레이리스트 추천
+     * 조회수 많은 플레이리스트 추천
      */
     @Override
     public List<RecommendedPlaylistResponse> findByLikeCount(int limit) {
@@ -68,6 +72,46 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .from(playlist)
                 .orderBy(playlist.visitCount.desc())
                 .limit(limit)
+                .fetch();
+    }
+
+
+    /**
+     * 어제 기준 전체 유저의 재생 기록에서 인기 장르 최대 6개 반환
+     */
+    @Override
+    public List<PlaylistGenre> findTopGenresByDate(LocalDate date) {
+        QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
+        QPlaylist playlist = QPlaylist.playlist;
+
+        return queryFactory
+                .select(playlist.genre)
+                .from(history)
+                .join(history.playlist, playlist)
+                .where(history.playedAt.between(date.atStartOfDay(), date.plusDays(1).atStartOfDay()))
+                .groupBy(playlist.genre)
+                .orderBy(history.count().desc())
+                .limit(6)
+                .fetch();
+    }
+
+    /**
+     * 특정 사용자의 전체 재생 기록에서 많이 들은 장르 순으로 반환 (제한 없음)
+     */
+    @Override
+    public List<PlaylistGenre> findMostPlayedGenresByUser(String userId) {
+        QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
+        QPlaylist playlist = QPlaylist.playlist;
+        QUsers users = QUsers.users;
+
+        return queryFactory
+                .select(playlist.genre)
+                .from(history)
+                .join(history.playlist, playlist)
+                .join(history.user, users)
+                .where(users.id.eq(userId))
+                .groupBy(playlist.genre)
+                .orderBy(history.count().desc())
                 .fetch();
     }
 }

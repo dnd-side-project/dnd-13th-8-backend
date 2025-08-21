@@ -13,6 +13,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ *  회원이 언제 어떤 플레이리스트를 들었는가
+ */
 @Getter
 @Entity
 @NoArgsConstructor
