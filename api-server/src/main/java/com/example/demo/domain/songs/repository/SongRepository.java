@@ -1,6 +1,6 @@
-package com.example.demo.domain.song.repository;
+package com.example.demo.domain.songs.repository;
 
-import com.example.demo.domain.song.entity.Song;
+import com.example.demo.domain.songs.entity.Song;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;

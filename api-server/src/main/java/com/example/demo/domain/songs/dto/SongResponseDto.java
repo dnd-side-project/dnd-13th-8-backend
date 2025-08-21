@@ -1,4 +1,4 @@
-package com.example.demo.domain.song.dto;
+package com.example.demo.domain.songs.dto;
 
 public record SongResponseDto(
         Long id,

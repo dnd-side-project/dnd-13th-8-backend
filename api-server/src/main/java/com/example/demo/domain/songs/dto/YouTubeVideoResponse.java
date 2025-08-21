@@ -1,4 +1,4 @@
-package com.example.demo.domain.song.dto;
+package com.example.demo.domain.songs.dto;
 
 import java.util.List;
 
