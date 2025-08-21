@@ -97,23 +97,44 @@ public class PlaylistMyPageController {
         return ResponseEntity.ok(myPlaylistsSorted);
     }
 
+    @Operation(
+            summary = "좋아요한 플레이리스트 에 창조자 목록 조회",
+            description = "사용자가 좋아요한 플레이리스트를 정렬 조건(Popular/Recent)에 따라 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "좋아요한 플레이리스트 에 창조자 응답",
+            content = @Content(schema = @Schema(implementation = LikedPlaylistsResponse.class))
+    )
     @GetMapping("/likes")
     public ResponseEntity<LikedPlaylistsResponse> getLikedPlaylists(
+            @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
+
+            @Parameter(description = "정렬 옵션 (RECENT or POPULAR)", example = "RECENT")
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
     ) {
         return ResponseEntity.ok(playlistService.getLikedPlaylists(user.getId(), sort));
     }
 
-
+    @Operation(
+            summary = "특정 제작자의 플레이리스트 목록 조회",
+            description = "제작자(creatorId)의 플레이리스트 목록을 반환합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "플레이리스트 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistDetailResponse.class)))
+    )
     @GetMapping
     public ResponseEntity<List<PlaylistDetailResponse>> getPlaylistsByCreator(
-            @RequestParam String creatorId,
-            @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
+            @Parameter(description = "제작자 ID", example = "user-1234")
+            @RequestParam String creatorId
     ) {
         List<PlaylistDetailResponse> playlists = playlistService.getPlaylistsByCreatorId(creatorId);
         return ResponseEntity.ok(playlists);
     }
+
 
 
     @Operation(
