@@ -1,5 +1,7 @@
 package com.example.demo.domain.song.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Schema(description = "유튜브 영상 정보 DTO")
 public record YouTubeVideoInfoDto(
         @Schema(description = "입력한 유튜브 링크", example = "https://youtu.be/abc123")
