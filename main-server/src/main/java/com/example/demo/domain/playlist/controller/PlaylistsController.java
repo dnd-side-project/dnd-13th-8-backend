@@ -1,6 +1,7 @@
 package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.PlaylistLikeResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,5 +47,17 @@ public class PlaylistsController {
         PlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "플레이리스트 좋아요 토글", description = "사용자가 해당 플레이리스트를 좋아요 또는 좋아요 취소합니다.")
+    @ApiResponse(responseCode = "200", description = "현재 좋아요 상태")
+    @PostMapping("/{playlistId}/like")
+    public ResponseEntity<PlaylistLikeResponse> togglePlaylistLike(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long playlistId
+    ) {
+        PlaylistLikeResponse response = playlistMainPageService.toggleLike(user.getId(), playlistId);
+        return ResponseEntity.ok(response);
+    }
+
 
 }
