@@ -48,16 +48,15 @@ public class PlaylistsController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "플레이리스트 좋아요 토글", description = "사용자가 해당 플레이리스트를 좋아요 또는 좋아요 취소합니다.")
-    @ApiResponse(responseCode = "200", description = "현재 좋아요 상태")
-    @PostMapping("/{playlistId}/like")
-    public ResponseEntity<PlaylistLikeResponse> togglePlaylistLike(
-            @AuthenticationPrincipal CustomUserDetails user,
-            @PathVariable Long playlistId
-    ) {
-        PlaylistLikeResponse response = playlistMainPageService.toggleLike(user.getId(), playlistId);
-        return ResponseEntity.ok(response);
-    }
-
+//    @Operation(summary = "플레이리스트 좋아요 토글", description = "사용자가 해당 플레이리스트를 좋아요 또는 좋아요 취소합니다.")
+//    @ApiResponse(responseCode = "200", description = "현재 좋아요 상태")
+//    @PostMapping("/{playlistId}/like")
+//    public ResponseEntity<PlaylistLikeResponse> togglePlaylistLike(
+//            @AuthenticationPrincipal CustomUserDetails user,
+//            @PathVariable Long playlistId
+//    ) {
+//        PlaylistLikeResponse response = playlistMainPageService.toggleLike(user.getId(), playlistId);
+//        return ResponseEntity.ok(response);
+//    }
 
 }

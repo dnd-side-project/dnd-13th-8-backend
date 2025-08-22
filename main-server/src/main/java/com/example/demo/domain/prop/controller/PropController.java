@@ -1,10 +1,8 @@
 package com.example.demo.domain.prop.controller;
 
-import com.example.common.error.exception.DomainException;
 import com.example.demo.domain.prop.dto.request.UploadPropRequestDto;
 import com.example.demo.domain.prop.dto.response.GetPropListResponseDto;
 import com.example.demo.domain.prop.service.PropService;
-import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/prop")
+@RequestMapping("/main/prop")
 @RequiredArgsConstructor
 @Tag(name = "Prop", description = "CD 커스터마이징 Prop API")
 public class PropController {
@@ -62,9 +60,7 @@ public class PropController {
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            content = @Content(
-                                    schema = @Schema (implementation = DomainException.class)
-                            )
+                            description = "Prop 혹은 User가 없습니다"
                     )
             }
     )
@@ -85,9 +81,7 @@ public class PropController {
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            content = @Content(
-                                    schema = @Schema (implementation = DomainException.class)
-                            )
+                            description = "Prop 혹은 User가 없습니다"
                     )
             }
     )

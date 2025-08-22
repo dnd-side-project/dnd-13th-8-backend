@@ -1,7 +1,7 @@
-package com.example.demo.domain.song.controller;
+package com.example.demo.domain.songs.controller;
 
-import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
-import com.example.demo.domain.song.service.YouTubeSongService;
+import com.example.demo.domain.songs.dto.YouTubeVideoInfoDto;
+import com.example.demo.domain.songs.service.YouTubeSongService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

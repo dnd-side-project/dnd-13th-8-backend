@@ -39,6 +39,8 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     private final SongRepository songRepository;
     private final LikesRepository likesRepository;
 
+    private static final int RECOMMENDATION_LIMIT = 3;
+
     @Override
     @Transactional
     public PlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
@@ -75,11 +77,10 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
         return PlaylistRecommendationResponse.of(genreBased, visitCountTop3);
     }
 
-    private static final int RECOMMENDATION_LIMIT = 3;
 
     @Override
     public List<RecommendedPlaylistCard> recommendFromLikedPlaylists(String myUserId) {
-        // 1. 추천용 플레이리스트 조회 (QueryDSL로 owner 기반 + fallback 포함)
+        // 1. 추천용 플레이리스트 조회
         List<Playlist> recommendedPlaylists =
                 playlistRepository.findRecommendedPlaylistsByUser(myUserId, RECOMMENDATION_LIMIT);
 

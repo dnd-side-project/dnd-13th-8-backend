@@ -1,11 +1,11 @@
-package com.example.demo.domain.song.service;
+package com.example.demo.domain.songs.service;
 
-import com.example.demo.domain.song.controller.YouTubeApiHttp;
-import com.example.demo.domain.song.dto.SongMapper;
-import com.example.demo.domain.song.dto.SongResponseDto;
-import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
-import com.example.demo.domain.song.entity.Song;
-import com.example.demo.domain.song.repository.SongRepository;
+import com.example.demo.domain.songs.controller.YouTubeApiHttp;
+import com.example.demo.domain.songs.dto.SongMapper;
+import com.example.demo.domain.songs.dto.SongResponseDto;
+import com.example.demo.domain.songs.dto.YouTubeVideoInfoDto;
+import com.example.demo.domain.songs.entity.Song;
+import com.example.demo.domain.songs.repository.SongRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;

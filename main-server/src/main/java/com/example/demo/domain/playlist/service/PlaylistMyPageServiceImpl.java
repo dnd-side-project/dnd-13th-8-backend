@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
@@ -29,7 +30,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final UsersRepository usersRepository;
     private static final int DEFAULT_LIMIT = 20;
 
-    @Transactional
     public Playlist saveBlockingPlaylist(String usersId, PlaylistCreateRequest request, String theme) {
         Users users = usersRepository.findById(usersId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -46,6 +46,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     }
 
     @Override
+    @Transactional
     public PlaylistWithSongsResponse savePlaylistWithSongs(String usersId, PlaylistCreateRequest request, String theme) {
         // 1. playlist 저장
         Playlist savedPlaylist = saveBlockingPlaylist(usersId, request, theme);

@@ -1,11 +1,7 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.playlist.dto.LikedPlaylistsResponse;
-import com.example.demo.domain.playlist.dto.PlaylistCreateRequest;
-import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.PlaylistResponse;
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
-import com.example.demo.domain.playlist.dto.PlaylistWithSongsResponse;
+import com.example.demo.domain.cd.service.CdService;
+import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistMyPageController {
 
     private final PlaylistMyPageService playlistMyPageService;
+    private final CdService cdService;
 
     @Operation(
             summary = "임시 플레이리스트 저장(세션)",
@@ -50,8 +47,8 @@ public class PlaylistMyPageController {
     }
 
     @Operation(
-            summary = "플레이리스트 생성(세션 임시본 사용)",
-            description = "세션에 저장된 임시본을 사용하여 실제 플레이리스트를 생성합니다."
+            summary = "플레이리스트 생성(세션 임시본 사용 + Cd 요청)",
+            description = "세션에 저장된 임시본과 CD 요청을 사용하여 실제 플레이리스트를 생성합니다."
     )
     @ApiResponse(
             responseCode = "200",
@@ -59,12 +56,11 @@ public class PlaylistMyPageController {
             content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
     )
     @ApiResponse(responseCode = "409", description = "세션에 임시 저장본 없음")
-    @PostMapping
+    @PostMapping("/final")
     public ResponseEntity<PlaylistWithSongsResponse> savePlaylist(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
-            @Parameter(description = "플레이리스트 테마", example = "여름/운동/집중")
-            @RequestParam("theme") String theme,
+            @RequestBody FinalPlaylistRequest finalPlaylistRequest,
             HttpSession session
     ) {
         PlaylistCreateRequest request = (PlaylistCreateRequest) session.getAttribute("tempPlaylist");
@@ -72,7 +68,11 @@ public class PlaylistMyPageController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistMyPageService.savePlaylistWithSongs(user.getId(), request, theme);
+        PlaylistWithSongsResponse response = playlistMyPageService.savePlaylistWithSongs(user.getId(), request,
+                finalPlaylistRequest.theme());
+
+        cdService.saveCdItemList(response.playlistId(), finalPlaylistRequest.saveCdRequestDto().cdItems());
+
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
     }

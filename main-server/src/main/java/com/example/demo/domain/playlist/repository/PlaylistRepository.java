@@ -68,20 +68,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     );
 
     @Query("""
-        SELECT p
-        FROM Playlist p
-        WHERE p.name LIKE %:query%
-        ORDER BY
-            CASE WHEN :sort = 'POPULAR' THEN p.visitCount END DESC,
-            CASE WHEN :sort = 'RECENT' THEN p.createdAt END DESC
-        """)
-    List<Playlist> findByTitleLikeSorted(
-            @Param("query") String query,
-            @Param("sort") PlaylistSortOption sort,
-            Pageable pageable
-    );
-
-    @Query("""
         SELECT p FROM Likes pl
         JOIN pl.playlist p
         WHERE pl.users.id = :userId

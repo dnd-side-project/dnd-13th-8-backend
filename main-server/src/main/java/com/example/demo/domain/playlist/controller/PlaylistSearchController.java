@@ -3,6 +3,7 @@ package com.example.demo.domain.playlist.controller;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
 import com.example.demo.domain.playlist.service.PlaylistSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,8 +12,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,7 +37,7 @@ public class PlaylistSearchController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistSearchResponse.class)))
     )
     @GetMapping("/genre")
-    public List<PlaylistSearchResponse> searchByGenre(
+    public ResponseEntity<List<PlaylistSearchResponse>> searchByGenre(
             @Parameter(description = "정렬 조건", example = "POPULAR")
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort,
 
@@ -43,7 +47,7 @@ public class PlaylistSearchController {
             @Parameter(description = "결과 개수 제한 (optional)", example = "20")
             @RequestParam(name = "limit", required = false) Integer limit
     ) {
-        return playlistSearchService.searchByGenre(genre, sort, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(playlistSearchService.searchByGenre(genre, sort, limit));
     }
 
     @Operation(
@@ -56,7 +60,7 @@ public class PlaylistSearchController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistSearchResponse.class)))
     )
     @GetMapping("/title")
-    public List<PlaylistSearchResponse> searchByTitle(
+    public ResponseEntity<CombinedSearchResponse> searchByTitle(
             @Parameter(description = "검색할 제목 키워드", example = "잔잔한")
             @RequestParam String query,
 
@@ -66,6 +70,7 @@ public class PlaylistSearchController {
             @Parameter(description = "결과 개수 제한 (optional)", example = "10")
             @RequestParam(required = false) Integer limit
     ) {
-        return playlistSearchService.searchByTitle(query, sort, limit);
+        CombinedSearchResponse combinedSearchResponse = playlistSearchService.searchAll(query, sort, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(combinedSearchResponse);
     }
 }

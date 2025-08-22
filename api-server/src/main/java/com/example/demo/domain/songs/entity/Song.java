@@ -1,4 +1,4 @@
-package com.example.demo.domain.song.entity;
+package com.example.demo.domain.songs.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
