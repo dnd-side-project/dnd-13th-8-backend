@@ -6,15 +6,26 @@ import java.time.Instant;
 
 public class ChatMapper {
 
-    public static Chat toEntity(ChatOutbound out) {
+    public static Chat toEntity(ChatOutbound chatOutbound) {
         String sentAt = Instant.now().toString();
         return Chat.builder()
-                .roomId(out.getRoomId())
+                .roomId(chatOutbound.getRoomId())
                 .sentAt(sentAt)
-                .messageId(out.getMessageId())
-                .senderId(out.getSenderId())
-                .content(out.getContent())
-                .systemMessage(out.isSystemMessage())
+                .messageId(chatOutbound.getMessageId())
+                .senderId(chatOutbound.getSenderId())
+                .content(chatOutbound.getContent())
+                .systemMessage(chatOutbound.isSystemMessage())
+                .build();
+    }
+
+    public static ChatOutbound toOutbound(Chat chat) {
+        return ChatOutbound.builder()
+                .roomId(chat.getRoomId())
+                .sentAt(chat.getSentAt())
+                .messageId(chat.getMessageId())
+                .senderId(chat.getSenderId())
+                .content(chat.getContent())
+                .systemMessage(chat.isSystemMessage())
                 .build();
     }
 }

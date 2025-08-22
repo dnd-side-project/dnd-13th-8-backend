@@ -29,7 +29,7 @@ public class ChatRedisSubscriber implements MessageListener {
             messagingTemplate.convertAndSend(destination, chatOutbound);
 
         } catch (Exception e) {
-            e.printStackTrace(); // 로깅 처리 권장
+            e.printStackTrace();
         }
     }
 }
