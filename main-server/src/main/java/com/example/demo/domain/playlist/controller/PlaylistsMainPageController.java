@@ -1,12 +1,11 @@
 package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.GenreDto;
-import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
-import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedGenresResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistsWithSongsResponse;
+import com.example.demo.domain.playlist.recommendation.dto.PlaylistRecommendationResponse;
+import com.example.demo.domain.playlist.recommendation.dto.RecommendedGenresResponse;
+import com.example.demo.domain.playlist.recommendation.dto.RecommendedPlaylistCard;
+import com.example.demo.domain.playlist.recommendation.dto.RecommendedPlaylistsWithSongsResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

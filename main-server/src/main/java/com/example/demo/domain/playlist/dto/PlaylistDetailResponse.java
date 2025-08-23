@@ -26,7 +26,7 @@ public record PlaylistDetailResponse(
         return new PlaylistDetailResponse(
                 playlist.getId(),
                 playlist.getName(),
-                playlist.getIsRepresentative(),
+                playlist.isRepresentative(),
                 tracks,
                 playlist.getGenre()
         );

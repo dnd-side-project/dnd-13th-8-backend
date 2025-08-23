@@ -18,7 +18,7 @@ public interface PlaylistMyPageService {
 
     void deletePlaylist(String userId, Long playlistId);
 
-    String sharePlaylist(String userId, Long playlistId);
+    String sharePlaylist(String userId);
 
     void updateRepresentative(String userId, Long playlistId);
 
