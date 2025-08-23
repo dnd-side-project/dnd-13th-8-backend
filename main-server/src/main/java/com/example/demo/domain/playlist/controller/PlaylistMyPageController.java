@@ -14,10 +14,12 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/main/playlists")
 @RequiredArgsConstructor
@@ -189,11 +191,9 @@ public class PlaylistMyPageController {
     @PostMapping("/me/{playlistId}/share")
     public ResponseEntity<String> sharePlaylist(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails user,
-            @Parameter(description = "플레이리스트 ID", example = "123")
-            @PathVariable Long playlistId
+            @AuthenticationPrincipal CustomUserDetails user
     ) {
-        String shareCode = playlistMyPageService.sharePlaylist(user.getId(), playlistId);
+        String shareCode = playlistMyPageService.sharePlaylist(user.getId());
         return ResponseEntity.ok(shareCode);
     }
 

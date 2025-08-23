@@ -9,10 +9,10 @@ import com.example.demo.domain.playlist.dto.PlaylistLikeResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.recommendation.dto.PlaylistRecommendationDto;
-import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
-import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
+import com.example.demo.domain.playlist.recommendation.dto.PlaylistRecommendationResponse;
+import com.example.demo.domain.playlist.recommendation.dto.RecommendedPlaylistCard;
+import com.example.demo.domain.playlist.recommendation.entity.UserPlaylistHistory;
+import com.example.demo.domain.playlist.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +56,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
                 .toList();
 
         // 1) 재생 기록 추가
-        user.play(playlist);
+        userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
 
         // 2) 방문 수 증가
         playlistRepository.incrementVisitCount(playlistId);
@@ -69,11 +68,11 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     public PlaylistRecommendationResponse getRecommendations(String userId) {
         var genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
         if (genreBased.isEmpty()) {
-            var visitCountTop6 = userPlaylistHistoryRepository.findByLikeCount(6);
+            var visitCountTop6 = userPlaylistHistoryRepository.findByVisitCount(6);
             return PlaylistRecommendationResponse.onlyLikes(visitCountTop6);
         }
 
-        var visitCountTop3 = userPlaylistHistoryRepository.findByLikeCount(3);
+        var visitCountTop3 = userPlaylistHistoryRepository.findByVisitCount(3);
         return PlaylistRecommendationResponse.of(genreBased, visitCountTop3);
     }
 

@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RepresentativePlaylistRepository extends JpaRepository<RepresentativePlaylist, Long> {
     Optional<RepresentativePlaylist> findByUser_Id(String usersId);
+
+    boolean existsByUser_Id(String userId);
 }
