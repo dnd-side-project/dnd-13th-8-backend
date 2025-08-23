@@ -1,14 +1,15 @@
 package com.example.demo.domain.recommendation.repository;
 
+
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.QPlaylist;
-import com.example.demo.domain.recommendation.dto.QRecommendedPlaylistResponse;
+import com.example.demo.domain.playlist.recommendation.dto.QRecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
-import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
+import com.example.demo.domain.playlist.recommendation.entity.QUserPlaylistHistory;
+import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
 
     private final JPAQueryFactory queryFactory;
 
-    private final QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
+  private final QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
     private final QPlaylist playlist = QPlaylist.playlist;
 
     /**
@@ -27,8 +28,13 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
      */
     @Override
     public List<RecommendedPlaylistResponse> findByUserRecentGenre(String userId, int limit) {
-        // 사용자가 가장 많이 들은 장르 하나 찾기
-        var topGenre = queryFactory
+        QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
+        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+        QPlaylist p = QPlaylist.playlist;
+        QUsers u = QUsers.users;
+
+        // 1. 가장 많이 들은 장르 찾기
+        PlaylistGenre topGenre = queryFactory
                 .select(history.playlist.genre)
                 .from(history)
                 .where(history.user.id.eq(userId))
@@ -37,43 +43,52 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .limit(1)
                 .fetchOne();
 
-        if (topGenre == null) {
-            return List.of();
-        }
+        if (topGenre == null) return List.of();
 
-        // 해당 장르 기반 추천 플레이리스트
+        // 2. 해당 장르의 대표 플레이리스트 추천
         return queryFactory
                 .select(new QRecommendedPlaylistResponse(
-                        playlist.id,
-                        playlist.name,
-                        playlist.users.username,
-                        playlist.genre,
-                        playlist.visitCount
+                        p.id,
+                        p.name,
+                        u.username,
+                        p.genre,
+                        p.visitCount
                 ))
-                .from(playlist)
-                .where(playlist.genre.eq(topGenre))
+                .from(rp)
+                .join(rp.playlist, p)
+                .join(p.users, u)
+                .where(p.genre.eq(topGenre))
+                .orderBy(p.visitCount.desc())
                 .limit(limit)
                 .fetch();
     }
+
 
     /**
      * 조회수 많은 플레이리스트 추천
      */
     @Override
-    public List<RecommendedPlaylistResponse> findByLikeCount(int limit) {
+    public List<RecommendedPlaylistResponse> findByVisitCount(int limit) {
+        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+        QPlaylist p = QPlaylist.playlist;
+        QUsers u = QUsers.users;
+
         return queryFactory
                 .select(new QRecommendedPlaylistResponse(
-                        playlist.id,
-                        playlist.name,
-                        playlist.users.username,
-                        playlist.genre,
-                        playlist.visitCount
+                        p.id,
+                        p.name,
+                        u.username,
+                        p.genre,
+                        p.visitCount
                 ))
-                .from(playlist)
-                .orderBy(playlist.visitCount.desc())
+                .from(rp)
+                .join(rp.playlist, p)
+                .join(p.users, u)
+                .orderBy(p.visitCount.desc())
                 .limit(limit)
                 .fetch();
     }
+
 
 
     /**

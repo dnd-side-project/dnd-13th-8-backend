@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.recommendation.dto;
+package com.example.demo.domain.recommendation.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
