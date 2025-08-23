@@ -34,13 +34,12 @@ public class BrowsePlaylistShuffleService {
         redisTemplate.opsForList().rightPushAll(key, ids);
         redisTemplate.expire(key, Duration.ofHours(24));
     }
-
-    @Scheduled(cron = "0 */5 * * * *") // 매 5분마다
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void scheduledShuffle() {
         List<String> userIds = usersRepository.findAllUserIds(); // 모든 유저 ID 가져오기
         for (String userId : userIds) {
             shuffleAndStore(userId);
         }
-        log.info(" 5분마다 셔플 실행됨");
+        log.info("새벽 3시에 셔플 실행됨");
     }
 }
