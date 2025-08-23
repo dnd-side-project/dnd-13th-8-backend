@@ -24,7 +24,7 @@ public record PlaylistResponse(
         return PlaylistResponse.builder()
                 .id(playlist.getId())
                 .name(playlist.getName())
-                .isRepresentative(playlist.getIsRepresentative())
+                .isRepresentative(playlist.isRepresentative())
                 .visitCount(playlist.getVisitCount())
                 .build();
     }

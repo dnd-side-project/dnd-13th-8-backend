@@ -6,6 +6,7 @@ import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
+import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -28,24 +29,27 @@ public class PlaylistSearchRepositoryCustomImpl implements PlaylistSearchReposit
 
         OrderSpecifier<?> order = switch (sort) {
             case POPULAR -> p.visitCount.desc();
-            case RECENT -> p.createdAt.desc();
+            case RECENT  -> p.createdAt.desc();
         };
 
-        return queryFactory
-                .selectDistinct() // 중복 방지
-                .from(rp)
+        List<RepresentativePlaylist> reps = queryFactory
+                .selectFrom(rp)           // 엔티티 선택
+                .distinct()               // 중복 방지
                 .join(rp.playlist, p).fetchJoin()
                 .join(p.users, u).fetchJoin()
                 .where(p.name.containsIgnoreCase(query))
                 .orderBy(order)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetch()
-                .stream()
+                .fetch();
+
+        return reps.stream()
                 .map(rep -> {
                     var playlist = rep.getPlaylist();
                     var user = playlist.getUsers();
-                    var songs = playlist.getSongs().stream().map(SongDto::from).toList();
+                    var songs = playlist.getSongs().stream()
+                            .map(SongDto::from)
+                            .toList();
 
                     return new PlaylistSearchDto(
                             playlist.getId(),
@@ -56,38 +60,39 @@ public class PlaylistSearchRepositoryCustomImpl implements PlaylistSearchReposit
                     );
                 })
                 .toList();
-    }
+
+}
 
     @Override
     public List<UserSearchDto> searchUsersWithRepresentativePlaylist(String query, Pageable pageable) {
-        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
-        QPlaylist p = QPlaylist.playlist;
-        QUsers u = QUsers.users;
+        QRepresentativePlaylist rep = QRepresentativePlaylist.representativePlaylist;
+        QPlaylist playlist = QPlaylist.playlist;
+        QUsers user = QUsers.users;
 
-        return queryFactory
-                .selectDistinct()
-                .from(rp)
-                .join(rp.user, u).fetchJoin()
-                .join(rp.playlist, p).fetchJoin()
-                .where(u.username.containsIgnoreCase(query))
+        List<RepresentativePlaylist> reps = queryFactory
+                .selectFrom(rep)
+                .join(rep.playlist, playlist).fetchJoin()
+                .join(rep.user, user).fetchJoin()
+                .where(user.username.containsIgnoreCase(query))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetch()
-                .stream()
-                .map(rep -> {
-                    var playlist = rep.getPlaylist();
-                    var user = rep.getUser();
-                    var songs = playlist.getSongs().stream().map(SongDto::from).toList();
+                .fetch();
 
+        return reps.stream()
+                .map(r -> {
+                    var p = r.getPlaylist();
+                    var u = r.getUser();
+                    var songs = p.getSongs().stream().map(SongDto::from).toList();
                     return new UserSearchDto(
-                            user.getId(),
-                            user.getUsername(),
-                            playlist.getId(),
-                            playlist.getName(),
+                            u.getId(),
+                            u.getUsername(),
+                            p.getId(),
+                            p.getName(),
                             songs
                     );
                 })
                 .toList();
-    }
+
+}
 }
 
