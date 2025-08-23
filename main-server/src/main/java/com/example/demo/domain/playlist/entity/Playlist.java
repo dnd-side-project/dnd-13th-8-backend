@@ -33,26 +33,22 @@ public class Playlist extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private PlaylistGenre genre;
 
-    private Boolean isRepresentative;
+    @Column(nullable = false)
+    private boolean isRepresentative = false;
 
-    private String theme;
 
-    private Boolean isShared;
+//    public void addSong(Song song) {
+//        this.songs.add(song);
+//        song.setPlaylist(this);
+//    }
 
-    private String shareCode;
-
-    @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Song> songs = new ArrayList<>();
-
-    public void addSong(Song song) {
-        this.songs.add(song);
-        song.setPlaylist(this);
+    public void setIsRepresentative(boolean isRepresentative) {
+        this.isRepresentative = isRepresentative;
     }
 
 
     @Builder
-    public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre, String theme) {
-        this.theme = theme;
+    public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre) {
         this.genre = genre;
         this.name = name;
         this.visitCount = visitCount;
@@ -65,11 +61,4 @@ public class Playlist extends BaseTimeEntity {
         this.isRepresentative = true;
     }
 
-    public void startShare(String shareCode) {
-        if (this.isShared) {
-            throw new IllegalStateException("이미 공유 중인 플레이리스트입니다.");
-        }
-        this.isShared = true;
-        this.shareCode = shareCode;
-    }
 }
