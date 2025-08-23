@@ -10,7 +10,9 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
 @Getter
 @Entity
 @NoArgsConstructor
@@ -31,14 +33,6 @@ public class Users extends BaseTimeEntity {
 //
 //    @Column(name = "profile_url")
 //    private String profileUrl;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<UserPlaylistHistory> playlistHistories = new ArrayList<>();
-
-    public void play(Playlist playlist) {
-        UserPlaylistHistory history = new UserPlaylistHistory(this, playlist, LocalDateTime.now());
-        this.playlistHistories.add(history);
-    }
 
     private boolean enabled;
 

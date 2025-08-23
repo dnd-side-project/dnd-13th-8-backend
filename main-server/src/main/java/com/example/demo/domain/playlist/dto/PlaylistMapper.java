@@ -1,16 +1,16 @@
 package com.example.demo.domain.playlist.dto;
 
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.user.entity.Users;
 
 public class PlaylistMapper {
 
-    public static Playlist toEntity(PlaylistCreateRequest request, String theme, Users users,boolean isRepresentative) {
+    public static Playlist toEntity(PlaylistCreateRequest request, Users users) {
         return Playlist.builder()
                 .name(request.name())
                 .genre(request.genre())
-                .isRepresentative(isRepresentative)
-                .theme(theme)
+                .isRepresentative(request.isRepresentative())
                 .users(users)
                 .build();
     }

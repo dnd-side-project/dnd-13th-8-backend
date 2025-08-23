@@ -1,5 +1,7 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.playlistdto;
 
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -26,7 +28,7 @@ public record PlaylistDetailResponse(
         return new PlaylistDetailResponse(
                 playlist.getId(),
                 playlist.getName(),
-                playlist.getIsRepresentative(),
+                playlist.isRepresentative(),
                 tracks,
                 playlist.getGenre()
         );

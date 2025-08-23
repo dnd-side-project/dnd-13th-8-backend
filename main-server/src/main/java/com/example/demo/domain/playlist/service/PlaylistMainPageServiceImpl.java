@@ -1,29 +1,21 @@
 package com.example.demo.domain.playlist.service;
 
-import com.example.demo.domain.like.entity.Likes;
-import com.example.demo.domain.like.repository.LikesRepository;
 import com.example.demo.domain.playlist.dto.GenreDto;
-import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.PlaylistLikeResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
-import com.example.demo.domain.playlist.entity.Playlist;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.recommendation.dto.PlaylistRecommendationDto;
 import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
+import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
-import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +29,6 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     private final UsersRepository userRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
-    private final LikesRepository likesRepository;
 
     private static final int RECOMMENDATION_LIMIT = 3;
 
@@ -57,7 +48,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
                 .toList();
 
         // 1) 재생 기록 추가
-        user.play(playlist);
+        userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
 
         // 2) 방문 수 증가
         playlistRepository.incrementVisitCount(playlistId);
@@ -65,51 +56,31 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
         return PlaylistDetailResponse.from(playlist, songDtos);
     }
 
+    /*
+    첫번째 추천 알고리즘
+     */
     @Override
     public PlaylistRecommendationResponse getRecommendations(String userId) {
         var genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
         if (genreBased.isEmpty()) {
-            var visitCountTop6 = userPlaylistHistoryRepository.findByLikeCount(6);
+            var visitCountTop6 = userPlaylistHistoryRepository.findByVisitCount(6);
             return PlaylistRecommendationResponse.onlyLikes(visitCountTop6);
         }
 
-        var visitCountTop3 = userPlaylistHistoryRepository.findByLikeCount(3);
+        var visitCountTop3 = userPlaylistHistoryRepository.findByVisitCount(3);
         return PlaylistRecommendationResponse.of(genreBased, visitCountTop3);
     }
 
 
+    /*
+    두번째 추천 알고리즘
+     */
     @Override
-    public List<RecommendedPlaylistCard> recommendFromLikedPlaylists(String myUserId) {
-        // 1. 추천용 플레이리스트 조회
-        List<Playlist> recommendedPlaylists =
-                playlistRepository.findRecommendedPlaylistsByUser(myUserId, RECOMMENDATION_LIMIT);
-
-        // 2. for 문 기반으로 DTO 매핑
-        List<RecommendedPlaylistCard> result = new ArrayList<>();
-
-        for (Playlist playlist : recommendedPlaylists) {
-            Users owner = playlist.getUsers();
-
-            List<SongDto> songDtos = new ArrayList<>();
-            for (Song song : playlist.getSongs()) {
-                songDtos.add(new SongDto(
-                        song.getId(),
-                        song.getYoutubeTitle(),
-                        song.getYoutubeThumbnail()
-                ));
-            }
-
-
-            result.add(new RecommendedPlaylistCard(
-                    playlist.getId(),
-                    playlist.getName(),
-                    owner.getUsername(),
-                    playlist.getIsRepresentative(),
-                    songDtos
-            ));
-        }
-        return result;
+    public List<PlaylistSearchDto> recommendFromLikedPlaylists(String myUserId) {
+        //  추천용 플레이리스트 DTO 조회 (팔로우 기반)
+        return userPlaylistHistoryRepository.findRecommendedPlaylistsByUser(myUserId, RECOMMENDATION_LIMIT);
     }
+
 
     @Override
     public List<GenreDto> recommendGenres(String userId) {
@@ -143,30 +114,6 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
                 .limit(6)
                 .map(g -> new GenreDto(g.name(), g.getDisplayName()))
                 .toList();
-    }
-
-    @Transactional
-    @Override
-    public PlaylistLikeResponse toggleLike(String userId, Long playlistId) {
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Playlist playlist = playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new IllegalArgumentException("플레이리스트를 찾을 수 없습니다."));
-
-        Optional<Likes> existing = likesRepository.findByUsersAndPlaylist(user, playlist);
-        boolean liked;
-
-        if (existing.isPresent()) {
-            // 좋아요 취소
-            likesRepository.delete(existing.get());
-            liked = false;
-        } else {
-            // 좋아요 추가
-            Likes like = new Likes(user, playlist);
-            likesRepository.save(like);
-            liked = true;
-        }
-        return new PlaylistLikeResponse(liked);
     }
 }
 

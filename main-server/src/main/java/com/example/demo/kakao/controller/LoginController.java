@@ -1,6 +1,7 @@
 package com.example.demo.kakao.controller;
 
 import com.example.demo.domain.user.entity.Users;
+import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.auth.refresh.store.RedisRefreshTokenStore;
 import com.example.demo.global.http.service.AccessTokenCookieService;
 import com.example.demo.global.http.service.RefreshTokenCookieService;
@@ -33,6 +34,7 @@ public class LoginController {
     private final AccessTokenCookieService accessCookies;
     private final RefreshTokenCookieService refreshCookies;
     private final RedisRefreshTokenStore redisRefreshTokenStore;
+    private final UsersRepository usersRepository;
 
     @Operation(
             summary = "카카오 로그인",
@@ -67,8 +69,11 @@ public class LoginController {
     @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
     @GetMapping("/auth/super")
     public ResponseEntity<String> superLogin() {
-        Users users = new Users(); // userId는 실제 환경에서는 유효 값이어야 함
-        String superToken = jwtProvider.issueAccess(users.getId());
+        Users users = new Users();
+        users.setUsername("admin");
+        Users saved = usersRepository.save(users);
+
+        String superToken = jwtProvider.issueAccess(saved.getId());
         return ResponseEntity.ok().body(superToken);
     }
 }
