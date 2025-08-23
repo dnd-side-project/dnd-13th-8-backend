@@ -1,7 +1,7 @@
 package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.GenreDto;
-import com.example.demo.domain.playlist.dto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenresResponse;
@@ -58,12 +58,12 @@ public class PlaylistsMainPageController {
             content = @Content(schema = @Schema(implementation = RecommendedPlaylistsWithSongsResponse.class))
     )
     @GetMapping("/recommendations/friend")
-    public ResponseEntity<RecommendedPlaylistsWithSongsResponse> getOwnerBasedRecommendations(
+    public ResponseEntity<List<PlaylistSearchDto>> getOwnerBasedRecommendations(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<RecommendedPlaylistCard> recommended = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
-        return ResponseEntity.ok(new RecommendedPlaylistsWithSongsResponse(recommended));
+        List<PlaylistSearchDto> playlistSearchDtos = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
+        return ResponseEntity.ok(playlistSearchDtos);
     }
 
     @Operation(

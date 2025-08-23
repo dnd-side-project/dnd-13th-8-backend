@@ -1,6 +1,7 @@
 package com.example.demo.domain.playlist.dto;
 
 import com.example.demo.domain.song.entity.Song;
+import com.example.demo.domain.song.util.DurationFormatUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -15,7 +16,13 @@ public record SongDto(
         String title,
 
         @Schema(description = "유튜브 영상 URL", example = "https://youtube.com/watch?v=abc123")
-        String youtubeUrl
+        String youtubeUrl,
+
+        @Schema(description = "썸네일 이미지 URL", example = "https://img.youtube.com/vi/abc123/hqdefault.jpg")
+        String youtubeThumbnail,
+
+        @Schema(description = "유튜브 영상 길이", example = "MM:SS")
+        String youtubeLength
 
 ) {
     public static SongDto from(Song song) {
@@ -23,6 +30,8 @@ public record SongDto(
                 .id(song.getId())
                 .title(song.getYoutubeTitle())
                 .youtubeUrl(song.getYoutubeUrl())
+                .youtubeThumbnail(song.getYoutubeThumbnail())
+                .youtubeLength(DurationFormatUtil.formatToHumanReadable(song.getYoutubeLength()))
                 .build();
     }
 }

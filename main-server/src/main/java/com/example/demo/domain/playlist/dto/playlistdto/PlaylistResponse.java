@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.playlistdto;
 
 import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +24,7 @@ public record PlaylistResponse(
         return PlaylistResponse.builder()
                 .id(playlist.getId())
                 .name(playlist.getName())
-                .isRepresentative(playlist.getIsRepresentative())
+                .isRepresentative(playlist.isRepresentative())
                 .visitCount(playlist.getVisitCount())
                 .build();
     }

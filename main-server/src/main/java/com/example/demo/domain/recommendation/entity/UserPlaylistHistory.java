@@ -33,10 +33,13 @@ public class UserPlaylistHistory {
     @ManyToOne(fetch = FetchType.LAZY)
     private Playlist playlist;
 
-    @Builder
-    public UserPlaylistHistory(Users user,  Playlist playlist, LocalDateTime playedAt) {
+    private UserPlaylistHistory(Users user, Playlist playlist, LocalDateTime playedAt) {
         this.user = user;
-        this.playedAt = playedAt;
         this.playlist = playlist;
+        this.playedAt = playedAt;
+    }
+
+    public static UserPlaylistHistory of(Users user, Playlist playlist) {
+        return new UserPlaylistHistory(user, playlist, LocalDateTime.now());
     }
 }

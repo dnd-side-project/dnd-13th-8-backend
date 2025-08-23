@@ -1,34 +1,37 @@
 package com.example.demo.domain.recommendation.repository;
 
+import com.example.demo.domain.follow.entity.QFollow;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.SongDto;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
-import com.example.demo.domain.recommendation.dto.QRecommendedPlaylistResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
+import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
+import com.example.demo.domain.song.entity.QSong;
+import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.user.entity.QUsers;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDate;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
+import java.time.LocalDate;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHistoryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-
     private final QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
     private final QPlaylist playlist = QPlaylist.playlist;
+    private final QSong song = QSong.song;
 
-    /**
-     * 사용자가 최근 가장 많이 들은 장르 기반 추천
-     */
     @Override
-    public List<RecommendedPlaylistResponse> findByUserRecentGenre(String userId, int limit) {
-        // 사용자가 가장 많이 들은 장르 하나 찾기
-        var topGenre = queryFactory
+    public List<PlaylistSearchDto> findByUserRecentGenre(String userId, int limit) {
+        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+        QUsers u = QUsers.users;
+
+        PlaylistGenre topGenre = queryFactory
                 .select(history.playlist.genre)
                 .from(history)
                 .where(history.user.id.eq(userId))
@@ -37,53 +40,40 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .limit(1)
                 .fetchOne();
 
-        if (topGenre == null) {
-            return List.of();
-        }
+        if (topGenre == null) return List.of();
 
-        // 해당 장르 기반 추천 플레이리스트
-        return queryFactory
-                .select(new QRecommendedPlaylistResponse(
-                        playlist.id,
-                        playlist.name,
-                        playlist.users.username,
-                        playlist.genre,
-                        playlist.visitCount
-                ))
-                .from(playlist)
+        List<Playlist> playlists = queryFactory
+                .select(rp.playlist)
+                .from(rp)
+                .join(rp.playlist, playlist).fetchJoin()
+                .join(playlist.users, u).fetchJoin()
                 .where(playlist.genre.eq(topGenre))
-                .limit(limit)
-                .fetch();
-    }
-
-    /**
-     * 조회수 많은 플레이리스트 추천
-     */
-    @Override
-    public List<RecommendedPlaylistResponse> findByLikeCount(int limit) {
-        return queryFactory
-                .select(new QRecommendedPlaylistResponse(
-                        playlist.id,
-                        playlist.name,
-                        playlist.users.username,
-                        playlist.genre,
-                        playlist.visitCount
-                ))
-                .from(playlist)
                 .orderBy(playlist.visitCount.desc())
                 .limit(limit)
                 .fetch();
+
+        return toDtoWithSongs(playlists);
     }
 
+    @Override
+    public List<PlaylistSearchDto> findByVisitCount(int limit) {
+        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+        QUsers u = QUsers.users;
 
-    /**
-     * 어제 기준 전체 유저의 재생 기록에서 인기 장르 최대 6개 반환
-     */
+        List<Playlist> playlists = queryFactory
+                .select(rp.playlist)
+                .from(rp)
+                .join(rp.playlist, playlist).fetchJoin()
+                .join(playlist.users, u).fetchJoin()
+                .orderBy(playlist.visitCount.desc())
+                .limit(limit)
+                .fetch();
+
+        return toDtoWithSongs(playlists);
+    }
+
     @Override
     public List<PlaylistGenre> findTopGenresByDate(LocalDate date) {
-        QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
-        QPlaylist playlist = QPlaylist.playlist;
-
         return queryFactory
                 .select(playlist.genre)
                 .from(history)
@@ -95,13 +85,8 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .fetch();
     }
 
-    /**
-     * 특정 사용자의 전체 재생 기록에서 많이 들은 장르 순으로 반환 (제한 없음)
-     */
     @Override
     public List<PlaylistGenre> findMostPlayedGenresByUser(String userId) {
-        QUserPlaylistHistory history = QUserPlaylistHistory.userPlaylistHistory;
-        QPlaylist playlist = QPlaylist.playlist;
         QUsers users = QUsers.users;
 
         return queryFactory
@@ -114,5 +99,79 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .orderBy(history.count().desc())
                 .fetch();
     }
-}
 
+    @Override
+    public List<PlaylistSearchDto> findRecommendedPlaylistsByUser(String userId, int limit) {
+        QFollow f = QFollow.follow;
+        QUsers u = QUsers.users;
+
+        List<Long> followedPlaylistIds = queryFactory
+                .select(f.playlist.id)
+                .from(f)
+                .where(f.users.id.eq(userId))
+                .fetch();
+
+        List<Playlist> basePlaylists = queryFactory
+                .selectFrom(playlist)
+                .join(playlist.users, u).fetchJoin()
+                .where(
+                        playlist.id.notIn(followedPlaylistIds),
+                        playlist.users.id.ne(userId)
+                )
+                .orderBy(playlist.createdAt.desc())
+                .limit(limit)
+                .fetch();
+
+        int remain = limit - basePlaylists.size();
+        if (remain > 0) {
+            List<Playlist> fallback = queryFactory
+                    .selectFrom(playlist)
+                    .join(playlist.users, u).fetchJoin()
+                    .where(
+                            playlist.id.notIn(followedPlaylistIds),
+                            playlist.users.id.ne(userId),
+                            playlist.id.notIn(basePlaylists.stream().map(Playlist::getId).toList())
+                    )
+                    .orderBy(playlist.createdAt.desc())
+                    .limit(remain)
+                    .fetch();
+
+            basePlaylists.addAll(fallback);
+        }
+
+        return toDtoWithSongs(basePlaylists);
+    }
+
+    private List<PlaylistSearchDto> toDtoWithSongs(List<Playlist> playlists) {
+        List<Long> playlistIds = playlists.stream().map(Playlist::getId).toList();
+        Map<Long, List<SongDto>> songMap = findSongsGroupedByPlaylistIds(playlistIds);
+
+        return playlists.stream()
+                .map(p -> new PlaylistSearchDto(
+                        p.getId(),
+                        p.getName(),
+                        p.getUsers().getId(),
+                        p.getUsers().getUsername(),
+                        songMap.getOrDefault(p.getId(), List.of())
+                ))
+                .toList();
+    }
+
+    private Map<Long, List<SongDto>> findSongsGroupedByPlaylistIds(List<Long> playlistIds) {
+        List<Tuple> rows = queryFactory
+                .select(song, song.playlist.id)
+                .from(song)
+                .where(song.playlist.id.in(playlistIds))
+                .fetch();
+
+        Map<Long, List<SongDto>> result = new HashMap<>();
+        for (Tuple row : rows) {
+            Song s = row.get(song);
+            Long playlistId = row.get(song.playlist.id);
+
+            result.computeIfAbsent(playlistId, k -> new ArrayList<>())
+                    .add(SongDto.from(s));
+        }
+        return result;
+    }
+}
