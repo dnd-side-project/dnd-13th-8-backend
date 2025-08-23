@@ -9,6 +9,8 @@ import com.example.demo.domain.playlist.dto.search.SearchItem;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.representative.entity.RepresentativePlaylist;
+import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
-    private final PlaylistRepository playlistRepository;
+    private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -32,17 +34,27 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         }
 
         Pageable pageable = PageRequest.of(0, finalLimit);
-        List<Playlist> results = playlistRepository.findByGenreSorted(genre, sort, pageable);
 
-        return results.stream()
-                .map(p -> new PlaylistSearchResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getUsers().getUsername(),
-                        p.getVisitCount()
-                ))
+        List<RepresentativePlaylist> representatives = switch (sort) {
+            case POPULAR -> representativePlaylistRepository
+                    .findByGenreOrderByVisitCountDesc(genre, pageable);
+            case RECENT -> representativePlaylistRepository
+                    .findByGenreOrderByCreatedAtDesc(genre, pageable);
+        };
+
+        return representatives.stream()
+                .map(rep -> {
+                    Playlist p = rep.getPlaylist();
+                    return new PlaylistSearchResponse(
+                            p.getId(),
+                            p.getName(),
+                            p.getUsers().getUsername(),
+                            p.getVisitCount()
+                    );
+                })
                 .toList();
     }
+
 
     @Override
     public CombinedSearchResponse searchAll(String query, PlaylistSortOption sort, int limit) {
