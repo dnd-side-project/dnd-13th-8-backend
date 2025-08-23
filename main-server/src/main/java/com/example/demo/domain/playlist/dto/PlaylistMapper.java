@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.dto;
 
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.user.entity.Users;
 

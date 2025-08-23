@@ -2,10 +2,16 @@ package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.follow.dto.FollowPlaylistDto;
+import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
+import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.domain.playlist.dto.*;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.playlist.util.ShareCodeGenerator;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.dto.SongMapper;
@@ -30,6 +36,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final SongRepository songRepository;
     private final UsersRepository usersRepository;
     private final RepresentativePlaylistRepository representativePlaylistRepository;
+    private final FollowRepository followRepository;
 
     private static final int DEFAULT_LIMIT = 20;
 
@@ -157,9 +164,9 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     @Override
     @Transactional(readOnly = true)
-    public LikedPlaylistsResponse getLikedPlaylists(String userId, PlaylistSortOption sort) {
-        List<LikedPlaylistDto> result = playlistRepository.findLikedPlaylistsWithMeta(userId, sort, DEFAULT_LIMIT);
-        return new LikedPlaylistsResponse(result.size(), result);
+    public FollowPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort) {
+        List<FollowPlaylistDto> result = followRepository.findFolloweePlaylistsWithMeta(userId, sort, DEFAULT_LIMIT);
+        return new FollowPlaylistsResponse(result.size(), result);
     }
 
     @Override

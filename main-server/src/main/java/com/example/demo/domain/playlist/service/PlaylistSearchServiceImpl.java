@@ -1,14 +1,13 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.PlaylistSearchResponse;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.SearchItem;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import java.util.ArrayList;

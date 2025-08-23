@@ -1,7 +1,12 @@
 package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.cd.service.CdService;
+import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.*;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -100,24 +105,25 @@ public class PlaylistMyPageController {
     }
 
     @Operation(
-            summary = "좋아요한 플레이리스트 에 창조자 목록 조회",
-            description = "사용자가 좋아요한 플레이리스트를 정렬 조건(Popular/Recent)에 따라 조회합니다."
+            summary = "팔로우한 유저들의 플레이리스트 조회",
+            description = "사용자가 팔로우한 유저들의 플레이리스트를 정렬 조건(POPULAR / RECENT)에 따라 조회합니다."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "좋아요한 플레이리스트 에 창조자 응답",
-            content = @Content(schema = @Schema(implementation = LikedPlaylistsResponse.class))
+            description = "팔로우한 유저들의 플레이리스트 응답",
+            content = @Content(schema = @Schema(implementation = FollowPlaylistsResponse.class))
     )
-    @GetMapping("/likes")
-    public ResponseEntity<LikedPlaylistsResponse> getLikedPlaylists(
+    @GetMapping("/follows")
+    public ResponseEntity<FollowPlaylistsResponse> getFolloweePlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
 
             @Parameter(description = "정렬 옵션 (RECENT or POPULAR)", example = "RECENT")
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
     ) {
-        return ResponseEntity.ok(playlistMyPageService.getLikedPlaylists(user.getId(), sort));
+        return ResponseEntity.ok(playlistMyPageService.getFolloweePlaylists(user.getId(), sort));
     }
+
 
     @Operation(
             summary = "특정 제작자의 플레이리스트 목록 조회",

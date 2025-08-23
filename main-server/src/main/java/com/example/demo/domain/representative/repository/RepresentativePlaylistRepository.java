@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface RepresentativePlaylistRepository extends JpaRepository<RepresentativePlaylist, Long> {
+public interface RepresentativePlaylistRepository extends JpaRepository<RepresentativePlaylist, Long> , PlaylistSearchRepositoryCustom{
     Optional<RepresentativePlaylist> findByUser_Id(String usersId);
 
     boolean existsByUser_Id(String userId);
