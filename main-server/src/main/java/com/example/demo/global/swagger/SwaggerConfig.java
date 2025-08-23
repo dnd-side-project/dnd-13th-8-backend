@@ -15,5 +15,6 @@ public class SwaggerConfig {
                         .title("Main Server API")
                         .description("메인 서버 문서")
                         .version("v1"));
+
     }
 }
