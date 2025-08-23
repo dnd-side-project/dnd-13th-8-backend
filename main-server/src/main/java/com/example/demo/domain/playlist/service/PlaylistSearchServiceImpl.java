@@ -55,18 +55,23 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 .toList();
     }
 
-
     @Override
+    @Transactional(readOnly = true)
     public CombinedSearchResponse searchAll(String query, PlaylistSortOption sort, int limit) {
-            Pageable pageable = Pageable.ofSize(limit);
-            List<PlaylistSearchDto> playlists = playlistRepository.searchPlaylists(query, sort, pageable);
-            List<UserSearchDto> users = playlistRepository.searchUsersWithRepresentativePlaylist(query);
+        Pageable pageable = Pageable.ofSize(limit);
 
-            List<SearchItem> combined = new ArrayList<>();
-            combined.addAll(users);      // type = "USER"
-            combined.addAll(playlists);  // type = "PLAYLIST"
+        List<PlaylistSearchDto> playlists = representativePlaylistRepository
+                .searchRepresentativePlaylists(query, sort, pageable);
 
-            return new CombinedSearchResponse(combined);
-        }
+        List<UserSearchDto> users = representativePlaylistRepository
+                .searchUsersWithRepresentativePlaylist(query, pageable);
+
+        List<SearchItem> combined = new ArrayList<>();
+        combined.addAll(users);      // type = "USER"
+        combined.addAll(playlists);  // type = "PLAYLIST"
+
+        return new CombinedSearchResponse(combined);
+    }
+
 
 }

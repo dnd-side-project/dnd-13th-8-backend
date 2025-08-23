@@ -3,6 +3,7 @@ package com.example.demo.domain.playlist.repository;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.entity.Playlist;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -13,13 +14,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PlaylistRepository extends JpaRepository<Playlist, Long>, PlaylistRecommendationRepositoryCustom {
-
-    @Query("""
-    SELECT p FROM Playlist p
-    WHERE p.users.id = :userId
-      AND p.isRepresentative = true
-""")
-    Optional<Playlist> findRepresentativeByUserId(@Param("userId") String userId);
 
     @Query("""
     SELECT p FROM Playlist p
@@ -47,7 +41,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     @Query("UPDATE Playlist p SET p.isRepresentative = false WHERE p.users.id = :userId AND p.isRepresentative = true")
     void clearPreviousRepresentative(String userId);
 
-    boolean existsByShareCode(String shareCode);
 
     @Modifying
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
@@ -80,4 +73,13 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
             @Param("sort") PlaylistSortOption sort,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT DISTINCT p FROM Playlist p
+        JOIN FETCH p.users u
+        LEFT JOIN FETCH p.song s
+        WHERE p.id IN :ids
+    """)
+    List<Playlist> findAllWithSongsByIds(@Param("ids") List<Long> ids);
+
 }
