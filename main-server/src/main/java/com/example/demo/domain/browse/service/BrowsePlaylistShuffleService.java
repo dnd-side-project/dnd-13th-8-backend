@@ -40,6 +40,7 @@ public class BrowsePlaylistShuffleService {
         for (String userId : userIds) {
             shuffleAndStore(userId);
         }
+
         log.info("새벽 3시에 셔플 실행됨");
     }
 }
