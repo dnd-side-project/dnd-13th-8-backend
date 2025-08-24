@@ -29,6 +29,7 @@ public class BrowsePlaylistController {
     @GetMapping
     @Operation(summary = "커서 기반 플레이리스트 조회 (둘러보기)", description = "셔플된 플레이리스트 목록을 커서 기반으로 15개씩 반환합니다.")
     public ResponseEntity<BrowseResponse> browsePlaylists(
+            @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @Parameter(description = "다음 페이지를 위한 커서 (기본값: 0)", example = "0")
             @RequestParam(defaultValue = "0") int cursor,
@@ -41,15 +42,19 @@ public class BrowsePlaylistController {
     }
 
     @PostMapping("/{playlistId}/follow")
-    public ResponseEntity<Void> followPlaylist(@AuthenticationPrincipal CustomUserDetails me,
-                                               @PathVariable Long playlistId) {
+    public ResponseEntity<Void> followPlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable Long playlistId) {
         playlistFollowService.follow(me.getId(), playlistId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{playlistId}/follow")
-    public ResponseEntity<Void> unfollowPlaylist(@AuthenticationPrincipal CustomUserDetails me,
-                                                 @PathVariable Long playlistId) {
+    public ResponseEntity<Void> unfollowPlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable Long playlistId) {
         playlistFollowService.unfollow(me.getId(), playlistId);
         return ResponseEntity.ok().build();
     }
