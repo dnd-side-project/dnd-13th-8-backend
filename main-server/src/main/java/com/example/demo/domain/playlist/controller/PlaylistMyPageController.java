@@ -8,6 +8,10 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
+import com.example.demo.domain.representative.entity.RepresentativePlaylist;
+import com.example.demo.domain.representative.service.RepresentativePlaylistService;
+import com.example.demo.domain.user.entity.Users;
+import com.example.demo.domain.user.service.UsersService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +37,9 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistMyPageController {
 
     private final PlaylistMyPageService playlistMyPageService;
+    private final RepresentativePlaylistService representativePlaylistService;
     private final CdService cdService;
+    private final UsersService usersService;
 
     @Operation(
             summary = "임시 플레이리스트 저장(세션)",
@@ -75,8 +81,7 @@ public class PlaylistMyPageController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistMyPageService.savePlaylistWithSongs(user.getId(), request,
-                finalPlaylistRequest.theme());
+        PlaylistWithSongsResponse response = playlistMyPageService.savePlaylistWithSongs(user.getId(), request);
 
         cdService.saveCdItemList(response.playlistId(), finalPlaylistRequest.saveCdRequestDto().cdItems());
 
@@ -144,7 +149,6 @@ public class PlaylistMyPageController {
     }
 
 
-
     @Operation(
             summary = "내 플레이리스트 상세 조회",
             description = "플레이리스트 상세 및 곡 목록, 좋아요/조회수 등 메타 정보를 반환합니다."
@@ -163,6 +167,27 @@ public class PlaylistMyPageController {
             @AuthenticationPrincipal CustomUserDetails user
     ) {
         PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), playlistId);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "공유된 링크로 플레이리스트 상세 조회",
+            description = "공유된 링크로 플레이리스트 상세 및 곡 목록, 좋아요/조회수 등 메타 정보를 반환합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "플레이리스트 상세",
+            content = @Content(schema = @Schema(implementation = PlaylistDetailResponse.class))
+    )
+    @ApiResponse(responseCode = "404", description = "플레이리스트를 찾을 수 없음")
+    @GetMapping("/shared/{shareCode}")
+    public ResponseEntity<PlaylistDetailResponse> getSharedPlaylistDetail(
+            @Parameter(description = "플레이리스트 ID", example = "123")
+            @PathVariable String shareCode
+    ) {
+        Users user = usersService.findUserByShareCode(shareCode);
+        RepresentativePlaylist representativePlaylist = representativePlaylistService.findRepresentativePlaylistByUserId(user.getId());
+        PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), representativePlaylist.getId());
         return ResponseEntity.ok(response);
     }
 
