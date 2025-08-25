@@ -32,9 +32,9 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
         return queryFactory
                 .select(Projections.constructor(
                         FollowPlaylistDto.class,
+                        p.visitCount.intValue(),        // 플레이리스트 조회수 총합 (또는 개수)
                         p.users.id,         // 제작자 ID
-                        p.users.username,   // 제작자 닉네임
-                        p.visitCount        // 플레이리스트 조회수 총합 (또는 개수)
+                        p.users.username   // 제작자 닉네임
                 ))
                 .from(f)
                 .join(f.playlist, p)

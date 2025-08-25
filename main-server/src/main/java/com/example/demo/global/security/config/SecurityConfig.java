@@ -1,7 +1,6 @@
 package com.example.demo.global.security.config;
 
-import com.example.demo.global.http.dto.CookieProps;
-import com.example.demo.global.http.util.CookieReader;
+
 import com.example.demo.global.jwt.JwtProvider;
 import com.example.demo.global.security.filter.CustomUserDetailsService;
 import com.example.demo.global.security.filter.JwtAuthenticationFilter;
@@ -24,17 +23,25 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/cd/**")) // refresh 붙이기 전 단계
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(reg -> reg
-                        .requestMatchers("/**").permitAll() // 개발용 임시
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/super").permitAll()
-                        .requestMatchers("/health").permitAll()
-                        .requestMatchers("/chat/health").permitAll()
-                        .requestMatchers("/api/health").permitAll()
-                        .requestMatchers("/auth/kakao/**").permitAll()
-                        .requestMatchers("/auth/session").permitAll()
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/super",
+                                "/auth/kakao/**",
+                                "/auth/session",
+                                "/health",
+                                "/chat/health",
+                                "/api/health",
+
+                                //  Swagger 관련 경로
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui.html",
+                                "/webjars/**"
+                        ).permitAll()
                         .requestMatchers("/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
@@ -45,4 +52,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }
