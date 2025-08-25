@@ -18,10 +18,10 @@ public record PlaylistCardResponse(
         String playlistName,
 
         @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
-        String ownerId,
+        String creatorId,
 
-        @Schema(description = "플레이리스트 제작자 닉네임", example = "ballad_master")
-        String ownerName,
+        @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
+        String creatorNickname,
 
         @Schema(description = "추천된 곡 목록")
         List<SongDto> songs

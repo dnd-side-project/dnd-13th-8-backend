@@ -10,10 +10,10 @@ import java.util.List;
 public record PlaylistDetailResponse(
 
         @Schema(description = "플레이리스트 ID", example = "101")
-        Long id,
+        Long playlistId,
 
         @Schema(description = "플레이리스트 이름", example = "집중할 때 듣는 음악")
-        String name,
+        String playlistName,
 
         @Schema(description = "대표 플레이리스트 여부", example = "true")
         boolean isRepresentative,

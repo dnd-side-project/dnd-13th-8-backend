@@ -47,8 +47,8 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                     return new PlaylistSearchResponse(
                             p.getId(),
                             p.getName(),
-                            p.getUsers().getUsername(),
-                            p.getVisitCount()
+                            p.getUsers().getId(),
+                            p.getUsers().getUsername()
                     );
                 })
                 .toList();
