@@ -27,7 +27,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
     private final QSong song = QSong.song;
 
     @Override
-    public List<PlaylistSearchDto> findByUserRecentGenre(String userId, int limit) {
+    public List<Playlist> findByUserRecentGenre(String userId, int limit) {
         QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
         QUsers u = QUsers.users;
 
@@ -42,7 +42,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
 
         if (topGenre == null) return List.of();
 
-        List<Playlist> playlists = queryFactory
+        return queryFactory
                 .select(rp.playlist)
                 .from(rp)
                 .join(rp.playlist, playlist).fetchJoin()
@@ -51,16 +51,14 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .orderBy(playlist.visitCount.desc())
                 .limit(limit)
                 .fetch();
-
-        return toDtoWithSongs(playlists);
     }
 
     @Override
-    public List<PlaylistSearchDto> findByVisitCount(int limit) {
+    public List<Playlist> findByVisitCount(int limit) {
         QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
         QUsers u = QUsers.users;
 
-        List<Playlist> playlists = queryFactory
+        return queryFactory
                 .select(rp.playlist)
                 .from(rp)
                 .join(rp.playlist, playlist).fetchJoin()
@@ -68,9 +66,8 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .orderBy(playlist.visitCount.desc())
                 .limit(limit)
                 .fetch();
-
-        return toDtoWithSongs(playlists);
     }
+
 
     @Override
     public List<PlaylistGenre> findTopGenresByDate(LocalDate date) {
@@ -101,7 +98,7 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
     }
 
     @Override
-    public List<PlaylistSearchDto> findRecommendedPlaylistsByUser(String userId, int limit) {
+    public List<Playlist> findRecommendedPlaylistsByUser(String userId, int limit) {
         QFollow f = QFollow.follow;
         QUsers u = QUsers.users;
 
@@ -139,39 +136,6 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
             basePlaylists.addAll(fallback);
         }
 
-        return toDtoWithSongs(basePlaylists);
-    }
-
-    private List<PlaylistSearchDto> toDtoWithSongs(List<Playlist> playlists) {
-        List<Long> playlistIds = playlists.stream().map(Playlist::getId).toList();
-        Map<Long, List<SongDto>> songMap = findSongsGroupedByPlaylistIds(playlistIds);
-
-        return playlists.stream()
-                .map(p -> new PlaylistSearchDto(
-                        p.getId(),
-                        p.getName(),
-                        p.getUsers().getId(),
-                        p.getUsers().getUsername(),
-                        songMap.getOrDefault(p.getId(), List.of())
-                ))
-                .toList();
-    }
-
-    private Map<Long, List<SongDto>> findSongsGroupedByPlaylistIds(List<Long> playlistIds) {
-        List<Tuple> rows = queryFactory
-                .select(song, song.playlist.id)
-                .from(song)
-                .where(song.playlist.id.in(playlistIds))
-                .fetch();
-
-        Map<Long, List<SongDto>> result = new HashMap<>();
-        for (Tuple row : rows) {
-            Song s = row.get(song);
-            Long playlistId = row.get(song.playlist.id);
-
-            result.computeIfAbsent(playlistId, k -> new ArrayList<>())
-                    .add(SongDto.from(s));
-        }
-        return result;
+        return basePlaylists;
     }
 }
