@@ -11,7 +11,6 @@ import com.example.demo.kakao.dto.KakaoLoginRequest;
 import com.example.demo.kakao.dto.KakaoLoginResponse;
 import com.example.demo.kakao.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,10 +18,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "소셜 로그인 API (카카오)")
@@ -31,7 +32,6 @@ public class LoginController {
     private final AuthService authService;
     private final JwtProvider jwtProvider;
     private final JwtProps jwtProps;
-    private final AccessTokenCookieService accessCookies;
     private final RefreshTokenCookieService refreshCookies;
     private final RedisRefreshTokenStore redisRefreshTokenStore;
     private final UsersRepository usersRepository;
@@ -64,8 +64,12 @@ public class LoginController {
     @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급 (test, test2, test3...)")
     @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
     @GetMapping("/auth/super")
-    public ResponseEntity<String> superLogin(@RequestParam String userId) {
-        String superToken = jwtProvider.issueAccess(userId);
+    public ResponseEntity<String> superLogin() {
+        Users user = new Users();
+        user.setUsername("슈퍼테스트");
+        Users savedUser = usersRepository.save(user);
+        String superToken = jwtProvider.issueAccess(savedUser.getId());
         return ResponseEntity.ok().body(superToken);
     }
+
 }
