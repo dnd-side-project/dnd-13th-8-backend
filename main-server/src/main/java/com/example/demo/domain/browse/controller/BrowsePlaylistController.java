@@ -74,7 +74,6 @@ public class BrowsePlaylistController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         browsePlaylistService.confirmAndLogPlayback(userDetails.getId(), playlistId);
-        //browseViewCountService.confirmView(userDetails.getId(), playlistId);
     }
 
     @PostMapping("/view-counts")
