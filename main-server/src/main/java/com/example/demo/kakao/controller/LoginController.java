@@ -5,8 +5,10 @@ import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.auth.refresh.store.RedisRefreshTokenStore;
 import com.example.demo.global.http.service.AccessTokenCookieService;
 import com.example.demo.global.http.service.RefreshTokenCookieService;
+import com.example.demo.global.jwt.JwtAccessIssuer;
 import com.example.demo.global.jwt.JwtProps;
 import com.example.demo.global.jwt.JwtProvider;
+import com.example.demo.global.jwt.JwtRefreshIssuer;
 import com.example.demo.kakao.dto.KakaoLoginRequest;
 import com.example.demo.kakao.dto.KakaoLoginResponse;
 import com.example.demo.kakao.service.AuthService;
@@ -35,6 +37,8 @@ public class LoginController {
     private final RefreshTokenCookieService refreshCookies;
     private final RedisRefreshTokenStore redisRefreshTokenStore;
     private final UsersRepository usersRepository;
+    private final JwtRefreshIssuer jwtRefreshIssuer;
+    private final JwtAccessIssuer jwtAccessIssuer;
 
     @PostMapping("/auth/login")
     public ResponseEntity<KakaoLoginResponse> kakaoLogin(
@@ -45,7 +49,8 @@ public class LoginController {
             @Valid @RequestBody KakaoLoginRequest request
     ) {
         KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier());
-        String refresh = jwtProvider.issueRefresh(out.userId());
+
+        String refresh = jwtRefreshIssuer.issueRefresh(out.userId()); // 수정된 부분
         String jti = jwtProvider.jti(refresh);
 
         redisRefreshTokenStore.putSessionJti(
@@ -55,10 +60,10 @@ public class LoginController {
         );
 
         return ResponseEntity.ok()
-                // AccessToken은 쿠키 대신 body로 전달
                 .header(HttpHeaders.SET_COOKIE, refreshCookies.create(refresh).toString())
                 .body(out);
     }
+
 
 
     @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급 (test, test2, test3...)")
@@ -68,7 +73,7 @@ public class LoginController {
         Users user = new Users();
         user.setUsername("슈퍼테스트");
         Users savedUser = usersRepository.save(user);
-        String superToken = jwtProvider.issueAccess(savedUser.getId());
+        String superToken = jwtAccessIssuer.issueSuperToken(savedUser.getId());
         return ResponseEntity.ok().body(superToken);
     }
 
