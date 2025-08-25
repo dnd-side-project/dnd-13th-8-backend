@@ -15,7 +15,7 @@ public class JwtAccessIssuer {
         jwtProvider.validateSubject(userId);
         return jwtProvider.buildToken(userId, 30 * 60L, Map.of(
                 "typ", "access",
-                "role", "user"
+                "role", JwtRoleType.USER.value()
         ));
     }
 
@@ -24,7 +24,7 @@ public class JwtAccessIssuer {
         jwtProvider.validateSubject(userId);
         return jwtProvider.buildToken(userId, 30L * 24 * 60 * 60, Map.of(
                 "typ", "access",
-                "role", "super"
+                "role", JwtRoleType.SUPER.value()
         ));
     }
 
@@ -33,7 +33,7 @@ public class JwtAccessIssuer {
         jwtProvider.validateSubject(tempId);
         return jwtProvider.buildToken(tempId, 12 * 60 * 60L, Map.of(
                 "typ", "access",
-                "role", "anonymous"
+                "role", JwtRoleType.ANONYMOUS.value()
         ));
     }
 

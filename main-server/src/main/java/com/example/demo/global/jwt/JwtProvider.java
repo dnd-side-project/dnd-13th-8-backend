@@ -40,25 +40,6 @@ public class JwtProvider {
         }
     }
 
-    /** Access 토큰 발급 (subject = userId) */
-    public String issueAccess(String userId) {
-        validateSubject(userId);
-        int ttlMin = props.accessTtlMinutes();
-        if (ttlMin < 1) {
-            throw new JwtException("Access 토큰 만료 시간이 유효하지 않습니다.", JwtErrorCode.JWT_INVALID);
-        }
-        return buildToken(userId, ttlMin * 60L, Map.of("typ", "access"));
-    }
-
-    /** Refresh 토큰 발급 (subject = userId) */
-    public String issueRefresh(String userId) {
-        validateSubject(userId);
-        int days = props.refreshTtlDays();
-        if (days < 1) {
-            throw new JwtException("Refresh 토큰 만료 시간이 유효하지 않습니다.", JwtErrorCode.JWT_INVALID);
-        }
-        return buildToken(userId, days * 24L * 3600L, Map.of("typ", "refresh"));
-    }
 
     /** Access 토큰 검증(서명/만료 + typ=access) */
     public Jws<Claims> validateAccess(String jwt) {

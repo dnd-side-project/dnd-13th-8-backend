@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/main/playlists")
+@RequestMapping("/main/mypage/playlists")
 @RequiredArgsConstructor
 @Tag(name = "MyPage - Playlists", description = "마이페이지 내 플레이리스트 관리 API")
 @SecurityRequirement(name = "bearerAuth")

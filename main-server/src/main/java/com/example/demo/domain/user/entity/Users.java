@@ -1,12 +1,8 @@
 package com.example.demo.domain.user.entity;
 
-import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
+import com.example.demo.global.jwt.JwtRoleType;
 import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,6 +36,9 @@ public class Users extends BaseTimeEntity {
 
     private boolean enabled;
 
+    @Enumerated(EnumType.STRING)
+    private JwtRoleType role;
+
     public void assignShareCode(String shareCode) {
         if (this.shareCode != null) {
             throw new IllegalStateException("이미 shareCode가 존재합니다.");
@@ -48,9 +47,10 @@ public class Users extends BaseTimeEntity {
     }
 
     @Builder
-    public Users(String kakaoId, String username, boolean enabled) {
+    public Users(String kakaoId, String username, boolean enabled, JwtRoleType role) {
         this.kakaoId = kakaoId;
         this.username = username;
         this.enabled = enabled;
+        this.role = role;
     }
 }

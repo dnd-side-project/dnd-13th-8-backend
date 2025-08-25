@@ -2,13 +2,14 @@ package com.example.demo.kakao.controller;
 
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
+import com.example.demo.domain.user.service.NicknameGenerator;
 import com.example.demo.global.auth.refresh.store.RedisRefreshTokenStore;
-import com.example.demo.global.http.service.AccessTokenCookieService;
 import com.example.demo.global.http.service.RefreshTokenCookieService;
 import com.example.demo.global.jwt.JwtAccessIssuer;
 import com.example.demo.global.jwt.JwtProps;
 import com.example.demo.global.jwt.JwtProvider;
 import com.example.demo.global.jwt.JwtRefreshIssuer;
+import com.example.demo.global.jwt.JwtRoleType;
 import com.example.demo.kakao.dto.KakaoLoginRequest;
 import com.example.demo.kakao.dto.KakaoLoginResponse;
 import com.example.demo.kakao.service.AuthService;
@@ -20,12 +21,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "소셜 로그인 API (카카오)")
@@ -39,6 +38,7 @@ public class LoginController {
     private final UsersRepository usersRepository;
     private final JwtRefreshIssuer jwtRefreshIssuer;
     private final JwtAccessIssuer jwtAccessIssuer;
+    private final NicknameGenerator nicknameGenerator;
 
     @PostMapping("/auth/login")
     public ResponseEntity<KakaoLoginResponse> kakaoLogin(
@@ -50,7 +50,7 @@ public class LoginController {
     ) {
         KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier());
 
-        String refresh = jwtRefreshIssuer.issueRefresh(out.userId()); // 수정된 부분
+        String refresh = jwtRefreshIssuer.issueRefresh(out.userId());
         String jti = jwtProvider.jti(refresh);
 
         redisRefreshTokenStore.putSessionJti(
@@ -64,17 +64,34 @@ public class LoginController {
                 .body(out);
     }
 
-
-
     @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급 (test, test2, test3...)")
     @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
     @GetMapping("/auth/super")
     public ResponseEntity<String> superLogin() {
+        String nickname = nicknameGenerator.generateUniqueNickname();
         Users user = new Users();
-        user.setUsername("슈퍼테스트");
+        user.setUsername(nickname);
+        user.setRole(JwtRoleType.SUPER);
+
         Users savedUser = usersRepository.save(user);
         String superToken = jwtAccessIssuer.issueSuperToken(savedUser.getId());
+
         return ResponseEntity.ok().body(superToken);
+    }
+
+    @Operation(summary = "익명 로그인", description = "익명 계정용 Access 토큰 발급")
+    @ApiResponse(responseCode = "200", description = "익명 토큰 발급 성공")
+    @GetMapping("/auth/anonymous")
+    public ResponseEntity<String> anonymousLogin() {
+        String nickname = nicknameGenerator.generateUniqueNickname();
+        Users user = new Users();
+        user.setUsername(nickname);
+        user.setRole(JwtRoleType.ANONYMOUS);
+
+        Users savedUser = usersRepository.save(user);
+        String anonymousToken = jwtAccessIssuer.issueSuperToken(savedUser.getId());
+
+        return ResponseEntity.ok().body(anonymousToken);
     }
 
 }
