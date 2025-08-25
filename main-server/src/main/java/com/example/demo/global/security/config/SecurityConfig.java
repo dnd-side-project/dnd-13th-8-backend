@@ -39,7 +39,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .anonymous(Customizer.withDefaults());
-
         var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
