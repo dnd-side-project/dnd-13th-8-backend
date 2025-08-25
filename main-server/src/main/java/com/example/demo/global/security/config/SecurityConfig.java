@@ -1,5 +1,6 @@
 package com.example.demo.global.security.config;
 
+
 import com.example.demo.global.jwt.JwtProvider;
 import com.example.demo.global.security.filter.CustomUserDetailsService;
 import com.example.demo.global.security.filter.JwtAuthenticationFilter;
@@ -35,7 +36,11 @@ public class SecurityConfig {
                                 "/chat/health",
                                 "/api/health",
 
-                                // Swagger 관련 경로
+                                //  Swagger 관련 경로
+                                "/main/swagger-ui/**",
+                                "/main/swagger/**",
+                                "/swagger/**",
+                                "/main/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
@@ -53,10 +58,10 @@ public class SecurityConfig {
                 )
                 .anonymous(Customizer.withDefaults());
 
-        // JWT 인증 필터 등록
         var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }

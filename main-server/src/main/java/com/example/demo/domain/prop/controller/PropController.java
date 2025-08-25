@@ -43,7 +43,8 @@ public class PropController {
 
         MultipartFile file = uploadPropRequestDto.file();
         String userId = customUserDetails.getId();
-        propService.saveProp(userId, file);
+        String theme = uploadPropRequestDto.theme();
+        propService.saveProp(userId, theme, file);
         return ResponseEntity.ok().body("사진을 업로드하였습니다");
     }
 
