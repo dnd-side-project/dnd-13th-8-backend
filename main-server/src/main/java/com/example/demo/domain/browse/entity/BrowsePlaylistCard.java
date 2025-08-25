@@ -52,27 +52,9 @@ public class BrowsePlaylistCard {
     @Column(length = 500)
     private String shareUrl;
 
-    // CD 정보 스냅샷
-    @Column(name = "cd_item_id")
-    private Long cdItemId;
-
-    @Column(name = "cd_prop_id")
-    private Long propId;
-
-    @Column(name = "cd_x")
-    private Long xCoordinate;
-
-    @Column(name = "cd_y")
-    private Long yCoordinate;
-
-    @Column(name = "cd_z")
-    private Long zCoordinate;
-
-    @Column(name = "cd_angle")
-    private Long angle;
-
-    @Column(name = "cd_image_url", length = 500)
-    private String cdImageUrl;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String cdItemsJson;
 
     // 전체 재생 시간 문자열(예: "09:32")
     @Column(length = 16)
@@ -90,13 +72,7 @@ public class BrowsePlaylistCard {
             String songsJson,
             boolean isRepresentative,
             String shareUrl,
-            Long cdItemId,
-            Long propId,
-            Long xCoordinate,
-            Long yCoordinate,
-            Long zCoordinate,
-            Long angle,
-            String cdImageUrl,
+            String cdItemsJson,
             String totalTime
     ) {
         this.playlistId = playlistId;
@@ -109,13 +85,7 @@ public class BrowsePlaylistCard {
         this.songsJson = songsJson;
         this.isRepresentative = isRepresentative;
         this.shareUrl = shareUrl;
-        this.cdItemId = cdItemId;
-        this.propId = propId;
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
-        this.zCoordinate = zCoordinate;
-        this.angle = angle;
-        this.cdImageUrl = cdImageUrl;
+        this.cdItemsJson = cdItemsJson;
         this.totalTime = totalTime;
     }
 }

@@ -6,6 +6,8 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
+import static com.example.demo.domain.cd.dto.response.CdItemResponse.fromJsonList;
+
 @Schema(description = "플레이리스트 카드 정보")
 public record BrowsePlaylistDto(
 
@@ -31,7 +33,7 @@ public record BrowsePlaylistDto(
         String shareUrl,
 
         @Schema(description = "CD 이미지 및 위치 정보")
-        CdItemResponse cdItem,
+        List<CdItemResponse> cdItems,
 
         @Schema(description = "전체 곡 재생 시간", example = "09:32")
         String totalTime
@@ -48,15 +50,7 @@ public record BrowsePlaylistDto(
                         SongDto.fromJsonList(card.getSongsJson()),
                         card.isRepresentative(),
                         card.getShareUrl(),
-                        new CdItemResponse(
-                                card.getCdItemId(),
-                                card.getPropId(),
-                                card.getXCoordinate(),
-                                card.getYCoordinate(),
-                                card.getZCoordinate(),
-                                card.getAngle(),
-                                card.getCdImageUrl()
-                        ),
+                        fromJsonList(card.getCdItemsJson()),
                         card.getTotalTime()
                 );
         }

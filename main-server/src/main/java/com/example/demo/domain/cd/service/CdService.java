@@ -39,17 +39,31 @@ public class CdService {
     private final PlaylistRepository playlistRepository;
     private final PropRepository propRepository;
 
-    public List<CdItemResponse> findAllCdItemOnCd (Long playlistId) {
+    public List<CdItemResponse> findAllCdItemOnCd(Long playlistId) {
         List<CdItemView> cdItemViewList = cdRepository.findAllByPlaylistWithImageKeys(playlistId);
-        return cdItemViewList.stream().map(v -> CdItemResponse.builder()
-                .cdItemId(v.cdId())
-                .propId(v.propId())
-                .xCoordinate(v.xCoordinate())
-                .yCoordinate(v.yCoordinate())
-                .zCoordinate(v.zCoordinate())
-                .angle(v.angle())
-                .imageUrl(r2Service.getPresignedUrl(v.imageKey()))
-                .build()).toList();
+        return cdItemViewList.stream()
+                .map(v -> {
+                    String imageUrl;
+                    if ("DEFAULT".equals(v.imageKey())) {
+                        imageUrl = "DEFAULT";
+                    } else {
+                        imageUrl = r2Service.getPresignedUrl(v.imageKey());
+                    }
+
+                    return CdItemResponse.builder()
+                            .cdItemId(v.cdId())
+                            .propId(v.propId())
+                            .theme(v.theme())
+                            .xCoordinate(v.xCoordinate())
+                            .yCoordinate(v.yCoordinate())
+                            .height(v.height())
+                            .width(v.width())
+                            .scale(v.scale())
+                            .angle(v.angle())
+                            .imageUrl(imageUrl)
+                            .build();
+                })
+                .toList();
     }
 
     public CdResponse getCdByPlaylistId (Long playlistId) {
@@ -59,7 +73,7 @@ public class CdService {
                 .build();
     }
 
-    public CdListResponseDto getAllCdByPlaylistIdList (List<Long> playlistIdList) {
+    public CdListResponseDto getAllCdByPlaylistIdList(List<Long> playlistIdList) {
         if (playlistIdList == null || playlistIdList.isEmpty()) {
             return new CdListResponseDto(List.of());
         }
@@ -70,18 +84,31 @@ public class CdService {
                 .collect(Collectors.groupingBy(
                         CdItemView::playlistId,
                         LinkedHashMap::new,
-                        Collectors.mapping(r -> CdItemResponse.builder()
-                                        .cdItemId(r.cdId())
-                                        .propId(r.propId())
-                                        .xCoordinate(r.xCoordinate())
-                                        .yCoordinate(r.yCoordinate())
-                                        .zCoordinate(r.zCoordinate())
-                                        .angle(r.angle())
-                                        .imageUrl(r2Service.getPresignedUrl(r.imageKey()))
-                                        .build(),
+                        Collectors.mapping(r -> {
+                                    String imageUrl;
+                                    if ("DEFAULT".equals(r.imageKey())) {
+                                        imageUrl = "DEFAULT";
+                                    } else {
+                                        imageUrl = r2Service.getPresignedUrl(r.imageKey());
+                                    }
+
+                                    return CdItemResponse.builder()
+                                            .cdItemId(r.cdId())
+                                            .propId(r.propId())
+                                            .theme(r.theme())
+                                            .xCoordinate(r.xCoordinate())
+                                            .yCoordinate(r.yCoordinate())
+                                            .height(r.height())
+                                            .width(r.width())
+                                            .scale(r.scale())
+                                            .angle(r.angle())
+                                            .imageUrl(imageUrl)
+                                            .build();
+                                },
                                 Collectors.toList()
                         )
                 ));
+
         List<CdResponse> cdResponses = byPlaylist.entrySet().stream()
                 .map(entry -> CdResponse.builder()
                         .playlistId(entry.getKey())
@@ -119,7 +146,9 @@ public class CdService {
                             .prop(prop)
                             .xCoordinate(cd.xCoordinate())
                             .yCoordinate(cd.yCoordinate())
-                            .zCoordinate(cd.zCoordinate())
+                            .height(cd.height())
+                            .width(cd.width())
+                            .scale(cd.scale())
                             .angle(cd.angle())
                             .build();
                 })

@@ -17,6 +17,9 @@ public class Prop extends BaseTimeEntity{
     @Column(name = "id", updatable = false )
     private Long id;
 
+    @Column(name = "theme")
+    private String theme;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Users users;
@@ -25,8 +28,9 @@ public class Prop extends BaseTimeEntity{
     private String imageKey;
 
     @Builder
-    public Prop(Users user, String imageKey) {
+    public Prop(Users user, String theme, String imageKey) {
         this.users = user;
+        this.theme = theme;
         this.imageKey = imageKey;
     }
 

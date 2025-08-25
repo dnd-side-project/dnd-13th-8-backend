@@ -36,6 +36,10 @@ public class SecurityConfig {
                                 "/api/health",
 
                                 //  Swagger 관련 경로
+                                "/main/swagger-ui/**",
+                                "/main/swagger/**",
+                                "/swagger/**",
+                                "/main/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
