@@ -93,7 +93,7 @@ public class JwtProvider {
 
     /* ========== 내부 구현 ========== */
 
-    private String buildToken(String userId, long ttlSeconds, Map<String, Object> extraClaims) {
+    public String buildToken(String userId, long ttlSeconds, Map<String, Object> extraClaims) {
         Instant now = Instant.now();
         Instant exp = now.plusSeconds(ttlSeconds);
 
@@ -142,7 +142,7 @@ public class JwtProvider {
         }
     }
 
-    private void validateSubject(String userId) {
+    public void validateSubject(String userId) {
         if (userId == null) {
             throw new JwtException("userId가 null 입니다.", JwtErrorCode.JWT_INVALID);
         }
