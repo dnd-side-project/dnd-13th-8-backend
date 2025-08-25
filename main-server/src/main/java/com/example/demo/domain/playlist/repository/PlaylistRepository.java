@@ -40,6 +40,15 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>{
 //    void clearPreviousRepresentative(String userId);
 
 
+    @Query("""
+        SELECT p
+        FROM Playlist p
+        WHERE p.users.id = :userId
+          AND p.id <> :excludeId
+        ORDER BY p.createdAt DESC
+    """)
+    Optional<Playlist> findNextRecent(String userId, Long excludeId);
+
     @Modifying
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
     int incrementVisitCount(@Param("id") Long id);
