@@ -187,7 +187,7 @@ public class PlaylistMyPageController {
     ) {
         Users user = usersService.findUserByShareCode(shareCode);
         RepresentativePlaylist representativePlaylist = representativePlaylistService.findRepresentativePlaylistByUserId(user.getId());
-        PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), representativePlaylist.getId());
+        PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), representativePlaylist.getPlaylist().getId());
         return ResponseEntity.ok(response);
     }
 
