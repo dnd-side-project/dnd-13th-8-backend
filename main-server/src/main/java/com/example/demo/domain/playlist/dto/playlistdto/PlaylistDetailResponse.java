@@ -24,12 +24,12 @@ public record PlaylistDetailResponse(
         @Schema(description = "플레이리스트 장르", example = "JAZZ")
         PlaylistGenre genre
 ) {
-    public static PlaylistDetailResponse from(Playlist playlist, List<SongDto> tracks) {
+    public static PlaylistDetailResponse from(Playlist playlist, List<SongDto> songs) {
         return new PlaylistDetailResponse(
                 playlist.getId(),
                 playlist.getName(),
                 playlist.isRepresentative(),
-                tracks,
+                songs,
                 playlist.getGenre()
         );
     }

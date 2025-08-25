@@ -19,5 +19,4 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     void deleteByPlaylistId(Long playlistId);
 
     List<Song> findByPlaylistId(Long id);
-
 }

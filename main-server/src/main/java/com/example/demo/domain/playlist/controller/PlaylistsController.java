@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
+import com.example.demo.domain.representative.service.RepresentativePlaylistService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,6 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlaylistsController {
 
     private final PlaylistMainPageService playlistMainPageService;
+    private final RepresentativePlaylistService representativePlaylistService;
+
+    @GetMapping("/representative")
+    @Operation(summary = "내 대표 플레이리스트 조회")
+    public ResponseEntity<PlaylistDetailResponse> getMyRepresentativePlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        PlaylistDetailResponse dto = representativePlaylistService.getMyRepresentativePlaylist(userDetails.getId());
+        return ResponseEntity.ok(dto);
+    }
 
     @Operation(
             summary = "플레이리스트 상세 조회 + 재생 기록 저장",
