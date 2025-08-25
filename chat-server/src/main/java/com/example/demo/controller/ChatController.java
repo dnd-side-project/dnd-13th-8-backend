@@ -41,7 +41,7 @@ public class ChatController {
     @GetMapping("/chat/rooms/{roomId}/count")
     @Operation(
             summary = "채팅방 참여자 수 조회",
-            description = "해당 채팅방의 현재 참여자 수를 반환합니다.",
+            description = "해당 채팅방의 현재 참여자 수를 1회 반환합니다. (소켓 X)",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
