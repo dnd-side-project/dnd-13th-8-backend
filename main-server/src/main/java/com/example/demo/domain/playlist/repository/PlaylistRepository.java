@@ -44,4 +44,5 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>{
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
     int incrementVisitCount(@Param("id") Long id);
 
+    Optional<Playlist> findTopByGenreOrderByVisitCountDesc(PlaylistGenre genre);
 }

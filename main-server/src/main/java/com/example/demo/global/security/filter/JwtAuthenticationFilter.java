@@ -1,8 +1,6 @@
 package com.example.demo.global.security.filter;
 
 import com.example.common.error.exception.JwtException;
-import com.example.demo.global.http.dto.CookieProps;
-import com.example.demo.global.http.util.CookieReader;
 import com.example.demo.global.jwt.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,17 +18,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
-    private final CookieReader cookieReader;
-    private final CookieProps props;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        var accessOpt = cookieReader.read(req, props.access().name());
-        if (accessOpt.isPresent()) {
+        String authHeader = req.getHeader("Authorization");
+        String token = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        if (token != null && !token.isBlank()) {
             try {
-                var jws = jwtProvider.validateAccess(accessOpt.get());
+                var jws = jwtProvider.validateAccess(token);
                 String userId = jws.getPayload().getSubject();
 
                 var ud = userDetailsService.loadUserByUsername(userId);
@@ -43,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 throw ex;
             }
         }
+
         chain.doFilter(req, res);
     }
 }

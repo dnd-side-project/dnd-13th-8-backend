@@ -20,8 +20,6 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
-    private final CookieReader cookieReader;
-    private final CookieProps props;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,7 +40,7 @@ public class SecurityConfig {
                 )
                 .anonymous(Customizer.withDefaults());
 
-        var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService,cookieReader, props);
+        var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

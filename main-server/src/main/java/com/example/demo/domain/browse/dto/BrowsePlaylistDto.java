@@ -1,5 +1,6 @@
 package com.example.demo.domain.browse.dto;
 
+import com.example.demo.domain.browse.entity.BrowsePlaylistCard;
 import com.example.demo.domain.cd.dto.response.CdItemResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,4 +35,30 @@ public record BrowsePlaylistDto(
 
         @Schema(description = "전체 곡 재생 시간", example = "09:32")
         String totalTime
-) {}
+) {
+        public static BrowsePlaylistDto from(BrowsePlaylistCard card) {
+                return new BrowsePlaylistDto(
+                        card.getPlaylistId(),
+                        card.getPlaylistTitle(),
+                        card.getGenre(),
+                        new CreatorDto(
+                                card.getCreatorId(),
+                                card.getCreatorName()
+                        ),
+                        SongDto.fromJsonList(card.getSongsJson()),
+                        card.isRepresentative(),
+                        card.getShareUrl(),
+                        new CdItemResponse(
+                                card.getCdItemId(),
+                                card.getPropId(),
+                                card.getXCoordinate(),
+                                card.getYCoordinate(),
+                                card.getZCoordinate(),
+                                card.getAngle(),
+                                card.getCdImageUrl()
+                        ),
+                        card.getTotalTime()
+                );
+        }
+
+}

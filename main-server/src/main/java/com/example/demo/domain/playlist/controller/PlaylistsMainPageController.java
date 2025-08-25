@@ -1,12 +1,8 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.playlist.dto.GenreDto;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
-import com.example.demo.domain.recommendation.dto.PlaylistRecommendationResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedGenresResponse;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistCard;
-import com.example.demo.domain.recommendation.dto.RecommendedPlaylistsWithSongsResponse;
+import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,50 +33,44 @@ public class PlaylistsMainPageController {
     @ApiResponse(
             responseCode = "200",
             description = "추천 플레이리스트 목록",
-            content = @Content(schema = @Schema(implementation = PlaylistRecommendationResponse.class))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCardResponse.class)))
     )
     @GetMapping("/recommendations/playlist")
-    public ResponseEntity<PlaylistRecommendationResponse> getRecommendations(
+    public ResponseEntity<List<PlaylistCardResponse>> getRecommendations(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        PlaylistRecommendationResponse response = playlistMainPageService.getRecommendations(user.getId());
+        List<PlaylistCardResponse> response = playlistMainPageService.getRecommendations(user.getId());
         return ResponseEntity.ok(response);
     }
 
     @Operation(
-            summary = "좋아요 기반 제작자 추천",
-            description = "내가 좋아요한 플레이리스트의 제작자를 기반으로 새로운 플레이리스트를 추천합니다."
+            summary = "팔로우 기반 추천",
+            description = "사용자가 아직 팔로우하지 않은 최신 플레이리스트를 추천합니다."
     )
     @ApiResponse(
             responseCode = "200",
             description = "추천된 플레이리스트 카드 목록",
-            content = @Content(schema = @Schema(implementation = RecommendedPlaylistsWithSongsResponse.class))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCardResponse.class)))
     )
-    @GetMapping("/recommendations/friend")
-    public ResponseEntity<List<PlaylistSearchDto>> getOwnerBasedRecommendations(
+    @GetMapping("/recommendations/follow")
+    public ResponseEntity<List<PlaylistCardResponse>> recommendFromLikedPlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<PlaylistSearchDto> playlistSearchDtos = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
-        return ResponseEntity.ok(playlistSearchDtos);
+        List<PlaylistCardResponse> response = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "추천 장르 조회",
-            description = "어제 인기 있는 장르 + 내 선호 장르를 종합하여 추천 장르를 반환합니다."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "추천 장르 목록",
-            content = @Content(schema = @Schema(implementation = RecommendedGenresResponse.class))
-    )
-    @GetMapping("/recommendations/genre")
-    public ResponseEntity<RecommendedGenresResponse> getRecommendedGenre(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails user
+
+    @Operation(summary = "추천 장르 기반 대표 플레이리스트 목록")
+    @ApiResponse(responseCode = "200", description = "추천 플레이리스트 상세 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistDetailResponse.class))))
+    @GetMapping("/recommendations/genres")
+    public ResponseEntity<List<PlaylistDetailResponse>> recommendGenres(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<GenreDto> genre = playlistMainPageService.recommendGenres(user.getId());
-        return ResponseEntity.ok(new RecommendedGenresResponse(genre));
+        return ResponseEntity.ok(playlistMainPageService.recommendGenres(user.getId()));
     }
+
 }

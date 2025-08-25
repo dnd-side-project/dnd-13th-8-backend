@@ -8,7 +8,7 @@ public record PlaylistSearchDto(
         String playlistName,
         String userId,
         String username,
-        List<SongDto> tracks
+        List<SongDto> songs
 ) implements SearchItem {
 
     @Override
