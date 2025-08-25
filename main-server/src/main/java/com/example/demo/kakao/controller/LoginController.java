@@ -65,15 +65,11 @@ public class LoginController {
                 .body(out.userId());
     }
 
-    @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급")
+    @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급 (test, test2, test3...)")
     @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
     @GetMapping("/auth/super")
-    public ResponseEntity<String> superLogin() {
-        Users users = new Users();
-        users.setUsername("admin");
-        Users saved = usersRepository.save(users);
-
-        String superToken = jwtProvider.issueAccess(saved.getId());
+    public ResponseEntity<String> superLogin(@RequestParam String userId) {
+        String superToken = jwtProvider.issueAccess(userId);
         return ResponseEntity.ok().body(superToken);
     }
 }
