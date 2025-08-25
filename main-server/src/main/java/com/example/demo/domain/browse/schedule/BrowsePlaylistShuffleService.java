@@ -89,7 +89,7 @@ public class BrowsePlaylistShuffleService {
             }
 
             CdItemResponse cdItem = cdMap.get(playlistId);
-            String shareUrl = "https://deulak.com/share/" + user.getId();
+            String shareUrl = "https://deulak.com/share/" + user.getShareCode();
             long totalSec = songs.stream().mapToLong(Song::getYoutubeLength).sum();
 
             BrowsePlaylistCard snapshot = BrowsePlaylistCard.builder()

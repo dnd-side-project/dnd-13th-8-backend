@@ -36,13 +36,8 @@ public class LoginController {
     private final RedisRefreshTokenStore redisRefreshTokenStore;
     private final UsersRepository usersRepository;
 
-    @Operation(
-            summary = "카카오 로그인",
-            description = "인가 코드(code) + code_verifier를 통해 카카오 인증을 처리하고 JWT 토큰을 쿠키로 발급합니다."
-    )
-    @ApiResponse(responseCode = "200", description = "로그인 성공 (Set-Cookie로 토큰 전송)")
     @PostMapping("/auth/login")
-    public ResponseEntity<String> kakaoLogin(
+    public ResponseEntity<KakaoLoginResponse> kakaoLogin(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(schema = @Schema(implementation = KakaoLoginRequest.class))
@@ -60,10 +55,11 @@ public class LoginController {
         );
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookies.create(out.jwtAccessToken()).toString())
+                // AccessToken은 쿠키 대신 body로 전달
                 .header(HttpHeaders.SET_COOKIE, refreshCookies.create(refresh).toString())
-                .body(out.userId());
+                .body(out);
     }
+
 
     @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급 (test, test2, test3...)")
     @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
