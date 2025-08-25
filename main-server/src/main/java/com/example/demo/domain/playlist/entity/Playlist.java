@@ -59,4 +59,8 @@ public class Playlist extends BaseTimeEntity {
         this.isRepresentative = true;
     }
 
+    public void addVisitCount(long delta) {
+        this.visitCount += delta;
+    }
+
 }

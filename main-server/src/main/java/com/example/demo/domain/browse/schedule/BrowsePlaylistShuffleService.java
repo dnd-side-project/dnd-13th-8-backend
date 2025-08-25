@@ -1,4 +1,4 @@
-package com.example.demo.domain.browse.service;
+package com.example.demo.domain.browse.schedule;
 
 import com.example.demo.domain.browse.entity.BrowsePlaylistCard;
 import com.example.demo.domain.browse.repository.BrowsePlaylistRepository;
