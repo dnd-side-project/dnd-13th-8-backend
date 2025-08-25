@@ -219,7 +219,7 @@ public class PlaylistMyPageController {
                     @ExampleObject(name = "shareCode", value = "\"PL-ABCD-1234\"")
             })
     )
-    @PostMapping("/me/{playlistId}/share")
+    @PostMapping("/me/share")
     public ResponseEntity<String> sharePlaylist(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user

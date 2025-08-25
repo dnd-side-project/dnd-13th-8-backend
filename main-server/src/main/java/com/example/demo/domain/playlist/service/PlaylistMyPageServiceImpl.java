@@ -143,7 +143,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         if (users.getShareCode() != null && !users.getShareCode().isBlank()) {
-            return users.getShareCode();
+            return "/shared/" + users.getShareCode();
         }
 
         String shareCode = ShareCodeGenerator.generate(userId);
