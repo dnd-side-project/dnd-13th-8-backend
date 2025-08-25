@@ -12,6 +12,7 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.util.ShareCodeGenerator;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.dto.SongMapper;
@@ -76,7 +77,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse savePlaylistWithSongs(String usersId, PlaylistCreateRequest request, String theme) {
+    public PlaylistWithSongsResponse savePlaylistWithSongs(String usersId, PlaylistCreateRequest request) {
         Playlist savedPlaylist = savePlaylist(usersId, request);
 
         List<Song> songsToSave = new ArrayList<>();
@@ -138,12 +139,21 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     @Transactional
     public String sharePlaylist(String userId) {
-        boolean exists = representativePlaylistRepository.existsByUser_Id(userId);
-        if (!exists) {
-            throw new IllegalStateException("대표 플레이리스트가 설정되어 있지 않습니다.");
+        Users users = usersRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        if (users.getShareCode() != null && !users.getShareCode().isBlank()) {
+            return users.getShareCode();
         }
-        return "/shared/" + userId;
+
+        String shareCode = ShareCodeGenerator.generate(userId);
+        users.assignShareCode(shareCode);
+
+        usersRepository.save(users);
+
+        return "/shared/" + shareCode;
     }
+
 
 
     @Override

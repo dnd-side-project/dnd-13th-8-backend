@@ -27,6 +27,10 @@ public class Users extends BaseTimeEntity {
 
     @Column(name = "username")
     private String username;
+
+    @Column(name = "share_code", unique = true)
+    private String shareCode;
+
 //
 //    @Column(name = "nickname")
 //    private String nickname;
@@ -35,6 +39,13 @@ public class Users extends BaseTimeEntity {
 //    private String profileUrl;
 
     private boolean enabled;
+
+    public void assignShareCode(String shareCode) {
+        if (this.shareCode != null) {
+            throw new IllegalStateException("이미 shareCode가 존재합니다.");
+        }
+        this.shareCode = shareCode;
+    }
 
     @Builder
     public Users(String kakaoId, String username, boolean enabled) {

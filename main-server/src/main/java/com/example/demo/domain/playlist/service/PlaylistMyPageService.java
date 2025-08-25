@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PlaylistMyPageService {
 
-    PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request, String theme);
+    PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request);
 
     List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
