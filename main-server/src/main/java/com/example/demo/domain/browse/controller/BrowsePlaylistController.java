@@ -1,11 +1,13 @@
 package com.example.demo.domain.browse.controller;
 
+import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
 import com.example.demo.domain.browse.dto.BrowseResponse;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.follow.service.PlaylistFollowService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,20 +28,20 @@ public class BrowsePlaylistController {
     private final BrowsePlaylistService browsePlaylistService;
     private final PlaylistFollowService playlistFollowService;
 
+
     @GetMapping
-    @Operation(summary = "커서 기반 플레이리스트 조회 (둘러보기)", description = "셔플된 플레이리스트 목록을 커서 기반으로 15개씩 반환합니다.")
+    @Operation(
+            summary = "셔플된 플레이리스트 목록 조회 (둘러보기)",
+            description = "매일 새벽 3시에 셔플된 대표 플레이리스트 카드 20개를 조회합니다."
+    )
     public ResponseEntity<BrowseResponse> browsePlaylists(
             @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails user,
-            @Parameter(description = "다음 페이지를 위한 커서 (기본값: 0)", example = "0")
-            @RequestParam(defaultValue = "0") int cursor,
-
-            @Parameter(description = "가져올 개수 (기본값: 15)", example = "15")
-            @RequestParam(defaultValue = "15") int size
+            @AuthenticationPrincipal CustomUserDetails user
     ) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(browsePlaylistService.getShuffledPlaylists(user.getId(), cursor, size));
+        BrowseResponse response = browsePlaylistService.getShuffledPlaylists(user.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 
     @PostMapping("/{playlistId}/follow")
     public ResponseEntity<Void> followPlaylist(

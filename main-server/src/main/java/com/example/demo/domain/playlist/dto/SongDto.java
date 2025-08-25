@@ -1,8 +1,11 @@
 package com.example.demo.domain.playlist.dto;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.util.DurationFormatUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Builder;
 
 @Schema(description = "간략한 곡 정보 DTO")
@@ -33,5 +36,14 @@ public record SongDto(
                 .youtubeThumbnail(song.getYoutubeThumbnail())
                 .youtubeLength(DurationFormatUtil.formatToHumanReadable(song.getYoutubeLength()))
                 .build();
+    }
+
+    public static List<SongDto> fromJsonList(String songsJson) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(songsJson, new TypeReference<>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("type 으로 변환 중 오루", e);
+        }
     }
 }
