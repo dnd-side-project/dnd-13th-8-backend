@@ -20,10 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,13 +38,31 @@ public class CdService {
 
     public List<CdItemResponse> findAllCdItemOnCd(Long playlistId) {
         List<CdItemView> cdItemViewList = cdRepository.findAllByPlaylistWithImageKeys(playlistId);
+
+        Map<String, String> imageKeyCache = new HashMap<>();
+
         return cdItemViewList.stream()
                 .map(v -> {
-                    String imageUrl;
-                    if ("DEFAULT".equals(v.imageKey())) {
-                        imageUrl = "DEFAULT";
-                    } else {
-                        imageUrl = r2Service.getPresignedUrl(v.imageKey());
+                    String key = v.imageKey();
+
+                    if ("DEFAULT".equalsIgnoreCase(key)) {
+                        return CdItemResponse.builder()
+                                .cdItemId(v.cdId())
+                                .propId(v.propId())
+                                .theme(v.theme())
+                                .xCoordinate(v.xCoordinate())
+                                .yCoordinate(v.yCoordinate())
+                                .height(v.height())
+                                .width(v.width())
+                                .scale(v.scale())
+                                .angle(v.angle())
+                                .imageUrl("DEFAULT")
+                                .build();
+                    }
+
+                    String imageUrl = null;
+                    if (key != null && !key.isBlank()) {
+                        imageUrl = imageKeyCache.computeIfAbsent(key, k -> r2Service.getPresignedUrl(k));
                     }
 
                     return CdItemResponse.builder()
@@ -66,6 +81,7 @@ public class CdService {
                 .toList();
     }
 
+
     public CdResponse getCdByPlaylistId (Long playlistId) {
         return CdResponse.builder()
                 .playlistId(playlistId)
@@ -80,16 +96,22 @@ public class CdService {
 
         List<CdItemView> cdItemViewList = cdRepository.findAllByPlaylistIdWithImageKeysIn(playlistIdList);
 
+        Map<String, String> imageKeyCache = new HashMap<>();
+
         var byPlaylist = cdItemViewList.stream()
                 .collect(Collectors.groupingBy(
                         CdItemView::playlistId,
                         LinkedHashMap::new,
                         Collectors.mapping(r -> {
+                                    String key = r.imageKey();
                                     String imageUrl;
-                                    if ("DEFAULT".equals(r.imageKey())) {
+
+                                    if ("DEFAULT".equalsIgnoreCase(key)) {
                                         imageUrl = "DEFAULT";
+                                    } else if (key != null && !key.isBlank()) {
+                                        imageUrl = imageKeyCache.computeIfAbsent(key, k -> r2Service.getPresignedUrl(k));
                                     } else {
-                                        imageUrl = r2Service.getPresignedUrl(r.imageKey());
+                                        imageUrl = null;
                                     }
 
                                     return CdItemResponse.builder()
