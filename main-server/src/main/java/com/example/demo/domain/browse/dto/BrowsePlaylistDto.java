@@ -13,7 +13,7 @@ public record BrowsePlaylistDto(
         Long playlistId,
 
         @Schema(description = "플레이리스트 이름", example = "잔잔한 피아노곡")
-        String name,
+        String playlistName,
 
         @Schema(description = "장르 이름", example = "JAZZ")
         String genre,
