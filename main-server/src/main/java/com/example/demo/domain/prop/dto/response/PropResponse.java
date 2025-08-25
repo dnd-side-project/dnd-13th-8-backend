@@ -1,4 +1,4 @@
 package com.example.demo.domain.prop.dto.response;
 
-public record PropResponse(Long propId, String imageUrl) {
+public record PropResponse(Long propId, String theme, String imageUrl) {
 }

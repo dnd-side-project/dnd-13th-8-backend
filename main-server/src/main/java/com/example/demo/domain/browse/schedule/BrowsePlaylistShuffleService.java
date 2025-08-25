@@ -62,8 +62,8 @@ public class BrowsePlaylistShuffleService {
         Collections.shuffle(playlistIds);
         List<Long> selectedIds = playlistIds.stream().limit(SHUFFLE_SIZE).toList();
 
-        // 3. CD Map 조회
-        Map<Long, CdItemResponse> cdMap = getCdMap(selectedIds);
+        // 3. CD Map 조회 (playlistId -> List<CdItemResponse>)
+        Map<Long, List<CdItemResponse>> cdItemsMap = getCdMap(selectedIds);
 
         // 4. 유저 조회
         Users user = usersRepository.findById(userId)
@@ -79,16 +79,25 @@ public class BrowsePlaylistShuffleService {
             List<Song> songs = songRepository.findByPlaylistId(playlistId);
             List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
-            // JSON 변환
+            // songsJson 변환
             String songsJson;
             try {
                 songsJson = objectMapper.writeValueAsString(songDtos);
             } catch (JsonProcessingException e) {
-                log.warn("곡 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId);
+                log.warn("곡 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
                 continue;
             }
 
-            CdItemResponse cdItem = cdMap.get(playlistId);
+            // cdItemsJson 변환
+            String cdItemsJson;
+            try {
+                List<CdItemResponse> cdItems = cdItemsMap.getOrDefault(playlistId, Collections.emptyList());
+                cdItemsJson = objectMapper.writeValueAsString(cdItems);
+            } catch (JsonProcessingException e) {
+                log.warn("CD 아이템 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
+                continue;
+            }
+
             String shareUrl = "https://deulak.com/share/" + user.getShareCode();
             long totalSec = songs.stream().mapToLong(Song::getYoutubeLength).sum();
 
@@ -100,16 +109,10 @@ public class BrowsePlaylistShuffleService {
                     .genre(playlist.getGenre().name())
                     .creatorId(playlist.getUsers().getId())
                     .creatorName(playlist.getUsers().getUsername())
-                    .cdItemId(cdItem != null ? cdItem.cdItemId() : null)
-                    .propId(cdItem != null ? cdItem.propId() : null)
-                    .xCoordinate(cdItem != null ? cdItem.xCoordinate() : null)
-                    .yCoordinate(cdItem != null ? cdItem.yCoordinate() : null)
-                    .zCoordinate(cdItem != null ? cdItem.zCoordinate() : null)
-                    .angle(cdItem != null ? cdItem.angle() : null)
-                    .cdImageUrl(cdItem != null ? cdItem.imageUrl() : null)
-                    .shareUrl(shareUrl)
-                    .isRepresentative(true)
                     .songsJson(songsJson)
+                    .cdItemsJson(cdItemsJson)  
+                    .isRepresentative(true)
+                    .shareUrl(shareUrl)
                     .totalTime(DurationFormatUtil.formatToHumanReadable(totalSec))
                     .build();
 
@@ -120,17 +123,13 @@ public class BrowsePlaylistShuffleService {
         log.info("유저 {} → BrowseSnapshot {}개 저장 완료", userId, snapshots.size());
     }
 
-    private Map<Long, CdItemResponse> getCdMap(List<Long> playlistIds) {
+    private Map<Long, List<CdItemResponse>> getCdMap(List<Long> playlistIds) {
         CdListResponseDto cdList = cdService.getAllCdByPlaylistIdList(playlistIds);
-        Map<Long, CdItemResponse> result = new HashMap<>();
-
+        Map<Long, List<CdItemResponse>> result = new HashMap<>();
         for (CdResponse cdResponse : cdList.cds()) {
-            Long playlistId = cdResponse.playlistId();
-            if (cdResponse.cdItems() != null && !cdResponse.cdItems().isEmpty()) {
-                result.put(playlistId, cdResponse.cdItems().get(0));
-            }
+            result.put(cdResponse.playlistId(),
+                    cdResponse.cdItems() != null ? cdResponse.cdItems() : Collections.emptyList());
         }
-
         return result;
     }
 }
