@@ -24,6 +24,6 @@ public record PlaylistCreateRequest(
 
         @Schema(description = "포함할 유튜브 영상 목록")
         @NotEmpty
-        List<YouTubeVideoInfoDto> songs
+        List<YouTubeVideoInfoDto> youTubeVideoInfo
 
 ) {}

@@ -19,7 +19,7 @@ public record PlaylistDetailResponse(
         boolean isRepresentative,
 
         @Schema(description = "플레이리스트에 포함된 곡 목록")
-        List<SongDto> tracks,
+        List<SongDto> songs,
 
         @Schema(description = "플레이리스트 장르", example = "JAZZ")
         PlaylistGenre genre

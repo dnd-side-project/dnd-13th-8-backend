@@ -81,7 +81,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         Playlist savedPlaylist = savePlaylist(usersId, request);
 
         List<Song> songsToSave = new ArrayList<>();
-        for (YouTubeVideoInfoDto dto : request.songs()) {
+        for (YouTubeVideoInfoDto dto : request.youTubeVideoInfo()) {
             songsToSave.add(SongMapper.toEntity(dto, savedPlaylist));
         }
 

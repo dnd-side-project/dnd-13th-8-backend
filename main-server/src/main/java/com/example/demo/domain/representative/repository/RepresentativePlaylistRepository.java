@@ -31,4 +31,11 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
         ORDER BY p.createdAt DESC
         """)
     List<RepresentativePlaylist> findByGenreOrderByCreatedAtDesc(@Param("genre") PlaylistGenre genre, Pageable pageable);
+
+    @Query("""
+    SELECT rp.playlist.id
+    FROM RepresentativePlaylist rp
+    """)
+    List<Long> findAllPlaylistIds();
+
 }

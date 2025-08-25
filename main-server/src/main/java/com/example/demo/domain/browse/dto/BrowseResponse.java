@@ -7,11 +7,5 @@ import java.util.List;
 public record BrowseResponse(
 
         @Schema(description = "플레이리스트 목록", required = true)
-        List<BrowsePlaylistDto> playlists,
-
-        @Schema(description = "다음 커서. -1이면 마지막 페이지", example = "15")
-        int nextCursor,
-
-        @Schema(description = "다음 페이지 존재 여부", example = "true")
-        boolean hasNext
+        List<BrowsePlaylistDto> playlists
 ) {}
