@@ -24,8 +24,8 @@ public record SongDto(
         @Schema(description = "썸네일 이미지 URL", example = "https://img.youtube.com/vi/abc123/hqdefault.jpg")
         String youtubeThumbnail,
 
-        @Schema(description = "유튜브 영상 길이", example = "MM:SS")
-        String youtubeLength
+        @Schema(description = "유튜브 영상 길이", example = "SS")
+        Long youtubeLength
 
 ) {
     public static SongDto from(Song song) {
@@ -34,7 +34,7 @@ public record SongDto(
                 .title(song.getYoutubeTitle())
                 .youtubeUrl(song.getYoutubeUrl())
                 .youtubeThumbnail(song.getYoutubeThumbnail())
-                .youtubeLength(DurationFormatUtil.formatToHumanReadable(song.getYoutubeLength()))
+                .youtubeLength(song.getYoutubeLength())
                 .build();
     }
 
