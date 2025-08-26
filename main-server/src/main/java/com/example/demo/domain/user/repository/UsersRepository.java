@@ -15,4 +15,6 @@ public interface UsersRepository extends JpaRepository<Users, String> {
     Optional<Users> findUsersByShareCode(String shareCode);
 
     boolean existsByUsername(String nickname);
+
+    Optional<Users> findByKakaoId(String kakaoId);
 }
