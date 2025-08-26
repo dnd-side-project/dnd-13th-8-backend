@@ -9,21 +9,25 @@ import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
+import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
@@ -34,6 +38,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     private final SongRepository songRepository;
 
     private static final int RECOMMENDATION_LIMIT = 3;
+    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override
     @Transactional
@@ -69,9 +74,9 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
         List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
 
         if (genreBased.isEmpty()) {
-            basePlaylists = userPlaylistHistoryRepository.findByVisitCount(6);
+            basePlaylists = representativePlaylistRepository.findByVisitCount(6);
         } else {
-            List<Playlist> visitCountTop3 = userPlaylistHistoryRepository.findByVisitCount(3);
+            List<Playlist> visitCountTop3 = representativePlaylistRepository.findByVisitCount(3);
             basePlaylists = new ArrayList<>();
             basePlaylists.addAll(genreBased);
             basePlaylists.addAll(visitCountTop3);
@@ -109,38 +114,48 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
                 .toList();
     }
 
-
-
     @Override
     public List<PlaylistDetailResponse> recommendGenres(String userId) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
-        Set<PlaylistGenre> genres = new LinkedHashSet<>(userPlaylistHistoryRepository.findTopGenresByDate(yesterday));
+        Set<PlaylistGenre> genres = new LinkedHashSet<>();
 
+        // 1차: 어제 가장 많이 들은 장르
+        List<PlaylistGenre> topGenres = userPlaylistHistoryRepository.findTopGenresByDate(yesterday);
+        genres.addAll(topGenres);
+
+        // 2차: 유저가 자주 들은 장르
         if (genres.size() < 6) {
-            for (PlaylistGenre genre : userPlaylistHistoryRepository.findMostPlayedGenresByUser(userId)) {
+            List<PlaylistGenre> userGenres = userPlaylistHistoryRepository.findMostPlayedGenresByUser(userId);
+            for (PlaylistGenre genre : userGenres) {
                 if (genres.size() >= 6) break;
                 genres.add(genre);
             }
         }
 
+        // 3차: 장르 미충족 시 전체 장르에서 보완
         if (genres.size() < 6) {
             for (PlaylistGenre genre : PlaylistGenre.values()) {
-                if (genres.size() >= 6) break;
                 genres.add(genre);
             }
         }
 
-        return genres.stream()
-                .limit(6)
-                .map(genre -> {
-                    Playlist playlist = playlistRepository.findTopByGenreOrderByVisitCountDesc(genre)
-                            .orElseThrow(() -> new IllegalStateException("No playlist found for genre: " + genre));
-                    List<SongDto> songs = songRepository.findSongsByPlaylistId(playlist.getId())
-                            .stream().map(SongDto::from).toList();
-                    return PlaylistDetailResponse.from(playlist, songs);
-                })
-                .toList();
+        // 후보 장르 기반으로 playlist 후보 조회
+        List<Playlist> candidates = representativePlaylistRepository.findTopVisitedRepresentativePlaylistsByGenres(genres);
+        List<PlaylistDetailResponse> result = new ArrayList<>();
+        Set<PlaylistGenre> selectedGenres = new HashSet<>();
+
+        for (Playlist playlist : candidates) {
+            if (selectedGenres.contains(playlist.getGenre())) continue;
+            selectedGenres.add(playlist.getGenre());
+            List<SongDto> songs = songRepository.findSongsByPlaylistId(playlist.getId())
+                    .stream().map(SongDto::from).toList();
+            result.add(PlaylistDetailResponse.from(playlist, songs));
+            if (result.size() >= 6) break;
+        }
+        return result;
     }
+
+
 
 }
 

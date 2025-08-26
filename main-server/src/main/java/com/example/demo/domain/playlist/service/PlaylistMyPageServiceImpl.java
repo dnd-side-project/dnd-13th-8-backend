@@ -15,7 +15,7 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.playlist.util.ShareCodeGenerator;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
+import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
 import com.example.demo.domain.song.dto.SongMapper;
 import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
@@ -37,7 +37,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
     private final UsersRepository usersRepository;
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
+    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
     private final FollowRepository followRepository;
 
     private static final int DEFAULT_LIMIT = 20;
