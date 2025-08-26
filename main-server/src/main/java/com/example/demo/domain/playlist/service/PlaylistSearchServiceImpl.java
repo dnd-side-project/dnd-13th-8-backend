@@ -9,7 +9,7 @@ import com.example.demo.domain.playlist.dto.search.SearchItem;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
+import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
+    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override
     @Transactional(readOnly = true)

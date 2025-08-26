@@ -1,22 +1,23 @@
 package com.example.demo.domain.recommendation.repository;
 
+import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.follow.entity.QFollow;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.SongDto;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
 import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.song.entity.QSong;
-import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.user.entity.QUsers;
-import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHistoryRepositoryCustom {
@@ -43,29 +44,17 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
         if (topGenre == null) return List.of();
 
         return queryFactory
-                .select(rp.playlist)
+                .select(rp) //  select owner entity
                 .from(rp)
                 .join(rp.playlist, playlist).fetchJoin()
                 .join(playlist.users, u).fetchJoin()
                 .where(playlist.genre.eq(topGenre))
                 .orderBy(playlist.visitCount.desc())
                 .limit(limit)
-                .fetch();
-    }
-
-    @Override
-    public List<Playlist> findByVisitCount(int limit) {
-        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
-        QUsers u = QUsers.users;
-
-        return queryFactory
-                .select(rp.playlist)
-                .from(rp)
-                .join(rp.playlist, playlist).fetchJoin()
-                .join(playlist.users, u).fetchJoin()
-                .orderBy(playlist.visitCount.desc())
-                .limit(limit)
-                .fetch();
+                .fetch()
+                .stream()
+                .map(RepresentativePlaylist::getPlaylist)
+                .toList();
     }
 
 
