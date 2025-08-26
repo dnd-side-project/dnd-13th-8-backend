@@ -50,18 +50,7 @@ public class LoginController {
     ) {
         KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier());
 
-        String refresh = jwtRefreshIssuer.issueRefresh(out.userId());
-        String jti = jwtProvider.jti(refresh);
-
-        redisRefreshTokenStore.putSessionJti(
-                out.userId(),
-                jti,
-                Duration.ofDays(jwtProps.refreshTtlDays())
-        );
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, refreshCookies.create(refresh).toString())
-                .body(out);
+        return ResponseEntity.ok().body(out);
     }
 
     @Operation(summary = "슈퍼 로그인 (임시 개발용)", description = "슈퍼 계정용 Access 토큰 발급 (test, test2, test3...)")
