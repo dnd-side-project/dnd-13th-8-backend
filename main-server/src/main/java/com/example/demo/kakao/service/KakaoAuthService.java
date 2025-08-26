@@ -34,9 +34,14 @@ public class KakaoAuthService {
                 "authorization_code",
                 clientId,
                 code,
+                redirectUri,       //
                 codeVerifier
         );
-        log.debug("Kakao token issued (expiresIn={}s)", token.expires_in());
+
+
+        log.info("[KakaoAuth] 카카오 토큰 응답 수신: access_token={}, expires_in={}s, refresh_token={}",
+                token.access_token(), token.expires_in(), token.refresh_token());
+
         return token;
     }
 

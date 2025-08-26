@@ -13,6 +13,7 @@ public interface KakaoAuthHttp {
             @RequestParam("grant_type") String grantType,        // "authorization_code"
             @RequestParam("client_id") String clientId,
             @RequestParam("code") String code,
+            @RequestParam("redirect_uri") String redirectUri,    //  필수: 추가됨
             @RequestParam("code_verifier") String codeVerifier   // PKCE
     );
 }
