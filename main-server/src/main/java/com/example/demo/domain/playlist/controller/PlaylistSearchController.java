@@ -43,8 +43,9 @@ public class PlaylistSearchController {
             @Parameter(description = "플레이리스트 장르", example = "SLEEP")
             @RequestParam(name = "genre") PlaylistGenre genre,
 
-            @Parameter(description = "결과 개수 제한 (optional)", example = "20")
-            @RequestParam(name = "limit", required = false) Integer limit
+            @Parameter(description = "결과 개수 제한 (optional)", example = "10")
+            @RequestParam(name = "limit", defaultValue = "10") Integer limit
+
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(playlistSearchService.searchByGenre(genre, sort, limit));
     }
@@ -67,7 +68,7 @@ public class PlaylistSearchController {
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort,
 
             @Parameter(description = "결과 개수 제한 (optional)", example = "10")
-            @RequestParam(required = false) Integer limit
+            @RequestParam(name = "limit", defaultValue = "10") Integer limit
     ) {
         CombinedSearchResponse combinedSearchResponse = playlistSearchService.searchAll(query, sort, limit);
         return ResponseEntity.status(HttpStatus.OK).body(combinedSearchResponse);
