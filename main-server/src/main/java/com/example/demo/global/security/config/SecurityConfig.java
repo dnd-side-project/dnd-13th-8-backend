@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/webjars/**"
                         ).permitAll()
-
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         //  마이페이지는 user/super 권한만 허용
                         .requestMatchers("/main/mypage/**").hasAnyAuthority("ROLE_USER", "ROLE_SUPER")
 
