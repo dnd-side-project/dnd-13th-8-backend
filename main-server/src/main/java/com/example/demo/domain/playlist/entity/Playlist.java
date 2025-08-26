@@ -49,7 +49,7 @@ public class Playlist extends BaseTimeEntity {
     public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre) {
         this.genre = genre;
         this.name = name;
-        this.visitCount = visitCount;
+        this.visitCount = (visitCount != null) ? visitCount : 0L;
         this.isRepresentative = isRepresentative;
         this.users = users;
     }
