@@ -102,17 +102,48 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
      */
     @Override
     public List<PlaylistCardResponse> recommendFromLikedPlaylists(String myUserId) {
-        List<Playlist> playlists = userPlaylistHistoryRepository.findRecommendedPlaylistsByUser(myUserId, RECOMMENDATION_LIMIT);
+        // 1. 내가 팔로우한 유저들의 대표 플레이리스트 ID 조회
+        List<Long> basePlaylistIds = playlistRepository.findFollowedRepresentativePlaylistIds(myUserId);
 
-        List<Long> ids = playlists.stream().map(Playlist::getId).toList();
-        Map<Long, List<Song>> songMap = songRepository.findAllByPlaylistIdIn(ids)
-                .stream()
-                .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
+        List<Playlist> resultPlaylists;
 
-        return playlists.stream()
+        if (basePlaylistIds.isEmpty()) {
+            resultPlaylists = playlistRepository.findLatestRepresentativePlaylists(myUserId, List.of(), RECOMMENDATION_LIMIT);
+        } else {
+            // 2. 유사한 곡 기반 추천
+            List<Playlist> basePlaylists = playlistRepository.findPlaylistsBySimilarSongs(
+                    basePlaylistIds, myUserId, basePlaylistIds, RECOMMENDATION_LIMIT
+            );
+
+            // 3. 부족하면 fallback으로 채우기
+            int remain = RECOMMENDATION_LIMIT - basePlaylists.size();
+            if (remain > 0) {
+                List<Long> excludeIds = new ArrayList<>(basePlaylistIds);
+                excludeIds.addAll(basePlaylists.stream().map(Playlist::getId).toList());
+
+                List<Playlist> fallback = playlistRepository.findLatestRepresentativePlaylists(
+                        myUserId,
+                        excludeIds,
+                        remain
+                );
+
+                basePlaylists.addAll(fallback);
+            }
+
+            resultPlaylists = basePlaylists;
+        }
+
+        // 4. 곡 매핑
+        List<Long> ids = resultPlaylists.stream().map(Playlist::getId).toList();
+        Map<Long, List<Song>> songMap = songRepository.findAllByPlaylistIdIn(ids).stream()
+                .collect(Collectors.groupingBy(song -> song.getPlaylist().getId()));
+
+        // 5. 응답 매핑
+        return resultPlaylists.stream()
                 .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of())))
                 .toList();
     }
+
 
     @Override
     public List<PlaylistDetailResponse> recommendGenres(String userId) {

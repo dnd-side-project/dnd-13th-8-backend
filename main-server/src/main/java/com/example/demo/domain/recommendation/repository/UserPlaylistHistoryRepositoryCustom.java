@@ -15,11 +15,6 @@ public interface UserPlaylistHistoryRepositoryCustom {
 
 
     /*
-    2번째
-     */
-    List<Playlist> findRecommendedPlaylistsByUser(String userId, int limit);
-
-    /*
     3번째
      */
     //전날(또는 특정 날짜)의 사용자 재생 기록을 기반으로 인기 장르 TOP 6 조회

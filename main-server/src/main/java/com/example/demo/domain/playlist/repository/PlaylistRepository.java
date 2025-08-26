@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PlaylistRepository extends JpaRepository<Playlist, Long>{
+public interface PlaylistRepository extends JpaRepository<Playlist, Long>, PlaylistRepositoryCustom {
 
     @Query("""
     SELECT p FROM Playlist p

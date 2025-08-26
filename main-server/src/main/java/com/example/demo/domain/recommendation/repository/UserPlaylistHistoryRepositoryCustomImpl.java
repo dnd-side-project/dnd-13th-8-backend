@@ -86,45 +86,4 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .fetch();
     }
 
-    @Override
-    public List<Playlist> findRecommendedPlaylistsByUser(String userId, int limit) {
-        QFollow f = QFollow.follow;
-        QUsers u = QUsers.users;
-
-        List<Long> followedPlaylistIds = queryFactory
-                .select(f.playlist.id)
-                .from(f)
-                .where(f.users.id.eq(userId))
-                .fetch();
-
-        List<Playlist> basePlaylists = queryFactory
-                .selectFrom(playlist)
-                .join(playlist.users, u).fetchJoin()
-                .where(
-                        playlist.id.notIn(followedPlaylistIds),
-                        playlist.users.id.ne(userId)
-                )
-                .orderBy(playlist.createdAt.desc())
-                .limit(limit)
-                .fetch();
-
-        int remain = limit - basePlaylists.size();
-        if (remain > 0) {
-            List<Playlist> fallback = queryFactory
-                    .selectFrom(playlist)
-                    .join(playlist.users, u).fetchJoin()
-                    .where(
-                            playlist.id.notIn(followedPlaylistIds),
-                            playlist.users.id.ne(userId),
-                            playlist.id.notIn(basePlaylists.stream().map(Playlist::getId).toList())
-                    )
-                    .orderBy(playlist.createdAt.desc())
-                    .limit(remain)
-                    .fetch();
-
-            basePlaylists.addAll(fallback);
-        }
-
-        return basePlaylists;
-    }
 }
