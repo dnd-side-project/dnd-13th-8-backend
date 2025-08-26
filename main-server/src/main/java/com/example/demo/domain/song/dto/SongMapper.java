@@ -46,7 +46,7 @@ public class SongMapper {
                         song.getYoutubeTitle(),
                         song.getYoutubeUrl(),
                         song.getYoutubeThumbnail(),
-                        DurationFormatUtil.formatToHumanReadable(song.getYoutubeLength())
+                        song.getYoutubeLength()
                 ))
                 .collect(Collectors.toList());
     }
