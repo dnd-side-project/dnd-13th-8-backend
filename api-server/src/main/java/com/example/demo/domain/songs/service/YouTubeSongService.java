@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 
 public interface YouTubeSongService {
 
-    Mono<List<SongResponseDto>> saveReactiveSongs(List<YouTubeVideoInfoDto> links, Long playlistId);
 
     Flux<YouTubeVideoInfoDto> fetchYouTubeInfo(List<String> links);
 }

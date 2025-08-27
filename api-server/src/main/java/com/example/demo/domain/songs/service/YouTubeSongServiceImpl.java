@@ -2,12 +2,9 @@ package com.example.demo.domain.songs.service;
 
 import com.example.demo.domain.songs.controller.YouTubeApiHttp;
 import com.example.demo.domain.songs.dto.SongMapper;
-import com.example.demo.domain.songs.dto.SongResponseDto;
 import com.example.demo.domain.songs.dto.YouTubeVideoInfoDto;
-import com.example.demo.domain.songs.entity.Song;
-import com.example.demo.domain.songs.repository.SongRepository;
-import java.util.List;
-import java.util.Map;
+import com.example.demo.domain.songs.dto.YouTubeVideoResponse;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -15,33 +12,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class YouTubeSongServiceImpl implements YouTubeSongService {
 
     private final YouTubeApiHttp youTubeApiHttp;
-    private final SongRepository songRepository;
 
     @Value("${youtube.api.key}")
     private String apiKey;
 
-    public Mono<List<SongResponseDto>> saveReactiveSongs(List<YouTubeVideoInfoDto> links, Long playlistId) {
-        List<Song> songs = links.stream()
-                .map(link -> SongMapper.toEntity(link, playlistId))
-                .toList();
-
-        return songRepository.saveAll(songs)
-                .map(SongMapper::toDto) // 저장된 각 Song → DTO로 변환
-                .collectList();         // Flux<SongResponseDto> → Mono<List<SongResponseDto>>
-    }
-
-
     /**
-     * 여러 유튜브 링크를 받아 영상 정보를 조회합니다.
+     * 프론트가 보낸 링크 순서를 그대로 유지하면서
+     * 유효하지 않은 링크는 valid=false로 처리하여 반환합니다.
      */
     public Flux<YouTubeVideoInfoDto> fetchYouTubeInfo(List<String> links) {
+        // 유효한 링크들만 videoId 추출
         Map<String, String> linkToVideoId = links.stream()
                 .filter(this::isValidYouTubeUrl)
                 .collect(Collectors.toMap(
@@ -53,20 +39,40 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
 
         return youTubeApiHttp.getVideoInfo("snippet,contentDetails", joinedVideoIds, apiKey)
                 .flatMapMany(response -> {
-                    if (response.items() == null || response.items().isEmpty()) {
-                        return Flux.error(new IllegalArgumentException("유효한 영상이 없습니다."));
+                    Map<String, YouTubeVideoResponse.Item> itemMap = Optional.ofNullable(response.items())
+                            .orElse(List.of()) // null 방지
+                            .stream()
+                            .collect(Collectors.toMap(
+                                    YouTubeVideoResponse.Item::id,
+                                    Function.identity()
+                            ));
+
+                    List<YouTubeVideoInfoDto> result = new ArrayList<>();
+
+                    for (String link : links) {
+                        if (!isValidYouTubeUrl(link)) {
+                            result.add(YouTubeVideoInfoDto.invalid(link));
+                            continue;
+                        }
+
+                        String videoId = linkToVideoId.get(link);
+                        YouTubeVideoResponse.Item item = itemMap.get(videoId);
+
+                        if (item == null) {
+                            result.add(YouTubeVideoInfoDto.invalid(link));
+                            continue;
+                        }
+
+                        String title = item.snippet().title();
+                        String thumbnailUrl = item.snippet().thumbnails().high().url();
+                        String duration = item.contentDetails().duration();
+
+                        result.add(YouTubeVideoInfoDto.valid(link, title, thumbnailUrl, duration));
                     }
 
-                    return Flux.fromIterable(response.items())
-                            .map(item -> {
-                                String videoId = item.id();
-                                String originalLink = getLinkFromVideoId(linkToVideoId, videoId);
-                                return SongMapper.toDto(item, originalLink);
-                            });
+                    return Flux.fromIterable(result);
                 });
-
     }
-
 
     private boolean isValidYouTubeUrl(String url) {
         return url != null && url.matches("^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/)[\\w-]{11}.*$");
@@ -81,13 +87,4 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
         }
         return null;
     }
-
-    private String getLinkFromVideoId(Map<String, String> map, String videoId) {
-        return map.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(videoId))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse("");
-    }
-
 }
