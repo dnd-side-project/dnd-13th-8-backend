@@ -59,7 +59,7 @@ public class PlaylistSearchController {
     @ApiResponse(
             responseCode = "200",
             description = "검색된 플레이리스트 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistSearchResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = CombinedSearchResponse.class)))
     )
     @GetMapping("/title")
     public ResponseEntity<CombinedSearchResponse> searchByTitle(
@@ -76,14 +76,30 @@ public class PlaylistSearchController {
         return ResponseEntity.status(HttpStatus.OK).body(combinedSearchResponse);
     }
 
+        @Operation(
+                summary = "인기 검색어 조회",
+                description = """
+            Redis에 저장된 검색어를 조회 수 기준으로 정렬하여 반환합니다.
+            range는 'today', '7d', '30d' 중 하나로 지정할 수 있으며, 기본값은 'today'입니다.
+            Redis 데이터가 없을 경우 기본 디폴트 검색어가 fallback으로 제공됩니다.
+        """
+        )
+        @ApiResponse(
+                responseCode = "200",
+                description = "인기 검색어 조회 성공",
+                content = @Content(schema = @Schema(implementation = PopularSearchResponse.class))
+        )
+        @GetMapping("/popular")
+        public ResponseEntity<PopularSearchResponse> getPopularSearchTerms(
+                @Parameter(description = "조회 범위 (today, 7d, 30d)", example = "today")
+                @RequestParam(defaultValue = "today") String range,
 
-    @GetMapping("/popular")
-    public ResponseEntity<PopularSearchResponse> getPopularSearchTerms(
-            @RequestParam(defaultValue = "today") String range,
-            @RequestParam(defaultValue = "10") int limit
-    ) {
-        List<PopularItem> terms = playlistSearchService.getPopularTerms(range, limit);
-        PopularSearchResponse response = new PopularSearchResponse(range, limit, terms);
-        return ResponseEntity.ok(response);
-    }
+                @Parameter(description = "최대 검색어 개수", example = "10")
+                @RequestParam(defaultValue = "10") int limit
+        ) {
+            List<PopularItem> terms = playlistSearchService.getPopularTerms(range, limit);
+            PopularSearchResponse response = new PopularSearchResponse(range, limit, terms);
+            return ResponseEntity.ok(response);
+        }
+
 }

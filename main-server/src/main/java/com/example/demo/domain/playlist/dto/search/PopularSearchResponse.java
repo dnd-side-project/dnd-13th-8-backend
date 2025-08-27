@@ -1,8 +1,15 @@
 package com.example.demo.domain.playlist.dto.search;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
+@Schema(description = "인기 검색어 응답")
 public record PopularSearchResponse(
-        String range,                     // 조회 범위 (예: "today", "7d", "30d")
-        int limit,                        // 요청한 최대 개수
-        List<PopularItem> keywords       // 인기 검색어 리스트
+        @Schema(description = "조회 범위", example = "today")
+        String range,
+
+        @Schema(description = "조회 개수", example = "10")
+        int limit,
+
+        @Schema(description = "인기 검색어 리스트")
+        List<PopularItem> keywords
 ) {}
