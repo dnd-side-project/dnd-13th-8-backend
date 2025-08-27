@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface PlaylistSearchService {
 
-    CursorPageResponse<PlaylistSearchResponse> searchByGenre(
+    CursorPageResponse<PlaylistSearchResponse, Long> searchByGenre(
             PlaylistGenre genre,
             PlaylistSortOption sort,
             Long cursorId,
