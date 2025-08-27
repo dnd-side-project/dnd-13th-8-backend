@@ -31,12 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
 
     private final AuthService authService;
-    private final JwtProvider jwtProvider;
-    private final JwtProps jwtProps;
-    private final RefreshTokenCookieService refreshCookies;
-    private final RedisRefreshTokenStore redisRefreshTokenStore;
     private final UsersRepository usersRepository;
-    private final JwtRefreshIssuer jwtRefreshIssuer;
     private final JwtAccessIssuer jwtAccessIssuer;
     private final NicknameGenerator nicknameGenerator;
 
@@ -72,9 +67,8 @@ public class LoginController {
     @ApiResponse(responseCode = "200", description = "익명 토큰 발급 성공")
     @GetMapping("/auth/anonymous")
     public ResponseEntity<String> anonymousLogin() {
-        String nickname = nicknameGenerator.generateUniqueNickname();
         Users user = new Users();
-        user.setUsername(nickname);
+        user.setUsername("anonymous");
         user.setRole(JwtRoleType.ANONYMOUS);
         user.setProfileUrl("NULL");
         Users savedUser = usersRepository.save(user);

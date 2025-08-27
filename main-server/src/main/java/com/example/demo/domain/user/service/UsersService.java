@@ -32,9 +32,6 @@ public class UsersService {
 
         // 닉네임 업데이트 (중복 체크 포함)
         if (req.nickname() != null && !req.nickname().isBlank()) {
-            if (usersRepository.existsByUsername(req.nickname())) {
-                throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-            }
             user.changeNickname(req.nickname());
         }
 

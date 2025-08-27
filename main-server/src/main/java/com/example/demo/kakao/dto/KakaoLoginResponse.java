@@ -11,6 +11,9 @@ public record KakaoLoginResponse(
         @Schema(description = "사용자 이름", example = "홍길동")
         String username,
 
+        @Schema(description = "사용자 프로필 이미지 URL", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
+        String userProfileImageUrl,
+
         @Schema(description = "JWT Access Token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
         String jwtAccessToken
 ) {}
