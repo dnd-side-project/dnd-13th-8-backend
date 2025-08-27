@@ -69,7 +69,6 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
 
                         result.add(YouTubeVideoInfoDto.valid(link, title, thumbnailUrl, duration));
                     }
-
                     return Flux.fromIterable(result);
                 });
     }
