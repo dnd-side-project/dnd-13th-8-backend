@@ -4,6 +4,8 @@ import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
+import com.example.demo.domain.playlist.dto.search.PopularItem;
+import com.example.demo.domain.playlist.dto.search.PopularSearchResponse;
 import com.example.demo.domain.playlist.service.PlaylistSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -72,5 +74,16 @@ public class PlaylistSearchController {
     ) {
         CombinedSearchResponse combinedSearchResponse = playlistSearchService.searchAll(query, sort, limit);
         return ResponseEntity.status(HttpStatus.OK).body(combinedSearchResponse);
+    }
+
+
+    @GetMapping("/popular")
+    public ResponseEntity<PopularSearchResponse> getPopularSearchTerms(
+            @RequestParam(defaultValue = "today") String range,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<PopularItem> terms = playlistSearchService.getPopularTerms(range, limit);
+        PopularSearchResponse response = new PopularSearchResponse(range, limit, terms);
+        return ResponseEntity.ok(response);
     }
 }

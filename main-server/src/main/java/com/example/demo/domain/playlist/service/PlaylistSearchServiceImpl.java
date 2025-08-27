@@ -5,24 +5,50 @@ import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.dto.search.PopularItem;
+import com.example.demo.domain.playlist.dto.search.PopularSearchResponse;
 import com.example.demo.domain.playlist.dto.search.SearchItem;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
 @RequiredArgsConstructor
 public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
+    private final StringRedisTemplate redis;
+
+    // 기본 인기 검색어 (Redis 데이터가 없을 때 fallback)
+    private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
+            new PopularItem("여름", 100),
+            new PopularItem("바캉스 플리", 95),
+            new PopularItem("카페 재즈 플레이리스트", 90),
+            new PopularItem("여름청량팝", 85),
+            new PopularItem("감성 힙합", 80),
+            new PopularItem("최맛 여자아이돌 모음", 75),
+            new PopularItem("드라이브", 70),
+            new PopularItem("K-POP", 65),
+            new PopularItem("인디밴드음악", 60)
+    );
+
 
     @Override
     @Transactional(readOnly = true)
@@ -73,4 +99,33 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     }
 
 
+    @Override
+    public List<PopularItem> getPopularTerms(String range, int limit) {
+        String redisKey = resolveKeyFromRange(range);
+
+        // Redis ZSET에서 인기 검색어 가져오기
+        Set<TypedTuple<String>> raw =
+                redis.opsForZSet().reverseRangeWithScores(redisKey, 0, limit - 1);
+
+        // fallback 처리
+        if (raw == null || raw.isEmpty()) {
+            return DEFAULT_POPULAR_TERMS.stream().limit(limit).toList();
+        }
+
+        return raw.stream()
+                .map(tuple -> new PopularItem(tuple.getValue(), tuple.getScore().longValue()))
+                .toList();
+    }
+
+    // range 값에 따른 Redis 키 생성
+    private String resolveKeyFromRange(String range) {
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        return switch (range) {
+            case "7d" -> "pop:term:" + now.minusDays(7) + ":" + now;  // 향후 확장 고려
+            case "30d" -> "pop:term:" + now.minusDays(30) + ":" + now;
+            default -> "pop:term:" + now;
+        };
+    }
 }
+
+
