@@ -54,4 +54,17 @@ public class Users extends BaseTimeEntity {
         this.role = role;
         this.profileUrl = profileUrl;
     }
+
+    // 닉네임 변경 메서드
+    public void changeNickname(String newNickname) {
+        if (newNickname == null || newNickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임은 비어있을 수 없습니다.");
+        }
+        this.username = newNickname;
+    }
+
+    // 프로필 이미지 변경 메서드
+    public void changeProfileImage(String newProfileImageUrl) {
+        this.profileUrl = newProfileImageUrl;
+    }
 }
