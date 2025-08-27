@@ -8,11 +8,11 @@ import java.util.List;
 @Schema(description = "검색 결과 중 사용자 대표 플레이리스트 항목")
 public record UserSearchDto(
 
-        @Schema(description = "사용자 ID", example = "user-uuid-1234")
-        String userId,
+        @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
+        String creatorId,
 
-        @Schema(description = "사용자 이름", example = "junyeop_dev")
-        String username,
+        @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
+        String creatorNickname,
 
         @Schema(description = "사용자 프로필 이미지 URL", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
         String userProfileImageUrl,
