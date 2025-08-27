@@ -99,6 +99,7 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
                     return new UserSearchDto(
                             u.getId(),
                             u.getUsername(),
+                            u.getProfileUrl(),
                             p.getId(),
                             p.getName(),
                             songMap.getOrDefault(p.getId(), List.of())
