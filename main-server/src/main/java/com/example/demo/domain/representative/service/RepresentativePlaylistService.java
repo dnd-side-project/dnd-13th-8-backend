@@ -2,6 +2,7 @@ package com.example.demo.domain.representative.service;
 
 import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.exception.PlaylistException;
+import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -20,6 +21,7 @@ public class RepresentativePlaylistService {
 
     private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
     private final SongRepository songRepository;
+    private final CdService cdService;
 
     public RepresentativePlaylist findRepresentativePlaylistByUserId(String userId) {
         return representativePlaylistRepository.findByUser_Id(userId)
@@ -38,7 +40,7 @@ public class RepresentativePlaylistService {
                 .map(SongDto::from)
                 .toList();
 
-        return PlaylistDetailResponse.from(playlist, songDtos);
+        return PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlist.getId()));
     }
 
 

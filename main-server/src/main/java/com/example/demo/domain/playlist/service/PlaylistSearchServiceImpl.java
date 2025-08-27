@@ -1,5 +1,8 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
+import com.example.demo.domain.cd.repository.CdRepository;
+import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
@@ -39,6 +42,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
     private final StringRedisTemplate redis;
     private final UsersRepository usersRepository;
+    private final CdService cdService;
 
     private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
             new PopularItem("여름"),
@@ -85,18 +89,39 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<CombinedSearchResponse> searchByTitle(String query, PlaylistSortOption sort, int page, Integer size
+    public PageResponse<CombinedSearchResponse> searchByTitle(
+            String query, PlaylistSortOption sort, int page, Integer size
     ) {
         int finalSize = validateLimit(size);
         int offset = page * finalSize;
 
         recordSearchTerm(query);
 
-        List<PlaylistSearchDto> playlists =
+        // 1. 플레이리스트 검색 결과 (raw)
+        List<PlaylistSearchDto> playlistsRaw =
                 representativePlaylistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, finalSize);
+
+        // 2. CD 정보 포함한 PlaylistSearchDto로 재구성
+        List<PlaylistSearchDto> playlists = new ArrayList<>();
+        for (PlaylistSearchDto raw : playlistsRaw) {
+            OnlyCdResponse cdResponse = cdService.getOnlyCdByPlaylistId(raw.playlistId());
+
+            PlaylistSearchDto dto = PlaylistSearchDto.from(
+                    raw.playlistId(),
+                    raw.playlistName(),
+                    raw.creatorId(),
+                    raw.creatorNickname(),
+                    cdResponse
+            );
+
+            playlists.add(dto);
+        }
+
+        // 3. 사용자 검색
         List<UserSearchDto> users =
                 usersRepository.searchUsersByQueryWithOffset(query, sort, offset, finalSize);
 
+        // 4. 병합
         List<SearchItem> merged = new ArrayList<>();
         merged.addAll(playlists);
         merged.addAll(users);
@@ -110,6 +135,8 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 hasNext
         );
     }
+
+
 
 
 

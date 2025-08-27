@@ -1,6 +1,7 @@
 package com.example.demo.domain.playlist.service;
 
 
+import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.SongDto;
@@ -16,7 +17,6 @@ import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +37,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     private final UsersRepository userRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
+    private final CdService cdService;
 
     private static final int RECOMMENDATION_LIMIT = 3;
     private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
@@ -62,7 +63,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
         // 2) 방문 수 증가
         playlistRepository.incrementVisitCount(playlistId);
 
-        return PlaylistDetailResponse.from(playlist, songDtos);
+        return PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlistId));
     }
 
     /*
@@ -92,7 +93,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
                 .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
 
         return basePlaylists.stream()
-                .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of())))
+                .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of()), cdService.getOnlyCdByPlaylistId(p.getId())))
                 .toList();
     }
 
@@ -141,7 +142,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
 
         // 5. 응답 매핑
         return resultPlaylists.stream()
-                .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of())))
+                .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of()),cdService.getOnlyCdByPlaylistId(p.getId())))
                 .toList();
     }
 

@@ -1,6 +1,8 @@
 package com.example.demo.domain.playlist.dto.search;
 
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
+import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -17,7 +19,10 @@ public record PlaylistSearchDto(
         String creatorId,
 
         @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
-        String creatorNickname
+        String creatorNickname,
+
+        @Schema(description = "cd 정보")
+        OnlyCdResponse onlyCdResponse
 
 ) implements SearchItem {
 
@@ -25,5 +30,21 @@ public record PlaylistSearchDto(
     @Schema(description = "검색 결과 타입", example = "PLAYLIST")
     public String getType() {
         return "PLAYLIST";
+    }
+
+    public static PlaylistSearchDto from(
+            Long playlistId,
+            String playlistName,
+            String creatorId,
+            String creatorNickname,
+            OnlyCdResponse onlyCdResponse
+    ) {
+        return new PlaylistSearchDto(
+                playlistId,
+                playlistName,
+                creatorId,
+                creatorNickname,
+                onlyCdResponse
+        );
     }
 }

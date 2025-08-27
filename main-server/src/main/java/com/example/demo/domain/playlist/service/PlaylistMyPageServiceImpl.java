@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.follow.dto.FollowPlaylistDto;
 import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
 import com.example.demo.domain.follow.repository.FollowRepository;
@@ -49,6 +50,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final FollowRepository followRepository;
 
     private static final int DEFAULT_LIMIT = 20;
+    private final CdService cdService;
 
     /**
      * 플레이리스트 저장 (신규/대표 지정 요청 시 대표 매핑 처리)
@@ -155,7 +157,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         List<Song> songs = songRepository.findSongsByPlaylistId(playlistId);
         List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
-        return PlaylistDetailResponse.from(playlist, songDtos);
+        return PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlistId));
     }
 
     /**
@@ -256,7 +258,8 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         for (Playlist playlist : playlists) {
             List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
             List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
-            responses.add(PlaylistDetailResponse.from(playlist, songDtos));
+            responses.add(PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlist.getId())));
+
         }
         return responses;
     }

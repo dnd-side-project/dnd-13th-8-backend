@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.dto.playlistdto;
 
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -22,15 +23,20 @@ public record PlaylistDetailResponse(
         List<SongDto> songs,
 
         @Schema(description = "플레이리스트 장르", example = "JAZZ")
-        PlaylistGenre genre
+        PlaylistGenre genre,
+
+        @Schema(description = "플레이리스트에 포함된 CD 아이템 목록")
+        OnlyCdResponse onlyCdResponse
 ) {
-    public static PlaylistDetailResponse from(Playlist playlist, List<SongDto> songs) {
+    public static PlaylistDetailResponse from(Playlist playlist, List<SongDto> songs, OnlyCdResponse onlyCdResponse) {
         return new PlaylistDetailResponse(
                 playlist.getId(),
                 playlist.getName(),
                 playlist.isRepresentative(),
                 songs,
-                playlist.getGenre()
+                playlist.getGenre(),
+                onlyCdResponse
+
         );
     }
 }
