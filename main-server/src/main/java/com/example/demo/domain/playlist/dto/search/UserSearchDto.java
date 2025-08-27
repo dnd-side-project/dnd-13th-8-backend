@@ -21,10 +21,7 @@ public record UserSearchDto(
         Long playlistId,
 
         @Schema(description = "대표 플레이리스트 이름", example = "내가 좋아하는 감성곡")
-        String playlistName,
-
-        @Schema(description = "대표 플레이리스트에 포함된 곡 목록")
-        List<SongDto> songs
+        String playlistName
 
 ) implements SearchItem {
 

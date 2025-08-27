@@ -17,10 +17,7 @@ public record PlaylistSearchDto(
         String userId,
 
         @Schema(description = "플레이리스트 생성 유저 이름", example = "junyeop_dev")
-        String username,
-
-        @Schema(description = "플레이리스트에 포함된 곡 목록")
-        List<SongDto> songs
+        String username
 
 ) implements SearchItem {
 
