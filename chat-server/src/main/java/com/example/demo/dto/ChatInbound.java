@@ -11,6 +11,9 @@ public class ChatInbound {
     private String senderId;
 
     @NotBlank
+    private String username;
+
+    @NotBlank
     private String content;
 
     private boolean systemMessage = false;
