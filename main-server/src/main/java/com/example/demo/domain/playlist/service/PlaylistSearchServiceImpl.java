@@ -36,15 +36,15 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     // 기본 인기 검색어 (Redis 데이터가 없을 때 fallback)
     private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
-            new PopularItem("여름", 100),
-            new PopularItem("바캉스 플리", 95),
-            new PopularItem("카페 재즈 플레이리스트", 90),
-            new PopularItem("여름청량팝", 85),
-            new PopularItem("감성 힙합", 80),
-            new PopularItem("최맛 여자아이돌 모음", 75),
-            new PopularItem("드라이브", 70),
-            new PopularItem("K-POP", 65),
-            new PopularItem("인디밴드음악", 60)
+            new PopularItem("여름"),
+            new PopularItem("바캉스 플리"),
+            new PopularItem("카페 재즈 플레이리스트"),
+            new PopularItem("여름청량팝"),
+            new PopularItem("감성 힙합"),
+            new PopularItem("최맛 여자아이돌 모음"),
+            new PopularItem("드라이브"),
+            new PopularItem("K-POP"),
+            new PopularItem("인디밴드음악")
     );
 
 
@@ -113,7 +113,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         }
 
         return raw.stream()
-                .map(tuple -> new PopularItem(tuple.getValue(), tuple.getScore().longValue()))
+                .map(tuple -> new PopularItem(tuple.getValue()))
                 .toList();
     }
 

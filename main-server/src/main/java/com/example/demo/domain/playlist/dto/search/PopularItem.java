@@ -6,8 +6,5 @@ import java.util.List;
 @Schema(description = "인기 검색어 항목")
 public record PopularItem(
         @Schema(description = "검색어", example = "여름")
-        String term,
-
-        @Schema(description = "검색 빈도 수 또는 점수", example = "100")
-        long score
+        String term
 ) {}
