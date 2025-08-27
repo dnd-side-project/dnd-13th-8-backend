@@ -47,10 +47,11 @@ public class Users extends BaseTimeEntity {
     }
 
     @Builder
-    public Users(String kakaoId, String username, boolean enabled, JwtRoleType role) {
+    public Users(String kakaoId, String username, boolean enabled, JwtRoleType role, String profileUrl) {
         this.kakaoId = kakaoId;
         this.username = username;
         this.enabled = enabled;
         this.role = role;
+        this.profileUrl = profileUrl;
     }
 }

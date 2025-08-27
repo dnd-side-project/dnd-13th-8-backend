@@ -1,5 +1,6 @@
 package com.example.demo.kakao.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record KakaoProfileResponse(
         Long id,
@@ -10,6 +11,9 @@ public record KakaoProfileResponse(
     ) {}
 
     public record Profile(
-            String nickname
+            String nickname,
+
+            @JsonProperty("profile_image_url")
+            String profileImageUrl
     ) {}
 }

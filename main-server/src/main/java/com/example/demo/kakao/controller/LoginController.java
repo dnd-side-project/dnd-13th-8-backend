@@ -61,7 +61,7 @@ public class LoginController {
         Users user = new Users();
         user.setUsername(nickname);
         user.setRole(JwtRoleType.SUPER);
-
+        user.setProfileUrl("NULL");
         Users savedUser = usersRepository.save(user);
         String superToken = jwtAccessIssuer.issueSuperToken(savedUser.getId());
 
@@ -76,7 +76,7 @@ public class LoginController {
         Users user = new Users();
         user.setUsername(nickname);
         user.setRole(JwtRoleType.ANONYMOUS);
-
+        user.setProfileUrl("NULL");
         Users savedUser = usersRepository.save(user);
         String anonymousToken = jwtAccessIssuer.issueSuperToken(savedUser.getId());
 

@@ -35,14 +35,32 @@ public class KakaoProfileMapper {
         return nicknameGenerator.generateUniqueNickname();
     }
 
+    public String profileImageFrom(KakaoProfileResponse profileResponse) {
+        if (profileResponse != null &&
+                profileResponse.kakao_account() != null &&
+                profileResponse.kakao_account().profile() != null) {
+
+            String imageUrl = profileResponse.kakao_account().profile().profileImageUrl();
+            if (imageUrl != null && !imageUrl.isBlank()) {
+                return imageUrl;
+            }
+        }
+
+        // 없으면 기본 이미지 경로로 대체
+        return "NULL";
+    }
+
+
     public Users newUserFromProfile(KakaoProfileResponse p) {
         String kakaoId = kakaoIdFrom(p);
         String nickname = nicknameFrom(p);
+        String profileImageUrl = profileImageFrom(p);
 
         return Users.builder()
                 .kakaoId(kakaoId)
                 .username(nickname)
                 .role(JwtRoleType.USER)
+                .profileUrl(profileImageUrl)
                 .enabled(true)
                 .build();
     }
