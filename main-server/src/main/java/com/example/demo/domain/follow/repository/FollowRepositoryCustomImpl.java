@@ -34,7 +34,8 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                         FollowPlaylistDto.class,
                         p.visitCount.intValue(),        // 플레이리스트 조회수 총합 (또는 개수)
                         p.users.id,         // 제작자 ID
-                        p.users.username   // 제작자 닉네임
+                        p.users.username,  // 제작자 닉네임
+                        p.users.profileUrl
                 ))
                 .from(f)
                 .join(f.playlist, p)

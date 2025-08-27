@@ -30,9 +30,9 @@ public class Users extends BaseTimeEntity {
 //
 //    @Column(name = "nickname")
 //    private String nickname;
-//
-//    @Column(name = "profile_url")
-//    private String profileUrl;
+
+    @Column(name = "profile_url")
+    private String profileUrl;
 
     private boolean enabled;
 

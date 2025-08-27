@@ -42,19 +42,19 @@ public record CdItemResponse(
         @Schema(description = "CD 이미지 Presigned URL", example = "https://r2.bucket.com/cd-image.jpg?signature=abc123")
         String imageUrl
 ) {
-    public static CdItemResponse of(CdItemView view, String imgUrl) {
-        return CdItemResponse.builder()
-                .cdItemId(view.cdId())
-                .propId(view.propId())
-                .theme(view.theme())
-                .xCoordinate(view.xCoordinate())
-                .yCoordinate(view.yCoordinate())
-                .height(view.height())
-                .width(view.width())
-                .scale(view.scale())
-                .angle(view.angle())
-                .imageUrl(imgUrl)
-                .build();
+    public static CdItemResponse from(CdItemView v, String imageUrl) {
+        return new CdItemResponse(
+                v.getCdId(),
+                v.getPropId(),
+                v.getTheme(),
+                v.getXCoordinate(),
+                v.getYCoordinate(),
+                v.getHeight(),
+                v.getWidth(),
+                v.getScale(),
+                v.getAngle(),
+                imageUrl
+        );
     }
 
     public static List<CdItemResponse> fromJsonList(String cdItemsJson) {

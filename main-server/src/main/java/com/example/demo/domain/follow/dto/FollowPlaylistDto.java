@@ -12,6 +12,9 @@ public record FollowPlaylistDto(
         String creatorId,
 
         @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
-        String creatorNickname
+        String creatorNickname,
+
+        @Schema(description = "플레이리스트 제작자 이미지",  example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
+        String creatorProfileImageUrl
 
 ) {}

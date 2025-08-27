@@ -17,7 +17,9 @@ import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,16 +42,33 @@ public class BrowsePlaylistShuffleService {
 
     private static final int SHUFFLE_SIZE = 20;
 
+//    @PostConstruct
+//    public void scheduleOnceAfter3Min() {
+//        new Timer().schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                scheduledShuffle(); // ← 네가 원래 하던 메서드
+//            }
+//        }, Duration.ofMinutes(3).toMillis());
+//    }
+
+
+
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     @Transactional
     public void scheduledShuffle() {
         List<String> userIds = usersRepository.findAllUserIds();
+        log.info(" 셔플 대상 유저 수: {}", userIds.size());
 
         for (String userId : userIds) {
-            shuffleAndStore(userId);
+            try {
+                shuffleAndStore(userId);
+            } catch (Exception e) {
+                log.error(" 셔플 실패: userId={}", userId, e);
+            }
         }
 
-        log.info("BrowseSnapshot 셔플 완료 - 전체 유저 대상");
+        log.info(" BrowseSnapshot 셔플 완료 - 전체 유저 대상");
     }
 
     @Transactional
@@ -57,44 +76,54 @@ public class BrowsePlaylistShuffleService {
         // 1. 기존 스냅샷 삭제
         browseSnapshotRepository.deleteByUserId(userId);
 
-        // 2. 대표 플레이리스트 랜덤 셔플
-        List<Long> playlistIds = representativePlaylistRepository.findAllPlaylistIds();
-        Collections.shuffle(playlistIds);
-        List<Long> selectedIds = playlistIds.stream().limit(SHUFFLE_SIZE).toList();
+        // 2. 대표 플레이리스트 ID 셔플
+        List<Long> original = representativePlaylistRepository.findAllPlaylistIds();
+        if (original == null || original.isEmpty()) {
+            log.warn(" 대표 플레이리스트가 비어있습니다. userId={}", userId);
+            return;
+        }
 
-        // 3. CD Map 조회 (playlistId -> List<CdItemResponse>)
+        List<Long> playlistIds = new ArrayList<>(original);
+        long seed = System.nanoTime() ^ UUID.randomUUID().getMostSignificantBits();
+        Collections.shuffle(playlistIds, new Random(seed));
+
+        List<Long> selectedIds = playlistIds.stream()
+                .limit(SHUFFLE_SIZE)
+                .toList();
+
+        log.info(" 셔플 완료: userId={}, selectedPlaylistIds={}", userId, selectedIds);
+
+        // 3. CD Map 조회
         Map<Long, List<CdItemResponse>> cdItemsMap = getCdMap(selectedIds);
 
         // 4. 유저 조회
         Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("유저 없음: " + userId));
 
-        // 5. 카드 생성 및 저장
+        // 5. 카드 생성
         List<BrowsePlaylistCard> snapshots = new ArrayList<>();
         for (int i = 0; i < selectedIds.size(); i++) {
             Long playlistId = selectedIds.get(i);
             Playlist playlist = playlistRepository.findById(playlistId)
-                    .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
+                    .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음: " + playlistId));
 
             List<Song> songs = songRepository.findByPlaylistId(playlistId);
             List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
-            // songsJson 변환
             String songsJson;
             try {
                 songsJson = objectMapper.writeValueAsString(songDtos);
             } catch (JsonProcessingException e) {
-                log.warn("곡 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
+                log.warn(" 곡 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
                 continue;
             }
 
-            // cdItemsJson 변환
             String cdItemsJson;
             try {
                 List<CdItemResponse> cdItems = cdItemsMap.getOrDefault(playlistId, Collections.emptyList());
                 cdItemsJson = objectMapper.writeValueAsString(cdItems);
             } catch (JsonProcessingException e) {
-                log.warn("CD 아이템 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
+                log.warn(" CD 아이템 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
                 continue;
             }
 
@@ -110,7 +139,7 @@ public class BrowsePlaylistShuffleService {
                     .creatorId(playlist.getUsers().getId())
                     .creatorName(playlist.getUsers().getUsername())
                     .songsJson(songsJson)
-                    .cdItemsJson(cdItemsJson)  
+                    .cdItemsJson(cdItemsJson)
                     .isRepresentative(true)
                     .shareUrl(shareUrl)
                     .totalTime(DurationFormatUtil.formatToHumanReadable(totalSec))
@@ -119,16 +148,19 @@ public class BrowsePlaylistShuffleService {
             snapshots.add(snapshot);
         }
 
+        // 6. 저장
         browseSnapshotRepository.saveAll(snapshots);
-        log.info("유저 {} → BrowseSnapshot {}개 저장 완료", userId, snapshots.size());
+        log.info(" 저장 완료: userId={}, 저장된 스냅샷 개수={}", userId, snapshots.size());
     }
 
     private Map<Long, List<CdItemResponse>> getCdMap(List<Long> playlistIds) {
         CdListResponseDto cdList = cdService.getAllCdByPlaylistIdList(playlistIds);
         Map<Long, List<CdItemResponse>> result = new HashMap<>();
         for (CdResponse cdResponse : cdList.cds()) {
-            result.put(cdResponse.playlistId(),
-                    cdResponse.cdItems() != null ? cdResponse.cdItems() : Collections.emptyList());
+            result.put(
+                    cdResponse.playlistId(),
+                    cdResponse.cdItems() != null ? cdResponse.cdItems() : Collections.emptyList()
+            );
         }
         return result;
     }
