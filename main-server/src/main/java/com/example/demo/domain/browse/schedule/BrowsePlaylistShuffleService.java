@@ -83,7 +83,7 @@ public class BrowsePlaylistShuffleService {
         browseSnapshotRepository.deleteByUserId(userId);
 
         // 2. 대표 플레이리스트 ID 셔플
-        List<Long> original = representativePlaylistRepository.findAllPlaylistIds();
+        List<Long> original = representativePlaylistRepository.findAllPlaylistIdsExcludingUser(userId);
         if (original == null || original.isEmpty()) {
             log.warn(" 대표 플레이리스트가 비어있습니다. userId={}", userId);
             return;
