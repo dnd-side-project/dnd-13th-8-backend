@@ -3,6 +3,7 @@ package com.example.demo.domain.playlist.controller;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,9 +66,9 @@ public class PlaylistsMainPageController {
 
     @Operation(summary = "추천 장르 기반 대표 플레이리스트 목록")
     @ApiResponse(responseCode = "200", description = "추천 플레이리스트 상세 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistDetailResponse.class))))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedGenreResponse.class))))
     @GetMapping("/recommendations/genres")
-    public ResponseEntity<List<PlaylistDetailResponse>> recommendGenres(
+    public ResponseEntity<List<RecommendedGenreResponse>> recommendGenres(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user
     ) {
         return ResponseEntity.ok(playlistMainPageService.recommendGenres(user.getId()));

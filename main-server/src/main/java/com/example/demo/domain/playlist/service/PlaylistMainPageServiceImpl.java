@@ -7,6 +7,7 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
@@ -96,7 +97,6 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     }
 
 
-
     /*
     두번째 추천 알고리즘
      */
@@ -108,7 +108,8 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
         List<Playlist> resultPlaylists;
 
         if (basePlaylistIds.isEmpty()) {
-            resultPlaylists = playlistRepository.findLatestRepresentativePlaylists(myUserId, List.of(), RECOMMENDATION_LIMIT);
+            resultPlaylists = playlistRepository.findLatestRepresentativePlaylists(myUserId, List.of(),
+                    RECOMMENDATION_LIMIT);
         } else {
             // 2. 유사한 곡 기반 추천
             List<Playlist> basePlaylists = playlistRepository.findPlaylistsBySimilarSongs(
@@ -146,47 +147,49 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
 
 
     @Override
-    public List<PlaylistDetailResponse> recommendGenres(String userId) {
+    public List<RecommendedGenreResponse> recommendGenres(String userId) {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         Set<PlaylistGenre> genres = new LinkedHashSet<>();
 
+        // 0차: 최근 많이 들은 장르 기반 플레이리스트 → 장르 추출
+        List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
+        for (Playlist playlist : genreBased) {
+            if (genres.size() >= 6)
+                break;
+            genres.add(playlist.getGenre());
+        }
+
         // 1차: 어제 가장 많이 들은 장르
         List<PlaylistGenre> topGenres = userPlaylistHistoryRepository.findTopGenresByDate(yesterday);
-        genres.addAll(topGenres);
-
-        // 2차: 유저가 자주 들은 장르
-        if (genres.size() < 6) {
-            List<PlaylistGenre> userGenres = userPlaylistHistoryRepository.findMostPlayedGenresByUser(userId);
-            for (PlaylistGenre genre : userGenres) {
-                if (genres.size() >= 6) break;
-                genres.add(genre);
-            }
+        for (PlaylistGenre genre : topGenres) {
+            if (genres.size() >= 6)
+                break;
+            genres.add(genre);
         }
 
-        // 3차: 장르 미충족 시 전체 장르에서 보완
-        if (genres.size() < 6) {
-            for (PlaylistGenre genre : PlaylistGenre.values()) {
-                genres.add(genre);
-            }
+        // 2차: 누적 기준 유저가 자주 들은 장르
+        List<PlaylistGenre> userGenres = userPlaylistHistoryRepository.findMostPlayedGenresByUser(userId);
+        for (PlaylistGenre genre : userGenres) {
+            if (genres.size() >= 6)
+                break;
+            genres.add(genre);
         }
 
-        // 후보 장르 기반으로 playlist 후보 조회
-        List<Playlist> candidates = representativePlaylistRepository.findTopVisitedRepresentativePlaylistsByGenres(genres);
-        List<PlaylistDetailResponse> result = new ArrayList<>();
-        Set<PlaylistGenre> selectedGenres = new HashSet<>();
-
-        for (Playlist playlist : candidates) {
-            if (selectedGenres.contains(playlist.getGenre())) continue;
-            selectedGenres.add(playlist.getGenre());
-            List<SongDto> songs = songRepository.findSongsByPlaylistId(playlist.getId())
-                    .stream().map(SongDto::from).toList();
-            result.add(PlaylistDetailResponse.from(playlist, songs));
-            if (result.size() >= 6) break;
+        // 3차: 전체 장르에서 부족한 것 보완
+        for (PlaylistGenre genre : PlaylistGenre.values()) {
+            if (genres.size() >= 6)
+                break;
+            genres.add(genre);
         }
+
+        // 응답으로 매핑
+        List<RecommendedGenreResponse> result = new ArrayList<>();
+        for (PlaylistGenre genre : genres) {
+            if (result.size() >= 6)
+                break;
+            result.add(RecommendedGenreResponse.from(genre));
+        }
+
         return result;
     }
-
-
-
 }
-

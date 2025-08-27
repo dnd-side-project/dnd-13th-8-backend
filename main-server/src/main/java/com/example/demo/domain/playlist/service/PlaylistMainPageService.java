@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import java.util.List;
 
 public interface PlaylistMainPageService {
@@ -12,7 +13,7 @@ public interface PlaylistMainPageService {
 
     List<PlaylistCardResponse> recommendFromLikedPlaylists(String myUserId);
 
-    List<PlaylistDetailResponse> recommendGenres(String userId);
+    List<RecommendedGenreResponse> recommendGenres(String userId);
 
 
 }
