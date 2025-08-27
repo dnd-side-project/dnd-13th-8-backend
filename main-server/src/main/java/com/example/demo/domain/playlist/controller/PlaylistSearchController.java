@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PageResponse;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
@@ -10,14 +11,12 @@ import com.example.demo.domain.playlist.dto.search.PopularSearchResponse;
 import com.example.demo.domain.playlist.service.PlaylistSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,37 +58,36 @@ public class PlaylistSearchController {
     }
 
     @Operation(
-            summary = "제목 기반 플레이리스트 검색 (커서 기반)",
-            description = "제목 키워드와 정렬 조건(RECENT/POPULAR)을 기반으로 플레이리스트를 검색합니다. "
-                    + "커서 기반 페이지네이션(cursorId, limit)을 지원합니다."
+            summary = "제목 기반 플레이리스트 및 유저 통합 검색 (오프셋 기반)",
+            description = "제목 키워드와 정렬 조건(RECENT/POPULAR)을 기반으로 플레이리스트와 유저를 검색합니다. "
+                    + "오프셋 기반 페이지네이션(page, size)을 지원합니다."
     )
     @ApiResponse(
             responseCode = "200",
-            description = "검색된 플레이리스트 목록 (커서 기반 응답)",
-            content = @Content(schema = @Schema(implementation = CursorPageResponse.class))
+            description = "검색된 플레이리스트 및 유저 목록 (오프셋 기반 응답)",
+            content = @Content(schema = @Schema(implementation = PageResponse.class))
     )
     @GetMapping("/title")
-    public ResponseEntity<CursorPageResponse<PlaylistSearchResponse>> searchByTitle(
+    public ResponseEntity<PageResponse<CombinedSearchResponse>> searchByTitle(
             @Parameter(description = "검색할 제목 키워드", example = "잔잔한")
             @RequestParam String query,
 
             @Parameter(description = "정렬 조건", example = "RECENT")
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort,
 
-            @Parameter(description = "마지막으로 조회한 playlistId(최초 요청은 생략)", example = "123")
-            @RequestParam(name = "cursorId", required = false) Long cursorId,
+            @Parameter(description = "현재 페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
 
             @Parameter(description = "한 페이지에 가져올 개수", example = "10")
-            @RequestParam(name = "limit", defaultValue = "10") Integer limit
+            @RequestParam(defaultValue = "10") Integer size
     ) {
-        CursorPageResponse<PlaylistSearchResponse> response =
-                playlistSearchService.searchByTitle(query, sort, cursorId, limit);
+        PageResponse<CombinedSearchResponse> response =
+                playlistSearchService.searchByTitle(query, sort, page, size);
         return ResponseEntity.ok(response);
     }
 
-
     @Operation(
-            summary = "인기 검색어 조회 (커서 기반)",
+            summary = "인기 검색어 조회",
             description = """
                 Redis에 저장된 검색어를 조회 수 기준으로 정렬하여 반환합니다.
                 range는 'today', '7d', '30d' 중 하나로 지정할 수 있으며, 기본값은 'today'입니다.

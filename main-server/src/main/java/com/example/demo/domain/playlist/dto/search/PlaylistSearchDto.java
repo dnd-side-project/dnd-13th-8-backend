@@ -13,14 +13,11 @@ public record PlaylistSearchDto(
         @Schema(description = "플레이리스트 이름", example = "감성 힙합 모음집")
         String playlistName,
 
-        @Schema(description = "플레이리스트 생성 유저 ID", example = "user-uuid-1234")
-        String userId,
+        @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
+        String creatorId,
 
-        @Schema(description = "플레이리스트 생성 유저 이름", example = "junyeop_dev")
-        String username,
-
-        @Schema(description = "플레이리스트에 포함된 곡 목록")
-        List<SongDto> songs
+        @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
+        String creatorNickname
 
 ) implements SearchItem {
 

@@ -3,34 +3,42 @@ package com.example.demo.domain.playlist.service;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PageResponse;
+import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.search.PopularItem;
+import com.example.demo.domain.playlist.dto.search.SearchItem;
+import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import com.example.demo.domain.user.repository.UsersRepository;
 import java.text.Normalizer;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
     private final StringRedisTemplate redis;
+    private final UsersRepository usersRepository;
 
     private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
             new PopularItem("여름"),
@@ -54,14 +62,10 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     ) {
         int finalLimit = validateLimit(limit);
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
-        Pageable pageable = PageRequest.of(0, finalLimit + 1);
 
-        List<RepresentativePlaylist> reps = switch (sort) {
-            case POPULAR -> representativePlaylistRepository.findByGenreWithCursorSortByVisit(genre, cursorId, pageable);
-            case RECENT -> representativePlaylistRepository.findByGenreWithCursorSortByRecent(genre, cursorId, pageable);
-        };
+        List<RepresentativePlaylist> reps = representativePlaylistRepository.findByGenreWithCursor(genre, sort,cursorId, limit);
 
-        return toCursorResponse(
+        CursorPageResponse<PlaylistSearchResponse> response = toCursorResponse(
                 reps,
                 finalLimit,
                 rep -> {
@@ -75,36 +79,39 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 },
                 PlaylistSearchResponse::playlistId
         );
+        return response;
     }
+
 
     @Override
     @Transactional(readOnly = true)
-    public CursorPageResponse<PlaylistSearchResponse> searchByTitle(
-            String query,
-            PlaylistSortOption sort,
-            Long cursorId,
-            Integer limit
+    public PageResponse<CombinedSearchResponse> searchByTitle(String query, PlaylistSortOption sort, int page, Integer size
     ) {
-        int finalLimit = validateLimit(limit);
-        cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
+        int finalSize = validateLimit(size);
+        int offset = page * finalSize;
+
         recordSearchTerm(query);
-        Pageable pageable = PageRequest.of(0, finalLimit + 1);
 
-        List<RepresentativePlaylist> reps =
-                representativePlaylistRepository.searchByTitleWithCursor(query, sort, cursorId, pageable);
+        List<PlaylistSearchDto> playlists =
+                representativePlaylistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, finalSize);
+        List<UserSearchDto> users =
+                usersRepository.searchUsersByQueryWithOffset(query, sort, offset, finalSize);
 
-        return toCursorResponse(
-                reps,
-                finalLimit,
-                rep -> new PlaylistSearchResponse(
-                        rep.getId(),
-                        rep.getPlaylist().getName(),
-                        rep.getUser().getId(),
-                        rep.getUser().getUsername()
-                ),
-                PlaylistSearchResponse::playlistId
+        List<SearchItem> merged = new ArrayList<>();
+        merged.addAll(playlists);
+        merged.addAll(users);
+
+        boolean hasNext = playlists.size() == finalSize || users.size() == finalSize;
+
+        return new PageResponse<>(
+                new CombinedSearchResponse(merged),
+                page,
+                finalSize,
+                hasNext
         );
     }
+
+
 
     @Override
     public List<PopularItem> getPopularTerms(String range, int limit) {
