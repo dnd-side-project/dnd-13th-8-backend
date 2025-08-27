@@ -89,7 +89,7 @@ public class PlaylistSearchController {
 
 
     @Operation(
-            summary = "인기 검색어 조회 (커서 기반)",
+            summary = "인기 검색어 조회",
             description = """
                 Redis에 저장된 검색어를 조회 수 기준으로 정렬하여 반환합니다.
                 range는 'today', '7d', '30d' 중 하나로 지정할 수 있으며, 기본값은 'today'입니다.
