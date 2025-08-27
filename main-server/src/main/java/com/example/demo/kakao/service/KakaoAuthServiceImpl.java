@@ -35,6 +35,6 @@ public class KakaoAuthServiceImpl implements AuthService {
                 });
         String access = jwtAccessIssuer.issueUserToken(users.getId());
 
-        return new KakaoLoginResponse(users.getId(), users.getUsername(), access);
+        return new KakaoLoginResponse(users.getId(), users.getUsername(), users.getProfileUrl(), access);
     }
 }

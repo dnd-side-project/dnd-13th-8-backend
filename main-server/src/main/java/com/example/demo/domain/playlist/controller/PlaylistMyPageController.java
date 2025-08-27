@@ -10,6 +10,8 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsRespons
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.service.RepresentativePlaylistService;
+import com.example.demo.domain.user.dto.UpdateProfileRequest;
+import com.example.demo.domain.user.dto.UpdateProfileResponse;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.service.UsersService;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -21,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -242,5 +245,14 @@ public class PlaylistMyPageController {
     ) {
         playlistMyPageService.updateRepresentative(user.getId(), playlistId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UpdateProfileResponse> updateProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @ModelAttribute UpdateProfileRequest request // MultipartFile + String 같이 받기 위해 @ModelAttribute
+    ) throws IOException {
+        UpdateProfileResponse response = usersService.updateProfile(userDetails.getId(), request);
+        return ResponseEntity.ok(response);
     }
 }

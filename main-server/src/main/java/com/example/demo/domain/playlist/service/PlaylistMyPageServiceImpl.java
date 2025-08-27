@@ -21,14 +21,22 @@ import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
+import com.example.demo.domain.user.dto.UpdateProfileRequest;
+import com.example.demo.domain.user.dto.UpdateProfileResponse;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
+import com.example.demo.global.security.filter.CustomUserDetails;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -252,4 +260,5 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         }
         return responses;
     }
+
 }
