@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 
@@ -40,6 +41,8 @@ public class BrowsePlaylistShuffleService {
     private final BrowsePlaylistRepository browseSnapshotRepository;
     private final ObjectMapper objectMapper;
 
+    private final TransactionTemplate txTemplate;
+
     private static final int SHUFFLE_SIZE = 20;
 
 //    @PostConstruct
@@ -47,9 +50,12 @@ public class BrowsePlaylistShuffleService {
 //        new Timer().schedule(new TimerTask() {
 //            @Override
 //            public void run() {
-//                scheduledShuffle(); // ← 네가 원래 하던 메서드
+//                txTemplate.execute(status -> {
+//                    scheduledShuffle();
+//                    return null;
+//                });
 //            }
-//        }, Duration.ofMinutes(3).toMillis());
+//        }, Duration.ofMinutes(1).toMillis());
 //    }
 
 

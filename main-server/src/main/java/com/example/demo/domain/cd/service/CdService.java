@@ -5,10 +5,7 @@ import com.example.common.error.code.PropErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.PropException;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
-import com.example.demo.domain.cd.dto.response.CdItemResponse;
-import com.example.demo.domain.cd.dto.response.CdListResponseDto;
-import com.example.demo.domain.cd.dto.response.CdMapper;
-import com.example.demo.domain.cd.dto.response.CdResponse;
+import com.example.demo.domain.cd.dto.response.*;
 import com.example.demo.domain.cd.entity.Cd;
 import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.repository.projection.CdItemView;
@@ -50,6 +47,13 @@ public class CdService {
     public CdResponse getCdByPlaylistId(Long playlistId) {
         return CdResponse.builder()
                 .playlistId(playlistId)
+                .cdItems(findAllCdItemOnCd(playlistId))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public OnlyCdResponse getOnlyCdByPlaylistId(Long playlistId) { // 다른 도메인에서 호출해서 사용하는 메소드
+        return OnlyCdResponse.builder()
                 .cdItems(findAllCdItemOnCd(playlistId))
                 .build();
     }
