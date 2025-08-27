@@ -15,6 +15,7 @@ public class Chat {
     private String sentAt;        // 정렬 키
     private String messageId;
     private String senderId;
+    private String username;
     private String content;
     private boolean systemMessage;
 
@@ -29,9 +30,10 @@ public class Chat {
     }
 
     @Builder
-    public Chat(String roomId, String sentAt, String messageId, String senderId, String content, boolean systemMessage) {
+    public Chat(String roomId, String sentAt, String username, String messageId, String senderId, String content, boolean systemMessage) {
         this.roomId = roomId;
         this.sentAt = sentAt;
+        this.username = username;
         this.messageId = messageId;
         this.senderId = senderId;
         this.content = content;
