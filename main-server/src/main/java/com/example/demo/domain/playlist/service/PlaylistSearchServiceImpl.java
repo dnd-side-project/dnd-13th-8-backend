@@ -6,28 +6,26 @@ import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.PopularItem;
-import com.example.demo.domain.playlist.dto.search.PopularSearchResponse;
 import com.example.demo.domain.playlist.dto.search.SearchItem;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import java.text.Normalizer;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
 @RequiredArgsConstructor
@@ -83,6 +81,8 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     @Override
     @Transactional(readOnly = true)
     public CombinedSearchResponse searchAll(String query, PlaylistSortOption sort, int limit) {
+        recordSearchTerm(query);
+
         Pageable pageable = Pageable.ofSize(limit);
 
         List<PlaylistSearchDto> playlists = representativePlaylistRepository
@@ -126,6 +126,23 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             default -> "pop:term:" + now;
         };
     }
+
+    public void recordSearchTerm(String rawTerm) {
+        String term = normalize(rawTerm);
+        String todayKey = "pop:term:" + LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        redis.opsForZSet().incrementScore(todayKey, term, 1.0);
+        redis.expire(todayKey, Duration.ofDays(35));
+    }
+
+    public String normalize(String term) {
+        // 1. 앞뒤 공백 제거 → 2. 연속 공백 하나로 → 3. 유니코드 정규화 → 4. 소문자 변환
+        return Normalizer.normalize(
+                term.trim().replaceAll("\\s+", " "),
+                Normalizer.Form.NFKC
+        ).toLowerCase(Locale.ROOT);
+    }
+
 }
 
 
