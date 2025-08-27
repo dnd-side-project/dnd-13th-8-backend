@@ -63,11 +63,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         int finalLimit = validateLimit(limit);
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
 
-        log.info("🎯 [장르 검색 요청] genre={}, sort={}, cursorId={}, limit={}", genre, sort, cursorId, finalLimit);
-
         List<RepresentativePlaylist> reps = representativePlaylistRepository.findByGenreWithCursor(genre, sort,cursorId, limit);
-
-        log.info("📦 [조회된 플레이리스트 수] {}개 (limit + 1)", reps.size());
 
         CursorPageResponse<PlaylistSearchResponse> response = toCursorResponse(
                 reps,
@@ -83,12 +79,6 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 },
                 PlaylistSearchResponse::playlistId
         );
-
-        log.info("✅ [응답] size={}, hasNext={}, nextCursor={}",
-                response.size(),
-                response.hasNext(),
-                response.nextCursor());
-
         return response;
     }
 
