@@ -7,6 +7,7 @@ import com.example.common.error.exception.PropException;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.dto.response.CdItemResponse;
 import com.example.demo.domain.cd.dto.response.CdListResponseDto;
+import com.example.demo.domain.cd.dto.response.CdMapper;
 import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.cd.entity.Cd;
 import com.example.demo.domain.cd.repository.CdRepository;
@@ -26,116 +27,52 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class CdService {
-
-    // CdItem -> Cd -> CdList (CdItemList = Cd)
 
     private final R2Service r2Service;
     private final CdRepository cdRepository;
     private final PlaylistRepository playlistRepository;
     private final PropRepository propRepository;
 
+    @Transactional(readOnly = true)
     public List<CdItemResponse> findAllCdItemOnCd(Long playlistId) {
-        List<CdItemView> cdItemViewList = cdRepository.findAllByPlaylistWithImageKeys(playlistId);
-
+        List<CdItemView> views = cdRepository.findAllByPlaylistWithImageKeys(playlistId);
         Map<String, String> imageKeyCache = new HashMap<>();
 
-        return cdItemViewList.stream()
-                .map(v -> {
-                    String key = v.imageKey();
-
-                    if ("DEFAULT".equalsIgnoreCase(key)) {
-                        return CdItemResponse.builder()
-                                .cdItemId(v.cdId())
-                                .propId(v.propId())
-                                .theme(v.theme())
-                                .xCoordinate(v.xCoordinate())
-                                .yCoordinate(v.yCoordinate())
-                                .height(v.height())
-                                .width(v.width())
-                                .scale(v.scale())
-                                .angle(v.angle())
-                                .imageUrl("DEFAULT")
-                                .build();
-                    }
-
-                    String imageUrl = null;
-                    if (key != null && !key.isBlank()) {
-                        imageUrl = imageKeyCache.computeIfAbsent(key, k -> r2Service.getPresignedUrl(k));
-                    }
-
-                    return CdItemResponse.builder()
-                            .cdItemId(v.cdId())
-                            .propId(v.propId())
-                            .theme(v.theme())
-                            .xCoordinate(v.xCoordinate())
-                            .yCoordinate(v.yCoordinate())
-                            .height(v.height())
-                            .width(v.width())
-                            .scale(v.scale())
-                            .angle(v.angle())
-                            .imageUrl(imageUrl)
-                            .build();
-                })
-                .toList();
+        List<CdItemResponse> responses = new ArrayList<>();
+        for (CdItemView view : views) {
+            responses.add(toResponse(view, imageKeyCache));
+        }
+        return responses;
     }
 
-
-    public CdResponse getCdByPlaylistId (Long playlistId) {
+    @Transactional(readOnly = true)
+    public CdResponse getCdByPlaylistId(Long playlistId) {
         return CdResponse.builder()
                 .playlistId(playlistId)
                 .cdItems(findAllCdItemOnCd(playlistId))
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public CdListResponseDto getAllCdByPlaylistIdList(List<Long> playlistIdList) {
         if (playlistIdList == null || playlistIdList.isEmpty()) {
             return new CdListResponseDto(List.of());
         }
 
-        List<CdItemView> cdItemViewList = cdRepository.findAllByPlaylistIdWithImageKeysIn(playlistIdList);
-
+        List<CdItemView> views = cdRepository.findAllByPlaylistIdWithImageKeysIn(playlistIdList);
         Map<String, String> imageKeyCache = new HashMap<>();
 
-        var byPlaylist = cdItemViewList.stream()
-                .collect(Collectors.groupingBy(
-                        CdItemView::playlistId,
-                        LinkedHashMap::new,
-                        Collectors.mapping(r -> {
-                                    String key = r.imageKey();
-                                    String imageUrl;
+        Map<Long, List<CdItemResponse>> grouped = new LinkedHashMap<>();
+        for (CdItemView view : views) {
+            Long playlistId = view.getPlaylistId();
+            CdItemResponse response = toResponse(view, imageKeyCache);
 
-                                    if ("DEFAULT".equalsIgnoreCase(key)) {
-                                        imageUrl = "DEFAULT";
-                                    } else if (key != null && !key.isBlank()) {
-                                        imageUrl = imageKeyCache.computeIfAbsent(key, k -> r2Service.getPresignedUrl(k));
-                                    } else {
-                                        imageUrl = null;
-                                    }
+            grouped.computeIfAbsent(playlistId, k -> new ArrayList<>()).add(response);
+        }
 
-                                    return CdItemResponse.builder()
-                                            .cdItemId(r.cdId())
-                                            .propId(r.propId())
-                                            .theme(r.theme())
-                                            .xCoordinate(r.xCoordinate())
-                                            .yCoordinate(r.yCoordinate())
-                                            .height(r.height())
-                                            .width(r.width())
-                                            .scale(r.scale())
-                                            .angle(r.angle())
-                                            .imageUrl(imageUrl)
-                                            .build();
-                                },
-                                Collectors.toList()
-                        )
-                ));
-
-        List<CdResponse> cdResponses = byPlaylist.entrySet().stream()
-                .map(entry -> CdResponse.builder()
-                        .playlistId(entry.getKey())
-                        .cdItems(entry.getValue())
-                        .build())
+        List<CdResponse> cdResponses = grouped.entrySet().stream()
+                .map(entry -> CdResponse.from(entry.getKey(), entry.getValue()))
                 .toList();
 
         return new CdListResponseDto(cdResponses);
@@ -143,38 +80,26 @@ public class CdService {
 
     @Transactional
     public void saveCdItemList(Long playlistId, List<CdItemRequest> cdItemRequestList) {
-
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
-        // 필요한 propId 목록 추출
         Set<Long> propIds = cdItemRequestList.stream()
                 .map(CdItemRequest::propId)
                 .collect(Collectors.toSet());
 
-        // 한 번에 조회
         Map<Long, Prop> propMap = propRepository.findAllById(propIds).stream()
                 .collect(Collectors.toMap(Prop::getId, Function.identity()));
 
-        // 변환
         List<Cd> cdList = cdItemRequestList.stream()
-                .map(cd -> {
-                    Prop prop = propMap.get(cd.propId());
+                .map(req -> {
+                    Prop prop = propMap.get(req.propId());
                     if (prop == null) {
                         throw new PropException(PropErrorCode.PROP_NOT_FOUND);
                     }
-                    return Cd.builder()
-                            .playlist(playlist)
-                            .prop(prop)
-                            .xCoordinate(cd.xCoordinate())
-                            .yCoordinate(cd.yCoordinate())
-                            .height(cd.height())
-                            .width(cd.width())
-                            .scale(cd.scale())
-                            .angle(cd.angle())
-                            .build();
+                    return CdMapper.toEntity(playlist, prop, req);
                 })
                 .toList();
+
 
         cdRepository.saveAll(cdList);
     }
@@ -186,5 +111,22 @@ public class CdService {
 
         cdRepository.deleteByPlaylistId(playlistId);
         saveCdItemList(playlistId, cdItemRequestList);
+    }
+
+    // ========================  유틸 메서드 ========================
+
+    private CdItemResponse toResponse(CdItemView view, Map<String, String> imageKeyCache) {
+        String imageUrl = resolveImageUrl(view.getImageKey(), imageKeyCache);
+        return CdItemResponse.from(view, imageUrl);
+    }
+
+    private String resolveImageUrl(String imageKey, Map<String, String> cache) {
+        if ("DEFAULT".equalsIgnoreCase(imageKey)) {
+            return "DEFAULT";
+        }
+        if (imageKey != null && !imageKey.isBlank()) {
+            return cache.computeIfAbsent(imageKey, r2Service::getPresignedUrl);
+        }
+        return null;
     }
 }
