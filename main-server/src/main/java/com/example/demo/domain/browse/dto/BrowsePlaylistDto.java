@@ -11,6 +11,12 @@ import static com.example.demo.domain.cd.dto.response.CdItemResponse.fromJsonLis
 @Schema(description = "플레이리스트 카드 정보")
 public record BrowsePlaylistDto(
 
+        @Schema(description = "카드 ID", example = "2")
+        Long cardId,
+
+        @Schema(description = "카드 노출 순서 (position)", example = "0")
+        int position,
+
         @Schema(description = "플레이리스트 ID", example = "101")
         Long playlistId,
 
@@ -40,6 +46,8 @@ public record BrowsePlaylistDto(
 ) {
         public static BrowsePlaylistDto from(BrowsePlaylistCard card) {
                 return new BrowsePlaylistDto(
+                        card.getId(),
+                        card.getPosition(),
                         card.getPlaylistId(),
                         card.getPlaylistTitle(),
                         card.getGenre(),

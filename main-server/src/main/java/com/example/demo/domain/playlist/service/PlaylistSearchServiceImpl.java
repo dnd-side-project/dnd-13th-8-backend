@@ -1,7 +1,6 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
-import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
@@ -17,6 +16,7 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
+import com.example.demo.global.paging.CursorPageConverter;
 import java.text.Normalizer;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -58,18 +58,21 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     @Override
     @Transactional(readOnly = true)
-    public CursorPageResponse<PlaylistSearchResponse> searchByGenre(
+    public CursorPageResponse<PlaylistSearchResponse, Long> searchByGenre(
             PlaylistGenre genre,
             PlaylistSortOption sort,
             Long cursorId,
             Integer limit
     ) {
         int finalLimit = validateLimit(limit);
+
+        // 커서가 없으면 Long.MAX_VALUE부터 시작 (내림차순 정렬일 때 적절)
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
 
-        List<RepresentativePlaylist> reps = representativePlaylistRepository.findByGenreWithCursor(genre, sort,cursorId, limit);
+        List<RepresentativePlaylist> reps = representativePlaylistRepository
+                .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1); // hasNext 판별 위해 limit + 1
 
-        CursorPageResponse<PlaylistSearchResponse> response = toCursorResponse(
+        return CursorPageConverter.toCursorResponse(
                 reps,
                 finalLimit,
                 rep -> {
@@ -83,8 +86,8 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 },
                 PlaylistSearchResponse::playlistId
         );
-        return response;
     }
+
 
 
     @Override
@@ -165,34 +168,6 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         return 10;
     }
 
-    private <E, D> CursorPageResponse<D> toCursorResponse(
-            List<E> entities,
-            int limit,
-            Function<E, D> mapper,
-            Function<D, Long> idExtractor
-    ) {
-        boolean hasNext = entities.size() > limit;
-        if (hasNext) {
-            entities = entities.subList(0, limit);
-        }
-
-        List<D> dtoList = entities.stream()
-                .map(mapper)
-                .collect(Collectors.toList());
-
-        String nextCursor = null;
-        if (hasNext && !dtoList.isEmpty()) {
-            Long lastId = idExtractor.apply(dtoList.get(dtoList.size() - 1));
-            nextCursor = lastId.toString();
-        }
-
-        return new CursorPageResponse<>(
-                dtoList,
-                nextCursor,
-                dtoList.size(),
-                hasNext
-        );
-    }
 
     private String resolveKeyFromRange(String range) {
         LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));

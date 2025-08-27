@@ -39,7 +39,7 @@ public class PlaylistSearchController {
             content = @Content(schema = @Schema(implementation = CursorPageResponse.class))
     )
     @GetMapping("/genre")
-    public ResponseEntity<CursorPageResponse<PlaylistSearchResponse>> searchByGenre(
+    public ResponseEntity<CursorPageResponse<PlaylistSearchResponse, Long>> searchByGenre(
             @Parameter(description = "정렬 조건", example = "POPULAR")
             @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort,
 
@@ -52,7 +52,7 @@ public class PlaylistSearchController {
             @Parameter(description = "한 페이지에 가져올 개수", example = "10")
             @RequestParam(name = "limit", defaultValue = "10") Integer limit
     ) {
-        CursorPageResponse<PlaylistSearchResponse> response =
+        CursorPageResponse<PlaylistSearchResponse, Long> response =
                 playlistSearchService.searchByGenre(genre, sort, cursorId, limit);
         return ResponseEntity.ok(response);
     }

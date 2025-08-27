@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface RepresentativeRepresentativePlaylistRepository extends JpaRepository<RepresentativePlaylist, Long>,
         RepresentativePlaylistRepositoryCustom {
@@ -16,6 +17,13 @@ public interface RepresentativeRepresentativePlaylistRepository extends JpaRepos
     FROM RepresentativePlaylist rp
     """)
     List<Long> findAllPlaylistIds();
+
+    @Query("""
+    SELECT rp.playlist.id
+    FROM RepresentativePlaylist rp
+    WHERE rp.playlist.users.id != :userId
+""")
+    List<Long> findAllPlaylistIdsExcludingUser(@Param("userId") String userId);
 
 }
 
