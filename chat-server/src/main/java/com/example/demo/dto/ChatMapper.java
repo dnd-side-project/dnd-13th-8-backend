@@ -13,6 +13,7 @@ public class ChatMapper {
                 .sentAt(sentAt)
                 .messageId(chatOutbound.getMessageId())
                 .senderId(chatOutbound.getSenderId())
+                .username(chatOutbound.getUsername())
                 .content(chatOutbound.getContent())
                 .systemMessage(chatOutbound.isSystemMessage())
                 .build();
@@ -24,6 +25,7 @@ public class ChatMapper {
                 .sentAt(chat.getSentAt())
                 .messageId(chat.getMessageId())
                 .senderId(chat.getSenderId())
+                .username(chat.getUsername())
                 .content(chat.getContent())
                 .systemMessage(chat.isSystemMessage())
                 .build();

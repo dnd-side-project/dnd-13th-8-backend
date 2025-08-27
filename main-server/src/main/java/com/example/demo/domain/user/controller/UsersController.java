@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.controller;
 
+import com.example.demo.domain.user.dto.GetUsernameAndIdResponse;
 import com.example.demo.domain.user.service.UsersService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,8 +23,8 @@ public class UsersController {
 
     @GetMapping
     @Operation(
-            summary = "내 이름 확인",
-            description = "로그인 된 유저의 이름 (Username)을 조회합니다",
+            summary = "내 이름/아이디 확인 (채팅용)",
+            description = "로그인 된 유저의 이름 (Username)과 ID를 조회합니다",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -33,7 +34,11 @@ public class UsersController {
                     )
             }
     )
-    public ResponseEntity<String> getUsername(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(customUserDetails.getUsername());
+    public ResponseEntity<GetUsernameAndIdResponse> getUsernameAndId(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        GetUsernameAndIdResponse getUsernameAndIdResponse = GetUsernameAndIdResponse.builder()
+                .userId(customUserDetails.getId())
+                .username(customUserDetails.getUsername())
+                .build();
+        return ResponseEntity.ok().body(getUsernameAndIdResponse);
     }
 }
