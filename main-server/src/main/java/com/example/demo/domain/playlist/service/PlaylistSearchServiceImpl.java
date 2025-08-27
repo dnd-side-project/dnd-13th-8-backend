@@ -1,13 +1,10 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
-import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.search.PopularItem;
-import com.example.demo.domain.playlist.dto.search.SearchItem;
-import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
@@ -15,10 +12,11 @@ import java.text.Normalizer;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +32,6 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
     private final StringRedisTemplate redis;
 
-    // 기본 인기 검색어 (Redis 데이터가 없을 때 fallback)
     private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
             new PopularItem("여름"),
             new PopularItem("바캉스 플리"),
@@ -47,26 +44,27 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             new PopularItem("인디밴드음악")
     );
 
-
     @Override
     @Transactional(readOnly = true)
-    public List<PlaylistSearchResponse> searchByGenre(PlaylistGenre genre, PlaylistSortOption sort, Integer limit) {
-        int finalLimit = 10;
-        if (limit != null && limit > 0 && limit <= 50) {
-            finalLimit = limit;
-        }
+    public CursorPageResponse<PlaylistSearchResponse> searchByGenre(
+            PlaylistGenre genre,
+            PlaylistSortOption sort,
+            Long cursorId,
+            Integer limit
+    ) {
+        int finalLimit = validateLimit(limit);
+        cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
+        Pageable pageable = PageRequest.of(0, finalLimit + 1);
 
-        Pageable pageable = PageRequest.of(0, finalLimit);
-
-        List<RepresentativePlaylist> representatives = switch (sort) {
-            case POPULAR -> representativePlaylistRepository
-                    .findByGenreOrderByVisitCountDesc(genre, pageable);
-            case RECENT -> representativePlaylistRepository
-                    .findByGenreOrderByCreatedAtDesc(genre, pageable);
+        List<RepresentativePlaylist> reps = switch (sort) {
+            case POPULAR -> representativePlaylistRepository.findByGenreWithCursorSortByVisit(genre, cursorId, pageable);
+            case RECENT -> representativePlaylistRepository.findByGenreWithCursorSortByRecent(genre, cursorId, pageable);
         };
 
-        return representatives.stream()
-                .map(rep -> {
+        return toCursorResponse(
+                reps,
+                finalLimit,
+                rep -> {
                     Playlist p = rep.getPlaylist();
                     return new PlaylistSearchResponse(
                             p.getId(),
@@ -74,40 +72,45 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                             p.getUsers().getId(),
                             p.getUsers().getUsername()
                     );
-                })
-                .toList();
+                },
+                PlaylistSearchResponse::playlistId
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CombinedSearchResponse searchAll(String query, PlaylistSortOption sort, int limit) {
+    public CursorPageResponse<PlaylistSearchResponse> searchByTitle(
+            String query,
+            PlaylistSortOption sort,
+            Long cursorId,
+            Integer limit
+    ) {
+        int finalLimit = validateLimit(limit);
+        cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
         recordSearchTerm(query);
+        Pageable pageable = PageRequest.of(0, finalLimit + 1);
 
-        Pageable pageable = Pageable.ofSize(limit);
+        List<RepresentativePlaylist> reps =
+                representativePlaylistRepository.searchByTitleWithCursor(query, sort, cursorId, pageable);
 
-        List<PlaylistSearchDto> playlists = representativePlaylistRepository
-                .searchRepresentativePlaylists(query, sort, pageable);
-
-        List<UserSearchDto> users = representativePlaylistRepository
-                .searchUsersWithRepresentativePlaylist(query, pageable);
-
-        List<SearchItem> combined = new ArrayList<>();
-        combined.addAll(users);      // type = "USER"
-        combined.addAll(playlists);  // type = "PLAYLIST"
-
-        return new CombinedSearchResponse(combined);
+        return toCursorResponse(
+                reps,
+                finalLimit,
+                rep -> new PlaylistSearchResponse(
+                        rep.getId(),
+                        rep.getPlaylist().getName(),
+                        rep.getUser().getId(),
+                        rep.getUser().getUsername()
+                ),
+                PlaylistSearchResponse::playlistId
+        );
     }
-
 
     @Override
     public List<PopularItem> getPopularTerms(String range, int limit) {
         String redisKey = resolveKeyFromRange(range);
+        Set<TypedTuple<String>> raw = redis.opsForZSet().reverseRangeWithScores(redisKey, 0, limit - 1);
 
-        // Redis ZSET에서 인기 검색어 가져오기
-        Set<TypedTuple<String>> raw =
-                redis.opsForZSet().reverseRangeWithScores(redisKey, 0, limit - 1);
-
-        // fallback 처리
         if (raw == null || raw.isEmpty()) {
             return DEFAULT_POPULAR_TERMS.stream().limit(limit).toList();
         }
@@ -117,11 +120,50 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 .toList();
     }
 
-    // range 값에 따른 Redis 키 생성
+    /*
+    내부 메소드
+     */
+
+    private int validateLimit(Integer limit) {
+        if (limit != null && limit > 0 && limit <= 50) {
+            return limit;
+        }
+        return 10;
+    }
+
+    private <E, D> CursorPageResponse<D> toCursorResponse(
+            List<E> entities,
+            int limit,
+            Function<E, D> mapper,
+            Function<D, Long> idExtractor
+    ) {
+        boolean hasNext = entities.size() > limit;
+        if (hasNext) {
+            entities = entities.subList(0, limit);
+        }
+
+        List<D> dtoList = entities.stream()
+                .map(mapper)
+                .collect(Collectors.toList());
+
+        String nextCursor = null;
+        if (hasNext && !dtoList.isEmpty()) {
+            Long lastId = idExtractor.apply(dtoList.get(dtoList.size() - 1));
+            nextCursor = lastId.toString();
+        }
+
+        return new CursorPageResponse<>(
+                dtoList,
+                nextCursor,
+                dtoList.size(),
+                hasNext
+        );
+    }
+
     private String resolveKeyFromRange(String range) {
         LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
         return switch (range) {
-            case "7d" -> "pop:term:" + now.minusDays(7) + ":" + now;  // 향후 확장 고려
+            case "7d" -> "pop:term:" + now.minusDays(7) + ":" + now;
             case "30d" -> "pop:term:" + now.minusDays(30) + ":" + now;
             default -> "pop:term:" + now;
         };
@@ -136,13 +178,9 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     }
 
     public String normalize(String term) {
-        // 1. 앞뒤 공백 제거 → 2. 연속 공백 하나로 → 3. 유니코드 정규화 → 4. 소문자 변환
         return Normalizer.normalize(
                 term.trim().replaceAll("\\s+", " "),
                 Normalizer.Form.NFKC
         ).toLowerCase(Locale.ROOT);
     }
-
 }
-
-
