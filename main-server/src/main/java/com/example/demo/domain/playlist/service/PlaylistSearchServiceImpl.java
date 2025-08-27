@@ -26,8 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
@@ -64,14 +62,14 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     ) {
         int finalLimit = validateLimit(limit);
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
-        Pageable pageable = PageRequest.of(0, finalLimit + 1);
 
-        List<RepresentativePlaylist> reps = switch (sort) {
-            case POPULAR -> representativePlaylistRepository.findByGenreWithCursorSortByVisit(genre, cursorId, pageable);
-            case RECENT -> representativePlaylistRepository.findByGenreWithCursorSortByRecent(genre, cursorId, pageable);
-        };
+        log.info("🎯 [장르 검색 요청] genre={}, sort={}, cursorId={}, limit={}", genre, sort, cursorId, finalLimit);
 
-        return toCursorResponse(
+        List<RepresentativePlaylist> reps = representativePlaylistRepository.findByGenreWithCursor(genre, sort,cursorId, limit);
+
+        log.info("📦 [조회된 플레이리스트 수] {}개 (limit + 1)", reps.size());
+
+        CursorPageResponse<PlaylistSearchResponse> response = toCursorResponse(
                 reps,
                 finalLimit,
                 rep -> {
@@ -85,7 +83,15 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 },
                 PlaylistSearchResponse::playlistId
         );
+
+        log.info("✅ [응답] size={}, hasNext={}, nextCursor={}",
+                response.size(),
+                response.hasNext(),
+                response.nextCursor());
+
+        return response;
     }
+
 
     @Override
     @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.example.demo.domain.representative.repository;
 
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -79,4 +80,31 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
                 .fetch();
     }
 
+        @Override
+        public List<RepresentativePlaylist> findByGenreWithCursor(PlaylistGenre genre, PlaylistSortOption sort, Long cursorId, int limit) {
+            QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+            QPlaylist p = QPlaylist.playlist;
+
+            BooleanBuilder builder = new BooleanBuilder();
+            builder.and(p.genre.eq(genre));
+            if (cursorId != null && cursorId > 0) {
+                builder.and(rp.id.lt(cursorId));
+            }
+
+            List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+            if (sort == PlaylistSortOption.POPULAR) {
+                orderSpecifiers.add(p.visitCount.desc());
+            } else {
+                orderSpecifiers.add(p.createdAt.desc());
+            }
+            orderSpecifiers.add(rp.id.desc()); // tie-breaker
+
+            return queryFactory
+                    .selectFrom(rp)
+                    .join(rp.playlist, p).fetchJoin()
+                    .where(builder)
+                    .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
+                    .limit(limit + 1)
+                    .fetch();
+        }
 }
