@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.controller;
 
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 import com.example.demo.domain.representative.service.RepresentativePlaylistService;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/main/playlists")
 @Tag(name = "playlist-detail", description = "플레이리스트 상세보기")
@@ -45,16 +48,16 @@ public class PlaylistsController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 상세 정보",
-            content = @Content(schema = @Schema(implementation = PlaylistDetailResponse.class))
+            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
     )
     @GetMapping("/{playlistId}")
-    public ResponseEntity<PlaylistDetailResponse> getPlaylistDetail(
+    public ResponseEntity<MainPlaylistDetailResponse> getPlaylistDetail(
             @Parameter(description = "플레이리스트 ID", example = "101")
             @PathVariable Long playlistId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        PlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
+        MainPlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
 

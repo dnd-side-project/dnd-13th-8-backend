@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
@@ -7,7 +8,7 @@ import java.util.List;
 
 public interface PlaylistMainPageService {
 
-    PlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId);
+    MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId);
 
     List<PlaylistCardResponse> getRecommendations(String userId);
 
