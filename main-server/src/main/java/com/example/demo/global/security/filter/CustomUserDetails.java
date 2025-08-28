@@ -19,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String role = user.getRole().value(); // DB: "USER" 같은 값이라 가정
+        String role = user.getRole().value();
         if (role != null && !role.startsWith("ROLE_")) {
             role = "ROLE_" + role;
         }

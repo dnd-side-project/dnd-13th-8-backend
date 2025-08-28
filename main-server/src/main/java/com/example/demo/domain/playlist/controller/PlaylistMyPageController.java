@@ -1,6 +1,5 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
@@ -41,7 +40,6 @@ public class PlaylistMyPageController {
 
     private final PlaylistMyPageService playlistMyPageService;
     private final RepresentativePlaylistService representativePlaylistService;
-    private final CdService cdService;
     private final UsersService usersService;
 
     @Operation(
@@ -84,9 +82,7 @@ public class PlaylistMyPageController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistMyPageService.savePlaylistWithSongs(user.getId(), request);
-
-        cdService.saveCdItemList(response.playlistId(), finalPlaylistRequest.saveCdRequestDto().cdItems());
+        PlaylistWithSongsResponse response = playlistMyPageService.saveFinalPlaylistWithSongsAndCd(user.getId(), request, finalPlaylistRequest.saveCdRequestDto().cdItems());
 
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);

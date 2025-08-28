@@ -4,6 +4,7 @@ import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.follow.dto.FollowPlaylistDto;
 import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
@@ -91,6 +92,18 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                 .toList();
 
         return new PlaylistWithSongsResponse(savedPlaylist.getId(), songDtos);
+    }
+
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request,
+                                                                     List<CdItemRequest> cdItemRequestList){
+
+        PlaylistWithSongsResponse response = savePlaylistWithSongs(usersId, request);
+
+        cdService.saveCdItemList(response.playlistId(), cdItemRequestList);
+
+        return response;
     }
 
     @Override

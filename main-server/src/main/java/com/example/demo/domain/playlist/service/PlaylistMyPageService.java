@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
@@ -9,6 +10,8 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsRespons
 import java.util.List;
 
 public interface PlaylistMyPageService {
+
+    PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request, List<CdItemRequest> cdItemRequestList);
 
     PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request);
 
