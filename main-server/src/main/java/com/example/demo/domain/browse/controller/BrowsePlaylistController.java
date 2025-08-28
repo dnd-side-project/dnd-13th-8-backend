@@ -44,7 +44,6 @@ public class BrowsePlaylistController {
             description = """
         사용자의 Redis에 캐싱된 셔플된 둘러보기(BrowsePlaylist) 목록을 커서 기반으로 조회합니다.
         각 유저는 매일 새벽 3시에 셔플된 position 기반의 카드 목록을 가지며, position과 cardId를 함께 사용해 커서 페이징합니다.
-        
         🔁 [Fallback 처리 안내]
         - 신규 가입자 등 캐시 데이터가 없는 경우: BrowsePlaylist 테이블의 ID 1~5번 중 하나를 무작위로 선택하여 반환합니다.
         - 이 경우 nextCursor는 null입니다.
