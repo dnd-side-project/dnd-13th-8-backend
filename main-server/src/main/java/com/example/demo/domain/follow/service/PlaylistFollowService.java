@@ -71,4 +71,9 @@ public class PlaylistFollowService {
             playlistFollowRepository.deleteByUsersIdAndPlaylistId(userId, playlistId);
         }
     }
+
+    @Transactional
+    public boolean isUserFollowing(String userId, Long playlistId) {
+        return playlistFollowRepository.existsByUsersIdAndPlaylistId(userId, playlistId);
+    }
 }
