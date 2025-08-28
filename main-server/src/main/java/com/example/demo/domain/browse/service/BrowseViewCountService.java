@@ -1,13 +1,15 @@
 package com.example.demo.domain.browse.service;
 
+import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BrowseViewCountService {
@@ -45,29 +47,35 @@ public class BrowseViewCountService {
      * Redis에 저장된 조회수를 반환합니다.
      * 값이 없으면 기본값 0을 반환합니다.
      */
-    public Map<Long, Long> getViewCounts(List<Long> playlistIds) {
-            Map<Long, Long> result = new HashMap<>();
-            if (playlistIds == null || playlistIds.isEmpty()) {
-                return result;
-            }
+    public List<PlaylistViewCountDto> getViewCounts(List<Long> playlistIds) {
+        List<PlaylistViewCountDto> result = new ArrayList<>();
+        if (playlistIds == null || playlistIds.isEmpty()) {
+            return result;
+        }
 
-            List<String> keys = playlistIds.stream()
-                    .map(id -> "BROWSE_VIEW_COUNT:" + id)
-                    .toList();
+        List<String> keys = playlistIds.stream()
+                .map(id -> "BROWSE_VIEW_COUNT:" + id)
+                .toList();
 
-            List<String> values = redisTemplate.opsForValue().multiGet(keys);
+        List<String> values = redisTemplate.opsForValue().multiGet(keys);
 
-            for (int i = 0; i < playlistIds.size(); i++) {
-                Long playlistId = playlistIds.get(i);
-                String value = values.get(i);
+        for (int i = 0; i < playlistIds.size(); i++) {
+            Long playlistId = playlistIds.get(i);
+            String value = (i < values.size()) ? values.get(i) : null;
 
-                if (value == null) {
-                    result.put(playlistId, 0L);
-                } else {
-                    result.put(playlistId, Long.parseLong(value));
+            Long viewCount = 0L;
+            if (value != null) {
+                try {
+                    viewCount = Long.parseLong(value);
+                } catch (NumberFormatException e) {
+                    log.warn("조회수 파싱 실패: playlistId={}, value={}", playlistId, value);
                 }
             }
 
-            return result;
+            result.add(new PlaylistViewCountDto(playlistId, viewCount));
         }
+
+        return result;
+    }
+
 }
