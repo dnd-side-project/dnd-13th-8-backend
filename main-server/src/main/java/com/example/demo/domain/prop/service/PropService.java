@@ -29,7 +29,7 @@ public class PropService {
     private final UsersRepository usersRepository;
 
     @Transactional
-    public void saveProp(String userId, String theme, MultipartFile file) {
+    public PropResponse saveProp(String userId, String theme, MultipartFile file) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -39,13 +39,20 @@ public class PropService {
         } catch (IOException e) {
             throw new PropException(PropErrorCode.PROP_R2_ERROR);
         }
-
         Prop prop = Prop.builder()
                 .user(user)
                 .theme(theme)
                 .imageKey(imageKey)
                 .build();
-        propRepository.save(prop);
+        Prop saved = propRepository.save(prop);
+
+        String imageUrl = r2Service.getPresignedUrl(imageKey);
+
+        return PropResponse.builder()
+                .propId(saved.getId())
+                .theme(saved.getTheme())
+                .imageUrl(imageUrl)
+                .build();
     }
 
     public GetPropListResponseDto findPropListByUserId (String userId) {
@@ -54,11 +61,12 @@ public class PropService {
         }
         List<Prop> propList = propRepository.findAllByUsersId(userId);
         List<PropResponse> propResponsesList = propList.stream()
-                .map(p -> new PropResponse(
-                    p.getId(),
-                    p.getTheme(),
-                    getPropImageUrl(p.getImageKey())   // imageKey → presigned URL
-                )).toList();
+                .map(p -> PropResponse.builder()
+                        .propId(p.getId())
+                        .theme(p.getTheme())
+                        .imageUrl(getPropImageUrl(p.getImageKey()))
+                        .build()
+                ).toList();
 
         return new GetPropListResponseDto(propResponsesList);
     }
