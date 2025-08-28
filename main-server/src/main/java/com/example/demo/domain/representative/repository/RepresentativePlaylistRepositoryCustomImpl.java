@@ -1,5 +1,8 @@
 package com.example.demo.domain.representative.repository;
 
+import static com.querydsl.core.types.dsl.Expressions.nullExpression;
+
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
@@ -69,8 +72,10 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
                         p.id,
                         p.name,
                         u.id,
-                        u.username
+                        u.username,
+                        nullExpression(OnlyCdResponse.class)
                 ))
+
                 .from(p)
                 .join(p.users, u)
                 .where(builder)
