@@ -1,12 +1,14 @@
 package com.example.demo.global.security.config;
 
-
 import com.example.demo.global.jwt.JwtProvider;
+import com.example.demo.global.security.ex.CustomAccessDeniedHandler;
+import com.example.demo.global.security.ex.CustomAuthenticationEntryPoint;
 import com.example.demo.global.security.filter.CustomUserDetailsService;
 import com.example.demo.global.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,6 +22,8 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService userDetailsService;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -39,7 +43,7 @@ public class SecurityConfig {
                                 "/chat/health",
                                 "/api/health",
 
-                                //  Swagger 관련 경로
+                                // Swagger 관련 경로
                                 "/main/swagger-ui/**",
                                 "/main/swagger/**",
                                 "/swagger/**",
@@ -50,15 +54,21 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        //  마이페이지는 user/super 권한만 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 마이페이지는 user/super 권한만 허용
                         .requestMatchers("/main/mypage/**").hasAnyAuthority("ROLE_USER", "ROLE_SUPER")
 
+                        // 로그아웃은 인증만 필요
                         .requestMatchers("/auth/logout").authenticated()
+
                         // 그 외 모든 요청은 인증만 필요
                         .anyRequest().authenticated()
-
                 )
+                .exceptionHandling(ex -> {
+                    ex.authenticationEntryPoint(authenticationEntryPoint); // 401
+                    ex.accessDeniedHandler(accessDeniedHandler); // 403
+                })
                 .anonymous(Customizer.withDefaults());
 
         var jwtFilter = new JwtAuthenticationFilter(jwtProvider, userDetailsService);
@@ -66,5 +76,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }
