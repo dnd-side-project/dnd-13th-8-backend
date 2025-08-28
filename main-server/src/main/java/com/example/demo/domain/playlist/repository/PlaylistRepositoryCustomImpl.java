@@ -22,8 +22,10 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
     public List<Long> findFollowedRepresentativePlaylistIds(String currentUserId) {
         QFollow f = QFollow.follow;
         QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+        QPlaylist p = QPlaylist.playlist;
+        QSong s = QSong.song;
 
-        // 내가 팔로우한 유저 ID 조회 (playlist 기준 아님)
+        // 내가 팔로우한 유저 ID 조회
         List<String> followedUserIds = queryFactory
                 .select(f.playlist.users.id)
                 .from(f)
@@ -35,21 +37,25 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
             return List.of();
         }
 
-        // 팔로우한 유저들의 대표 플레이리스트 ID 조회
+        // 곡 3개 이상인 대표 플레이리스트 ID 조회
         return queryFactory
                 .select(rp.playlist.id)
                 .from(rp)
+                .join(rp.playlist, p)
+                .join(s).on(s.playlist.id.eq(p.id))
                 .where(rp.user.id.in(followedUserIds))
+                .groupBy(rp.playlist.id)
+                .having(s.count().goe(3)) // 곡이 3개 이상인 플레이리스트만
                 .fetch();
+
     }
 
     /**
-     * 내가 팔로우한 유저들의 대표 플레이리스트에 포함된 곡과
-     * youtubeUrl 또는 title이 일치하는 곡이 포함된
-     * 다른 유저의 대표 플레이리스트 추천
+     * 내가 팔로우한 유저들의 대표 플레이리스트에 포함된 곡과 youtubeUrl 또는 title이 일치하는 곡이 포함된 다른 유저의 대표 플레이리스트 추천
      */
     @Override
-    public List<Playlist> findPlaylistsBySimilarSongs(List<Long> basePlaylistIds, String excludeUserId, List<Long> excludePlaylistIds, int limit) {
+    public List<Playlist> findPlaylistsBySimilarSongs(List<Long> basePlaylistIds, String excludeUserId,
+                                                      List<Long> excludePlaylistIds, int limit) {
         QRepresentativePlaylist rp = new QRepresentativePlaylist("rp");
         QSong s1 = new QSong("s1");
         QSong s2 = new QSong("s2");
@@ -65,40 +71,46 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                                 .or(s1.youtubeTitle.eq(s2.youtubeTitle))
                 )
                 .join(s2.playlist, p2)
-                .join(rp).on(rp.playlist.id.eq(p2.id)) // 대표 플레이리스트인지 확인
+                .join(rp).on(rp.playlist.id.eq(p2.id)) // 대표 플레이리스트만
                 .join(p2.users, u).fetchJoin()
+                .join(QSong.song, QSong.song).on(QSong.song.playlist.id.eq(p2.id)) // 곡 개수 계산용
                 .where(
-                        s1.playlist.id.in(basePlaylistIds),   // 기준 곡: 팔로우한 유저의 대표 플리 곡
-                        p2.id.notIn(excludePlaylistIds),      // 이미 추천된 플리 제외
-                        p2.users.id.ne(excludeUserId)         // 본인 제외
+                        s1.playlist.id.in(basePlaylistIds),
+                        p2.id.notIn(excludePlaylistIds),
+                        p2.users.id.ne(excludeUserId)
                 )
+                .groupBy(p2.id)
+                .having(QSong.song.count().goe(3)) //  곡이 3개 이상
                 .orderBy(p2.createdAt.desc())
                 .limit(limit)
                 .fetch();
     }
 
     /**
-     * fallback용 최신 대표 플레이리스트 조회
-     * (내가 만든 것 제외 + 이미 추천된 것 제외)
+     * fallback용 최신 대표 플레이리스트 조회 (내가 만든 것 제외 + 이미 추천된 것 제외)
      */
     @Override
-    public List<Playlist> findLatestRepresentativePlaylists(String excludeUserId, List<Long> excludePlaylistIds, int limit) {
+    public List<Playlist> findLatestRepresentativePlaylists(String excludeUserId, List<Long> excludePlaylistIds,
+                                                            int limit) {
         QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
         QPlaylist p = QPlaylist.playlist;
         QUsers u = QUsers.users;
+        QSong s = QSong.song;
 
         return queryFactory
                 .select(p)
                 .from(rp)
-                .join(rp.playlist, p) // ️ fetchJoin 제거
+                .join(rp.playlist, p)
                 .join(p.users, u).fetchJoin()
+                .join(s).on(s.playlist.id.eq(p.id)) // 곡 join
                 .where(
                         p.users.id.ne(excludeUserId),
                         p.id.notIn(excludePlaylistIds)
                 )
+                .groupBy(p.id) // count를 쓰기 위한 groupBy
+                .having(s.count().goe(3)) //  곡 3개 이상
                 .orderBy(p.createdAt.desc())
                 .limit(limit)
                 .fetch();
     }
-
 }

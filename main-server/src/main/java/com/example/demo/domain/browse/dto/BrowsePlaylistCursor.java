@@ -1,6 +1,7 @@
 package com.example.demo.domain.browse.dto;
 
 
+import com.example.demo.domain.browse.entity.BrowsePlaylistCard;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "셔플된 브라우즈 카드 목록의 커서 정보")
@@ -25,4 +26,5 @@ public record BrowsePlaylistCursor(
         )
         Long cardId
 
-) {}
+) {
+}

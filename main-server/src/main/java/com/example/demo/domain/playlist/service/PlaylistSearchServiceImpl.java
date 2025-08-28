@@ -77,7 +77,8 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                                 p.getUsers().getUsername()
                         );
                     },
-                    PlaylistSearchResponse::playlistId
+                    PlaylistSearchResponse::playlistId, // 커서 추출
+                    reps.getTotalCount()                // 총 개수 추가
             );
         } catch (Exception e) {
             throw new PlaylistSearchException("장르 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);

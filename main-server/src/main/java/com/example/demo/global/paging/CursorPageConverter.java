@@ -11,8 +11,8 @@ public class CursorPageConverter {
                 List<E> entities,
                 int limit,
                 Function<E, D> mapper,
-                Function<D, C> cursorExtractor
-        ) {
+                Function<D, C> cursorExtractor,
+                long totalCount) {
             boolean hasNext = entities.size() > limit;
             if (hasNext) {
                 entities = entities.subList(0, limit);
@@ -31,7 +31,8 @@ public class CursorPageConverter {
                     dtoList,
                     nextCursor,
                     dtoList.size(),
-                    hasNext
+                    hasNext,
+                    totalCount
             );
         }
     }

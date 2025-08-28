@@ -24,6 +24,9 @@ public record CursorPageResponse<T, C>(
         int size,
 
         @Schema(description = "다음 페이지 존재 여부", example = "true")
-        boolean hasNext
+        boolean hasNext,
+
+        @Schema(description = "총 검색 결과 수", example ="22")
+        long totalCount
 ) {
 }

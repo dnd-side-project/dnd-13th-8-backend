@@ -23,8 +23,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,10 +70,11 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
                         dtoList,
                         cursor,
                         dtoList.size(),
-                        false
+                        false,
+                        0L
                 );
             } else {
-                return new CursorPageResponse<>(List.of(), null, 0, false);
+                return new CursorPageResponse<>(List.of(), null, 0, false, 0L);
             }
         }
 
@@ -87,8 +86,8 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
                 dto -> {
                     BrowsePlaylistCursor cursor= new BrowsePlaylistCursor(dto.position(), dto.cardId());
                     return cursor;
-                }
-        );
+                },
+                0L);
     }
 
 
