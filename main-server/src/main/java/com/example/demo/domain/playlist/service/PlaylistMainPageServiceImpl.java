@@ -11,8 +11,7 @@ import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
-import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
@@ -40,7 +39,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
     private final CdService cdService;
-    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
+    private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     private static final int RECOMMENDATION_LIMIT = 3;
 

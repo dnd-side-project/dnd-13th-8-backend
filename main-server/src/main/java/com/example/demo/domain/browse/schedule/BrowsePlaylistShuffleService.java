@@ -9,7 +9,7 @@ import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.song.util.DurationFormatUtil;
@@ -17,9 +17,7 @@ import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +33,7 @@ public class BrowsePlaylistShuffleService {
 
     private final UsersRepository usersRepository;
     private final PlaylistRepository playlistRepository;
-    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
+    private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final SongRepository songRepository;
     private final CdService cdService;
     private final BrowsePlaylistRepository browseSnapshotRepository;

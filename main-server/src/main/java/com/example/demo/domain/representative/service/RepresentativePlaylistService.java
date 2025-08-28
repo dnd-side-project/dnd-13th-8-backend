@@ -7,7 +7,7 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import java.util.List;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RepresentativePlaylistService {
 
-    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
+    private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final SongRepository songRepository;
     private final CdService cdService;
 

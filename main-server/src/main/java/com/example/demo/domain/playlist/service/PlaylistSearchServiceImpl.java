@@ -14,7 +14,7 @@ import com.example.demo.domain.playlist.dto.search.SearchItem;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativeRepresentativePlaylistRepository;
+import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.paging.CursorPageConverter;
 import java.text.Normalizer;
@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
-    private final RepresentativeRepresentativePlaylistRepository representativePlaylistRepository;
+    private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final StringRedisTemplate redis;
     private final UsersRepository usersRepository;
     private final CdService cdService;
