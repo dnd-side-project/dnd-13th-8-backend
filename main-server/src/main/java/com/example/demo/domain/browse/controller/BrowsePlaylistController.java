@@ -6,6 +6,7 @@ import com.example.demo.domain.browse.dto.BrowseResponse;
 import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.browse.service.BrowseViewCountService;
+import com.example.demo.domain.follow.dto.IsUserFollowingResponse;
 import com.example.demo.domain.follow.service.PlaylistFollowService;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -130,6 +131,21 @@ public class BrowsePlaylistController {
             @RequestBody List<Long> playlistIds
     ) {
         return browseViewCountService.getViewCounts(playlistIds);
+    }
+
+    @GetMapping("/{playlistId}/follow")
+    @Operation(
+            summary = "플레이리스트 팔로우 여부 확인 True/False",
+            description = "현재 로그인한 사용자가 playlistId를 팔로우 중인지 확인합니다."
+    )
+    public ResponseEntity<IsUserFollowingResponse> checkFollow(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable Long playlistId
+    ) {
+        return ResponseEntity.ok().body(IsUserFollowingResponse.builder()
+                .isFollowing(playlistFollowService.isUserFollowing(me.getId(), playlistId))
+                .build());
     }
 
 
