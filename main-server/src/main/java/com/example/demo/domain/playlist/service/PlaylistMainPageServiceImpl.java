@@ -47,6 +47,7 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
     @Override
     @Transactional
     public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
+
         // 대표 플레이리스트만 조회
         var playlist = playlistRepository.findById(playlistId)
                 .filter(Playlist::isRepresentative)

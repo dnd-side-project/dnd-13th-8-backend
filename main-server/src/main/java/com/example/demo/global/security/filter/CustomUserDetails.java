@@ -19,7 +19,11 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRole().value()));
+        String role = user.getRole().value(); // DB: "USER" 같은 값이라 가정
+        if (role != null && !role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override
