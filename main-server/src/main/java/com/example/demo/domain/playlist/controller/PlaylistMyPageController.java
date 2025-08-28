@@ -41,7 +41,6 @@ public class PlaylistMyPageController {
 
     private final PlaylistMyPageService playlistMyPageService;
     private final RepresentativePlaylistService representativePlaylistService;
-    private final CdService cdService;
     private final UsersService usersService;
 
     @Operation(
