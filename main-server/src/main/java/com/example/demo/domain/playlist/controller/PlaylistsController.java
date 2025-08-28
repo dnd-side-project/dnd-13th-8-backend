@@ -57,6 +57,13 @@ public class PlaylistsController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
+
+        log.info("📌 [플리 상세 조회 진입] playlistId={}, user={}", playlistId, user);
+        if (user == null) {
+            log.warn("❗ 사용자 인증 정보가 없습니다.");
+        } else {
+            log.info("✅ 사용자 ID: {}", user.getId());
+        }
         MainPlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
