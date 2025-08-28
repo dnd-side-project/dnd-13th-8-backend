@@ -1,6 +1,5 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
