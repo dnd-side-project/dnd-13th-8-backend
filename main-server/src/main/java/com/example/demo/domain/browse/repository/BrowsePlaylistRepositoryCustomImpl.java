@@ -64,4 +64,29 @@ public class BrowsePlaylistRepositoryCustomImpl implements BrowsePlaylistReposit
                 .limit(size)
                 .fetch();
     }
+
+    public List<BrowsePlaylistCard> findFallbackWithinPositionAfter(
+            int position,
+            long afterCardId,
+            String excludeUserId,
+            int sizePlusOne
+    ) {
+        QBrowsePlaylistCard card = QBrowsePlaylistCard.browsePlaylistCard;
+
+        return queryFactory
+                .selectFrom(card)
+                .where(
+                        card.position.eq(position),
+                        card.userId.ne(excludeUserId),
+                        card.id.gt(afterCardId)
+                )
+                .groupBy(card.playlistId) // 같은 playlist 중복 제거
+                .orderBy(card.id.asc())   // 가장 먼저 등장하는 카드 기준
+                .limit(sizePlusOne)
+                .fetch();
+    }
+
+
+
+
 }

@@ -11,4 +11,8 @@ public interface BrowsePlaylistRepositoryCustom {
 
     List<BrowsePlaylistCard> findDistinctByPlaylistIdWithinPosition(int position, String userId, int limit
     );
+
+    List<BrowsePlaylistCard> findFallbackWithinPositionAfter(
+            int position, long afterCardId, String excludeUserId, int sizePlusOne
+    ) ;
 }

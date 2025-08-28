@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BrowsePlaylistRepository extends JpaRepository<BrowsePlaylistCard, Long>, BrowsePlaylistRepositoryCustom {
     void deleteByUserId(String userId);
 
+    long countByUserId(String userId);
 }

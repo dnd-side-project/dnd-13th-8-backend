@@ -38,7 +38,6 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
     private final PlaylistRepository playlistRepository;
     private final BrowseViewCountService browseViewCountService;
 
-
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getShuffledPlaylists(
@@ -56,12 +55,23 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
             return getPlaylistsForExistingUser(cards, size);
         }
 
-        if (isFirstRequest) {
-            return getPlaylistsForNewUser(userId, size);
-        }
+        long myCardCount = browsePlaylistRepository.countByUserId(userId);
+        if (myCardCount == 0L) {
+            boolean isValidCursor = (cursorPosition == null && cursorCardId == null)
+                    || (cursorPosition != null && cursorCardId != null);
+            if (!isValidCursor) {
+                throw new IllegalArgumentException("신규 fallback 요청 시, cursorPosition과 cursorCardId는 둘 다 null이거나 둘 다 있어야 합니다.");
+            }
 
+            if (isFirstRequest) {
+                return getPlaylistsForNewUser(userId, size);
+            } else {
+                return getPlaylistsForNewUserAfterCursor(userId, cursorPosition, cursorCardId, size);
+            }
+        }
         return new CursorPageResponse<>(List.of(), null, 0, false, 0L);
     }
+
 
 
     private CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getPlaylistsForExistingUser(
@@ -76,7 +86,6 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
                 0L
         );
     }
-
 
     private CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getPlaylistsForNewUser(
             String userId,
@@ -103,12 +112,11 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
                 .collect(Collectors.toList());
 
         BrowsePlaylistCursor cursor;
-
         if (!dtoList.isEmpty()) {
             BrowsePlaylistDto last = dtoList.get(dtoList.size() - 1);
             cursor = new BrowsePlaylistCursor(last.position(), last.cardId());
         } else {
-            cursor = new BrowsePlaylistCursor(0, 0L);
+            cursor = null;
         }
 
         return new CursorPageResponse<>(
@@ -120,14 +128,52 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
         );
     }
 
+    private CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getPlaylistsForNewUserAfterCursor(
+            String userId,
+            int position,
+            long afterCardId,
+            int size
+    ) {
+        List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository
+                .findFallbackWithinPositionAfter(position, afterCardId, userId, size + 1);
 
+        boolean hasNext;
+        List<BrowsePlaylistCard> resultCards;
+
+        if (fallbackCards.size() > size) {
+            hasNext = true;
+            resultCards = fallbackCards.subList(0, size);
+        } else {
+            hasNext = false;
+            resultCards = fallbackCards;
+        }
+
+        List<BrowsePlaylistDto> dtoList = resultCards.stream()
+                .map(BrowsePlaylistDto::from)
+                .collect(Collectors.toList());
+
+        BrowsePlaylistCursor cursor;
+        if (!dtoList.isEmpty()) {
+            BrowsePlaylistDto last = dtoList.get(dtoList.size() - 1);
+            cursor = new BrowsePlaylistCursor(last.position(), last.cardId());
+        } else {
+            cursor = null;
+        }
+
+        return new CursorPageResponse<>(
+                dtoList,
+                cursor,
+                dtoList.size(),
+                hasNext,
+                0L
+        );
+    }
 
     private int getRandomFallbackId() {
         List<Integer> ids = new ArrayList<>(List.of(0, 1, 2, 3, 4, 5));
         Collections.shuffle(ids, new Random(System.nanoTime()));
         return ids.getFirst();
     }
-
 
     @Override
     public void confirmAndLogPlayback(String id, Long playlistId) {
