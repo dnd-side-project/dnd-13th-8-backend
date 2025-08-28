@@ -15,6 +15,6 @@ public interface RepresentativePlaylistRepositoryCustom {
     List<Playlist> findByVisitCount(int limit);
 
     SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(String query, PlaylistSortOption sort, int offset, int limit);
-    List<RepresentativePlaylist> findByGenreWithCursor(PlaylistGenre genre, PlaylistSortOption sort, Long cursorId, int limit);
+    SearchResult<RepresentativePlaylist> findByGenreWithCursor(PlaylistGenre genre, PlaylistSortOption sort, Long cursorId, int limit);
 
 }

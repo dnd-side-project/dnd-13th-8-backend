@@ -62,11 +62,11 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
 
         try {
-            List<RepresentativePlaylist> reps = representativePlaylistRepository
+            SearchResult<RepresentativePlaylist> reps = representativePlaylistRepository
                     .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1);
 
             return CursorPageConverter.toCursorResponse(
-                    reps,
+                    reps.getResults(),
                     finalLimit,
                     rep -> {
                         Playlist p = rep.getPlaylist();
@@ -141,14 +141,12 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 throw new CdException("CD 정보 조회 실패", CommonErrorCode.BAD_REQUEST);
             }
         }
-        long total = Math.min(limit, raw.getTotalCount());
-        return new SearchResult<>(resolved, total);
+        return new SearchResult<>(resolved, raw.getTotalCount());
     }
 
     private SearchResult<UserSearchDto> fetchUsers(String query, PlaylistSortOption sort, int offset, int limit) {
         SearchResult<UserSearchDto> result = usersRepository.searchUsersByQueryWithOffset(query, sort, offset, limit);
-        long total = Math.min(limit, result.getTotalCount());
-        return new SearchResult<>(result.getResults(), total);
+        return new SearchResult<>(result.getResults(), result.getTotalCount());
     }
 
 
