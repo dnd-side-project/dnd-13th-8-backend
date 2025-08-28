@@ -13,7 +13,7 @@ public interface BrowsePlaylistRepository extends JpaRepository<BrowsePlaylistCa
     @Query("SELECT b FROM BrowsePlaylistCard b " +
             "WHERE b.position = :position AND b.userId <> :userId " +
             "ORDER BY b.id ASC")
-    List<BrowsePlaylistCard> findTop20ByPositionAndExcludeUserId(
+    List<BrowsePlaylistCard> findByPositionAndUserIdNotOrderByIdAsc(
             @Param("position") int position,
             @Param("userId") String userId,
             Pageable pageable

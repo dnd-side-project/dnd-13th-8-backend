@@ -8,4 +8,7 @@ public interface BrowsePlaylistRepositoryCustom {
     List<BrowsePlaylistCard> findByUserIdWithCursorPaging(
             String userId, Integer cursorPosition, Long cursorCardId, int size
     );
+
+    List<BrowsePlaylistCard> findDistinctByPlaylistIdWithinPosition(int position, String userId, int limit
+    );
 }

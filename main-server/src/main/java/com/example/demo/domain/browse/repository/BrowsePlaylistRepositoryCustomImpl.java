@@ -13,30 +13,55 @@ public class BrowsePlaylistRepositoryCustomImpl implements BrowsePlaylistReposit
     private final JPAQueryFactory queryFactory;
     private final QBrowsePlaylistCard card = QBrowsePlaylistCard.browsePlaylistCard;
 
+    /**
+     * 커서 기반 셔플 카드 조회 (내 카드만, 중복 허용)
+     */
     @Override
-    public List<BrowsePlaylistCard> findByUserIdWithCursorPaging(String userId, Integer cursorPosition,
-                                                                 Long cursorCardId, int size) {
-            // 기본 조건: 해당 유저의 카드만 조회
-            BooleanBuilder where = new BooleanBuilder()
-                    .and(card.userId.eq(userId));
+    public List<BrowsePlaylistCard> findByUserIdWithCursorPaging(
+            String userId,
+            Integer cursorPosition,
+            Long cursorCardId,
+            int size
+    ) {
+        BooleanBuilder where = new BooleanBuilder()
+                .and(card.userId.eq(userId));
 
-            // 커서가 존재할 경우 → position + cardId 조합으로 이후 데이터 조회
-            if (cursorPosition != null && cursorCardId != null) {
-                where.and(
-                        card.position.gt(cursorPosition)
-                                .or(
-                                        card.position.eq(cursorPosition)
-                                                .and(card.id.gt(cursorCardId))
-                                )
-                );
-            }
-
-            // 정렬: position → cardId 순으로 정렬하여 커서 기준 일관성 유지
-            return queryFactory
-                    .selectFrom(card)
-                    .where(where)
-                    .orderBy(card.position.asc(), card.id.asc())
-                    .limit(size) // 페이지 크기 제한
-                    .fetch();
+        if (cursorPosition != null && cursorCardId != null) {
+            where.and(
+                    card.position.gt(cursorPosition)
+                            .or(
+                                    card.position.eq(cursorPosition)
+                                            .and(card.id.gt(cursorCardId))
+                            )
+            );
         }
+
+        return queryFactory
+                .selectFrom(card)
+                .where(where)
+                .orderBy(card.position.asc(), card.id.asc())
+                .limit(size)
+                .fetch();
+    }
+
+    /**
+     *  fallback용: position 기준, 다른 유저 카드 중 playlistId 중복 제거해서 하나씩만 가져오기
+     */
+    @Override
+    public List<BrowsePlaylistCard> findDistinctByPlaylistIdWithinPosition(
+            int position,
+            String userId,
+            int size
+    ) {
+        return queryFactory
+                .selectFrom(card)
+                .where(
+                        card.position.eq(position),
+                        card.userId.ne(userId)
+                )
+                .groupBy(card.playlistId)
+                .orderBy(card.id.min().asc())
+                .limit(size)
+                .fetch();
+    }
 }

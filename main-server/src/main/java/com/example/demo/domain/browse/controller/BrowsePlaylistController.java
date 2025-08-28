@@ -70,7 +70,6 @@ public class BrowsePlaylistController {
             )
             @RequestParam(defaultValue = "20") int size
     ) {
-        log.info("들어왔으므" + user.getId());
         CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> shuffledPlaylists = browsePlaylistService.getShuffledPlaylists(
                 user.getId(), cursorPosition, cursorCardId, size
         );

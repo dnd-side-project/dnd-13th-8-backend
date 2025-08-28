@@ -21,7 +21,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -57,9 +56,7 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
 
             int fallbackId = getRandomFallbackId();
 
-            Pageable page = PageRequest.of(0, 30);
-
-            List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository.findTop20ByPositionAndExcludeUserId(fallbackId, userId, page);
+            List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository.findDistinctByPlaylistIdWithinPosition(fallbackId, userId, size);
 
             if (!fallbackCards.isEmpty()) {
 
@@ -86,7 +83,7 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
                 size,
                 BrowsePlaylistDto::from,
                 dto -> {
-                    BrowsePlaylistCursor cursor = new BrowsePlaylistCursor(dto.position(), dto.cardId());
+                    BrowsePlaylistCursor cursor= new BrowsePlaylistCursor(dto.position(), dto.cardId());
                     return cursor;
                 }
         );
@@ -98,7 +95,6 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
         Collections.shuffle(ids, new Random(System.nanoTime()));
         return ids.getFirst();
     }
-
 
 
     @Override
