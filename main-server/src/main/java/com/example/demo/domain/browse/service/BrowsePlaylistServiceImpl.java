@@ -38,6 +38,7 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
     private final PlaylistRepository playlistRepository;
     private final BrowseViewCountService browseViewCountService;
 
+
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getShuffledPlaylists(
@@ -46,49 +47,79 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
             Long cursorCardId,
             int size
     ) {
-        // 커서 기준 조회 (hasNext 판단 위해 size + 1로 조회)
+        boolean isFirstRequest = (cursorPosition == null && cursorCardId == null);
+
         List<BrowsePlaylistCard> cards = browsePlaylistRepository
                 .findByUserIdWithCursorPaging(userId, cursorPosition, cursorCardId, size + 1);
 
-
-        // 최초 요청이고 데이터가 전혀 없을 때 → fallback
-        if (cards.isEmpty() && cursorPosition == null && cursorCardId == null) {
-
-            int fallbackId = getRandomFallbackId();
-
-            List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository.findDistinctByPlaylistIdWithinPosition(fallbackId, userId, size);
-
-            if (!fallbackCards.isEmpty()) {
-
-                List<BrowsePlaylistDto> dtoList = fallbackCards.stream()
-                        .map(BrowsePlaylistDto::from)
-                        .collect(Collectors.toList());
-
-                BrowsePlaylistCursor cursor = new BrowsePlaylistCursor(0, 0L); // 기본 커서
-
-                return new CursorPageResponse<>(
-                        dtoList,
-                        cursor,
-                        dtoList.size(),
-                        false,
-                        0L
-                );
-            } else {
-                return new CursorPageResponse<>(List.of(), null, 0, false, 0L);
-            }
+        if (!cards.isEmpty()) {
+            return getPlaylistsForExistingUser(cards, size);
         }
 
+        if (isFirstRequest) {
+            return getPlaylistsForNewUser(userId, size);
+        }
 
+        return new CursorPageResponse<>(List.of(), null, 0, false, 0L);
+    }
+
+
+    private CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getPlaylistsForExistingUser(
+            List<BrowsePlaylistCard> cards,
+            int size
+    ) {
         return CursorPageConverter.toCursorResponse(
                 cards,
                 size,
                 BrowsePlaylistDto::from,
-                dto -> {
-                    BrowsePlaylistCursor cursor= new BrowsePlaylistCursor(dto.position(), dto.cardId());
-                    return cursor;
-                },
-                0L);
+                dto -> new BrowsePlaylistCursor(dto.position(), dto.cardId()),
+                0L
+        );
     }
+
+
+    private CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getPlaylistsForNewUser(
+            String userId,
+            int size
+    ) {
+        int fallbackPosition = getRandomFallbackId();
+
+        List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository
+                .findDistinctByPlaylistIdWithinPosition(fallbackPosition, userId, size + 1);
+
+        boolean hasNext;
+        List<BrowsePlaylistCard> resultCards;
+
+        if (fallbackCards.size() > size) {
+            hasNext = true;
+            resultCards = fallbackCards.subList(0, size);
+        } else {
+            hasNext = false;
+            resultCards = fallbackCards;
+        }
+
+        List<BrowsePlaylistDto> dtoList = resultCards.stream()
+                .map(BrowsePlaylistDto::from)
+                .collect(Collectors.toList());
+
+        BrowsePlaylistCursor cursor;
+
+        if (!dtoList.isEmpty()) {
+            BrowsePlaylistDto last = dtoList.get(dtoList.size() - 1);
+            cursor = new BrowsePlaylistCursor(last.position(), last.cardId());
+        } else {
+            cursor = new BrowsePlaylistCursor(0, 0L);
+        }
+
+        return new CursorPageResponse<>(
+                dtoList,
+                cursor,
+                dtoList.size(),
+                hasNext,
+                0L
+        );
+    }
+
 
 
     private int getRandomFallbackId() {
