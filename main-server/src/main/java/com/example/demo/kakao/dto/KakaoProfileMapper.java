@@ -44,16 +44,11 @@ public class KakaoProfileMapper {
 
             String imageUrl = profileResponse.kakao_account().profile().profileImageUrl();
             if (imageUrl != null && !imageUrl.isBlank()) {
-                log.info("카카오 프로필 이미지 URL: {}", imageUrl);
                 return imageUrl;
             } else {
-                log.warn("프로필 이미지 URL이 null 또는 blank입니다.");
             }
         } else {
-            log.warn("카카오 프로필 응답이 null이거나 하위 필드가 존재하지 않습니다.");
         }
-
-        // 없으면 기본 이미지 경로로 대체
         return "NULL";
     }
 
