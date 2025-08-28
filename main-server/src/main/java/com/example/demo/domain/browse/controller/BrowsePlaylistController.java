@@ -3,6 +3,7 @@ package com.example.demo.domain.browse.controller;
 import com.example.demo.domain.browse.dto.BrowsePlaylistCursor;
 import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
 import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
+import com.example.demo.domain.browse.dto.PlaylistViewCountRequest;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.browse.service.BrowseViewCountService;
 import com.example.demo.domain.follow.dto.IsUserFollowingResponse;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,9 +114,7 @@ public class BrowsePlaylistController {
     @PostMapping("/view-counts")
     @Operation(
             summary = "여러 플레이리스트 조회수 일괄 조회",
-            description = """
-            프론트에서 실시간 폴링 용도로 사용합니다. 5초 간격으로 보내주세요
-        """
+            description = "프론트에서 실시간 폴링 용도로 사용합니다. 5초 간격으로 보내주세요"
     )
     @ApiResponse(
             responseCode = "200",
@@ -124,9 +124,9 @@ public class BrowsePlaylistController {
             )
     )
     public List<PlaylistViewCountDto> getViewCounts(
-            @RequestBody List<Long> playlistIds
+            @RequestBody @Valid PlaylistViewCountRequest request
     ) {
-        return browseViewCountService.getViewCounts(playlistIds);
+        return browseViewCountService.getViewCounts(request.playlistIds());
     }
 
     @GetMapping("/{playlistId}/follow")
