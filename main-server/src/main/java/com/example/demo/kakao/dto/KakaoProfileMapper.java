@@ -6,8 +6,10 @@ import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.service.NicknameGenerator;
 import com.example.demo.global.jwt.JwtRoleType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class KakaoProfileMapper {
@@ -42,8 +44,13 @@ public class KakaoProfileMapper {
 
             String imageUrl = profileResponse.kakao_account().profile().profileImageUrl();
             if (imageUrl != null && !imageUrl.isBlank()) {
+                log.info("카카오 프로필 이미지 URL: {}", imageUrl);
                 return imageUrl;
+            } else {
+                log.warn("프로필 이미지 URL이 null 또는 blank입니다.");
             }
+        } else {
+            log.warn("카카오 프로필 응답이 null이거나 하위 필드가 존재하지 않습니다.");
         }
 
         // 없으면 기본 이미지 경로로 대체
