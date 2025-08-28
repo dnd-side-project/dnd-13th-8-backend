@@ -2,6 +2,7 @@ package com.example.demo.domain.prop.controller;
 
 import com.example.demo.domain.prop.dto.request.UploadPropRequestDto;
 import com.example.demo.domain.prop.dto.response.GetPropListResponseDto;
+import com.example.demo.domain.prop.dto.response.PropResponse;
 import com.example.demo.domain.prop.service.PropService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,24 +29,24 @@ public class PropController {
     @PostMapping(value = "/upload" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "Prop 이미지 업로드",
-            description = "단일 이미지를 R2에 저장 후 Bucket Key를 DB에 저장",
+            description = "단일 이미지를 R2에 저장 후 Bucket Key를 DB에 저장, 이후 저장된 이미지 바로 조회",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
                             content = @Content(
-                                    schema = @Schema(type = "string", example = "사진을 업로드하였습니다")
+                                    schema = @Schema(implementation = PropResponse.class)
                             )
                     )
             }
     )
-    public ResponseEntity<String> uploadImage(@ModelAttribute @Valid UploadPropRequestDto uploadPropRequestDto,
+    public ResponseEntity<PropResponse> uploadImage(@ModelAttribute @Valid UploadPropRequestDto uploadPropRequestDto,
     @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         MultipartFile file = uploadPropRequestDto.file();
         String userId = customUserDetails.getId();
         String theme = uploadPropRequestDto.theme();
         propService.saveProp(userId, theme, file);
-        return ResponseEntity.ok().body("사진을 업로드하였습니다");
+        return ResponseEntity.ok().body(propService.saveProp(userId, theme, file));
     }
 
     @GetMapping("/list")
