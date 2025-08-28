@@ -14,13 +14,13 @@ public interface FollowRepository extends JpaRepository<Follow, Long>, FollowRep
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
-        insert into playlist_follow (users_id, playlist_id, created_at)
-        select :userId, :playlistId, now()
-        where not exists (
-            select 1 from playlist_follow 
-            where users_id = :userId and playlist_id = :playlistId
-        )
-        """, nativeQuery = true)
+    insert into user_follow_playlist (user_id, playlist_id, created_at, updated_at)
+    select :userId, :playlistId, now(), now()
+    where not exists (
+        select 1 from user_follow_playlist 
+        where user_id = :userId and playlist_id = :playlistId
+    )
+    """, nativeQuery = true)
     void insertIfNotExists(@Param("userId") String userId, @Param("playlistId") Long playlistId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
