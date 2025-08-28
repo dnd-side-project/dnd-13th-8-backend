@@ -26,5 +26,6 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
     List<Long> findAllPlaylistIdsExcludingUser(@Param("userId") String userId);
 
     boolean existsByPlaylist_Id(Long playlistId);
+
 }
 
