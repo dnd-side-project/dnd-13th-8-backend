@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.controller;
 
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 import com.example.demo.domain.representative.service.RepresentativePlaylistService;
@@ -45,16 +46,16 @@ public class PlaylistsController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 상세 정보",
-            content = @Content(schema = @Schema(implementation = PlaylistDetailResponse.class))
+            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
     )
     @GetMapping("/{playlistId}")
-    public ResponseEntity<PlaylistDetailResponse> getPlaylistDetail(
+    public ResponseEntity<MainPlaylistDetailResponse> getPlaylistDetail(
             @Parameter(description = "플레이리스트 ID", example = "101")
             @PathVariable Long playlistId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        PlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
+        MainPlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
 
