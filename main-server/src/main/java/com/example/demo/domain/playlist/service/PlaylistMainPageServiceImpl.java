@@ -44,16 +44,13 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
 
     private static final int RECOMMENDATION_LIMIT = 3;
 
-
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
-
-        //  대표 플레이리스트 엔티티를 통해 조회
-        RepresentativePlaylist rep = representativePlaylistRepository.findById(playlistId)
+        // 대표 플레이리스트만 조회
+        var playlist = playlistRepository.findById(playlistId)
+                .filter(Playlist::isRepresentative)
                 .orElseThrow(() -> new IllegalArgumentException("대표 플레이리스트를 찾을 수 없습니다."));
-
-        Playlist playlist = rep.getPlaylist(); // 실제 Playlist 엔티티 추출
 
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -62,17 +59,16 @@ public class PlaylistMainPageServiceImpl implements PlaylistMainPageService {
         List<SongDto> songDtos = songs.stream()
                 .map(SongDto::from)
                 .toList();
-
         // 재생 기록 저장
         userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
-
         // 방문 수 증가
-        playlistRepository.incrementVisitCount(playlistId);
+        playlistRepository.incrementVisitCount(playlist.getId());
 
+        var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
         return MainPlaylistDetailResponse.from(
                 playlist,
                 songDtos,
-                cdService.getOnlyCdByPlaylistId(playlistId)
+                cdResponse
         );
     }
 
