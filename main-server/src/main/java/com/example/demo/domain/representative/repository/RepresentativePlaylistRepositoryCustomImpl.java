@@ -6,11 +6,11 @@ import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.dto.search.SearchResult;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -25,7 +25,6 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
 
     private final JPAQueryFactory queryFactory;
     private final QPlaylist playlist = QPlaylist.playlist;
-    private final QSong song = QSong.song;
 
     @Override
     public List<Playlist> findByVisitCount(int limit) {
@@ -44,9 +43,8 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
                 .map(RepresentativePlaylist::getPlaylist)
                 .toList();
     }
-
     @Override
-    public List<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(
+    public SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(
             String query,
             PlaylistSortOption sort,
             int offset,
@@ -66,7 +64,8 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
         }
         orderSpecifiers.add(p.id.desc());
 
-        return queryFactory
+        //  1. 목록 조회
+        List<PlaylistSearchDto> results = queryFactory
                 .select(Projections.constructor(
                         PlaylistSearchDto.class,
                         p.id,
@@ -75,7 +74,6 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
                         u.username,
                         nullExpression(OnlyCdResponse.class)
                 ))
-
                 .from(p)
                 .join(p.users, u)
                 .where(builder)
@@ -83,6 +81,17 @@ public class RepresentativePlaylistRepositoryCustomImpl implements Representativ
                 .offset(offset)
                 .limit(limit)
                 .fetch();
+
+        // 2. 총 개수 조회 (중복 제거)
+        long totalCount = Optional.ofNullable(queryFactory
+                .select(p.id.countDistinct())
+                .from(p)
+                .where(builder)
+                .fetchOne()
+        ).orElse(0L);
+
+        //  3. 결과 반환
+        return new SearchResult<>(results, totalCount);
     }
 
         @Override

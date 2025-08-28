@@ -9,31 +9,24 @@ import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PageResponse;
-import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
-import com.example.demo.domain.playlist.dto.search.PopularItem;
-import com.example.demo.domain.playlist.dto.search.SearchItem;
-import com.example.demo.domain.playlist.dto.search.UserSearchDto;
+import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.paging.CursorPageConverter;
-import java.text.Normalizer;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.Normalizer;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -87,7 +80,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                     PlaylistSearchResponse::playlistId
             );
         } catch (Exception e) {
-            throw new PlaylistSearchException("장르 기반 검색 중 오류 발생",CommonErrorCode.BAD_REQUEST);
+            throw new PlaylistSearchException("장르 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
         }
     }
 
@@ -102,53 +95,62 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         try {
             recordSearchTerm(query);
         } catch (Exception e) {
-            log.warn("❗ 검색어 기록 중 오류 발생: {}", e.getMessage());
+            log.warn(" 검색어 기록 중 오류 발생: {}", e.getMessage());
         }
 
         try {
-            List<PlaylistSearchDto> playlistsRaw =
-                    representativePlaylistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, finalSize);
-
-            List<PlaylistSearchDto> playlists = new ArrayList<>();
-            for (PlaylistSearchDto raw : playlistsRaw) {
-                OnlyCdResponse cdResponse;
-                try {
-                    cdResponse = cdService.getOnlyCdByPlaylistId(raw.playlistId());
-                } catch (Exception e) {
-                    log.warn("❗ CD 정보 조회 실패: playlistId={} / {}", raw.playlistId(), e.getMessage());
-                    throw new CdException("CD 정보 조회 실패", CommonErrorCode.BAD_REQUEST);
-                }
-
-                PlaylistSearchDto dto = PlaylistSearchDto.from(
-                        raw.playlistId(),
-                        raw.playlistName(),
-                        raw.creatorId(),
-                        raw.creatorNickname(),
-                        cdResponse
-                );
-
-                playlists.add(dto);
-            }
-
-            List<UserSearchDto> users =
-                    usersRepository.searchUsersByQueryWithOffset(query, sort, offset, finalSize);
+            SearchResult<PlaylistSearchDto> playlistsRaw = fetchPlaylistsWithCd(query, sort, offset, finalSize);
+            SearchResult<UserSearchDto> usersRaw = fetchUsers(query, sort, offset, finalSize);
 
             List<SearchItem> merged = new ArrayList<>();
-            merged.addAll(playlists);
-            merged.addAll(users);
+            merged.addAll(playlistsRaw.getResults());
+            merged.addAll(usersRaw.getResults());
 
-            boolean hasNext = playlists.size() == finalSize || users.size() == finalSize;
+            boolean hasNext = playlistsRaw.getResults().size() == finalSize || usersRaw.getResults().size() == finalSize;
+            long totalCount = playlistsRaw.getTotalCount() + usersRaw.getTotalCount();
 
             return new PageResponse<>(
                     new CombinedSearchResponse(merged),
                     page,
                     finalSize,
-                    hasNext
+                    hasNext,
+                    totalCount
             );
         } catch (Exception e) {
             throw new PlaylistSearchException("제목 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
         }
     }
+
+    private SearchResult<PlaylistSearchDto> fetchPlaylistsWithCd(String query, PlaylistSortOption sort, int offset, int limit) {
+        SearchResult<PlaylistSearchDto> raw = representativePlaylistRepository
+                .searchPlaylistsByTitleWithOffset(query, sort, offset, limit);
+
+        List<PlaylistSearchDto> resolved = new ArrayList<>();
+        for (PlaylistSearchDto item : raw.getResults()) {
+            try {
+                OnlyCdResponse cd = cdService.getOnlyCdByPlaylistId(item.playlistId());
+                resolved.add(PlaylistSearchDto.from(
+                        item.playlistId(),
+                        item.playlistName(),
+                        item.creatorId(),
+                        item.creatorNickname(),
+                        cd
+                ));
+            } catch (Exception e) {
+                log.warn(" CD 정보 조회 실패: playlistId={} / {}", item.playlistId(), e.getMessage());
+                throw new CdException("CD 정보 조회 실패", CommonErrorCode.BAD_REQUEST);
+            }
+        }
+        long total = Math.min(limit, raw.getTotalCount());
+        return new SearchResult<>(resolved, total);
+    }
+
+    private SearchResult<UserSearchDto> fetchUsers(String query, PlaylistSortOption sort, int offset, int limit) {
+        SearchResult<UserSearchDto> result = usersRepository.searchUsersByQueryWithOffset(query, sort, offset, limit);
+        long total = Math.min(limit, result.getTotalCount());
+        return new SearchResult<>(result.getResults(), total);
+    }
+
 
     @Override
     public List<PopularItem> getPopularTerms(String range, int limit) {
