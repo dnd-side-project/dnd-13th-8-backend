@@ -2,10 +2,10 @@ package com.example.demo.domain.browse.controller;
 
 import com.example.demo.domain.browse.dto.BrowsePlaylistCursor;
 import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
-import com.example.demo.domain.browse.dto.BrowseResponse;
 import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.browse.service.BrowseViewCountService;
+import com.example.demo.domain.follow.dto.IsUserFollowingResponse;
 import com.example.demo.domain.follow.service.PlaylistFollowService;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -16,10 +16,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,9 +42,8 @@ public class BrowsePlaylistController {
     @Operation(
             summary = "셔플된 플레이리스트 목록 조회 (둘러보기)",
             description = """
-        사용자의 Redis에 캐싱된 셔플된 둘러보기(BrowsePlaylist) 목록을 커서 기반으로 조회합니다. 
+        사용자의 Redis에 캐싱된 셔플된 둘러보기(BrowsePlaylist) 목록을 커서 기반으로 조회합니다.
         각 유저는 매일 새벽 3시에 셔플된 position 기반의 카드 목록을 가지며, position과 cardId를 함께 사용해 커서 페이징합니다.
-        
         🔁 [Fallback 처리 안내]
         - 신규 가입자 등 캐시 데이터가 없는 경우: BrowsePlaylist 테이블의 ID 1~5번 중 하나를 무작위로 선택하여 반환합니다.
         - 이 경우 nextCursor는 null입니다.
@@ -100,7 +97,7 @@ public class BrowsePlaylistController {
     @Operation(
             summary = "하트비트 확정 (15초 이상 재생)",
             description = """
-            사용자가 15초 이상 곡을 재생한 경우 호출됩니다. 
+            사용자가 15초 이상 곡을 재생한 경우 호출됩니다.
             Redis에 중복 확인 후, 조회수가 1 증가하며 하루에 한 번만 카운트됩니다.
         """
     )
@@ -130,6 +127,21 @@ public class BrowsePlaylistController {
             @RequestBody List<Long> playlistIds
     ) {
         return browseViewCountService.getViewCounts(playlistIds);
+    }
+
+    @GetMapping("/{playlistId}/follow")
+    @Operation(
+            summary = "플레이리스트 팔로우 여부 확인 True/False",
+            description = "현재 로그인한 사용자가 playlistId를 팔로우 중인지 확인합니다."
+    )
+    public ResponseEntity<IsUserFollowingResponse> checkFollow(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable Long playlistId
+    ) {
+        return ResponseEntity.ok().body(IsUserFollowingResponse.builder()
+                .isFollowing(playlistFollowService.isUserFollowing(me.getId(), playlistId))
+                .build());
     }
 
 
