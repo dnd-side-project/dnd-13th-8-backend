@@ -10,7 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @ComponentScan(basePackages = {
 		"com.example.demo",       // 전체 애플리케이션 루트
-		// ↓ api-server 패키지 중 제외할 곳은 명시적으로 빼줄 거임
+		"com.example.common"
+		// api-server 패키지 중 제외할 곳은 명시적으로 빼줄 거임
 }, excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.REGEX, pattern = "com\\.example\\.demo\\.domain\\.songs\\..*")
 })

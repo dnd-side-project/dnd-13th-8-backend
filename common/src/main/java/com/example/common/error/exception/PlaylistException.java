@@ -10,4 +10,5 @@ public class PlaylistException extends DomainException {
     public PlaylistException(ErrorCode code) {
         super(code);
     }
+
 }

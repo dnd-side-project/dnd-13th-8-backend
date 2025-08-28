@@ -1,5 +1,8 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.common.error.code.CommonErrorCode;
+import com.example.common.error.exception.CdException;
+import com.example.common.error.exception.PlaylistSearchException;
 import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
@@ -63,30 +66,30 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             Integer limit
     ) {
         int finalLimit = validateLimit(limit);
-
-        // 커서가 없으면 Long.MAX_VALUE부터 시작 (내림차순 정렬일 때 적절)
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
 
-        List<RepresentativePlaylist> reps = representativePlaylistRepository
-                .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1); // hasNext 판별 위해 limit + 1
+        try {
+            List<RepresentativePlaylist> reps = representativePlaylistRepository
+                    .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1);
 
-        return CursorPageConverter.toCursorResponse(
-                reps,
-                finalLimit,
-                rep -> {
-                    Playlist p = rep.getPlaylist();
-                    return new PlaylistSearchResponse(
-                            p.getId(),
-                            p.getName(),
-                            p.getUsers().getId(),
-                            p.getUsers().getUsername()
-                    );
-                },
-                PlaylistSearchResponse::playlistId
-        );
+            return CursorPageConverter.toCursorResponse(
+                    reps,
+                    finalLimit,
+                    rep -> {
+                        Playlist p = rep.getPlaylist();
+                        return new PlaylistSearchResponse(
+                                p.getId(),
+                                p.getName(),
+                                p.getUsers().getId(),
+                                p.getUsers().getUsername()
+                        );
+                    },
+                    PlaylistSearchResponse::playlistId
+            );
+        } catch (Exception e) {
+            throw new PlaylistSearchException("장르 기반 검색 중 오류 발생",CommonErrorCode.BAD_REQUEST);
+        }
     }
-
-
 
     @Override
     @Transactional(readOnly = true)
@@ -96,50 +99,56 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         int finalSize = validateLimit(size);
         int offset = page * finalSize;
 
-        recordSearchTerm(query);
-
-        // 1. 플레이리스트 검색 결과 (raw)
-        List<PlaylistSearchDto> playlistsRaw =
-                representativePlaylistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, finalSize);
-
-        // 2. CD 정보 포함한 PlaylistSearchDto로 재구성
-        List<PlaylistSearchDto> playlists = new ArrayList<>();
-        for (PlaylistSearchDto raw : playlistsRaw) {
-            OnlyCdResponse cdResponse = cdService.getOnlyCdByPlaylistId(raw.playlistId());
-
-            PlaylistSearchDto dto = PlaylistSearchDto.from(
-                    raw.playlistId(),
-                    raw.playlistName(),
-                    raw.creatorId(),
-                    raw.creatorNickname(),
-                    cdResponse
-            );
-
-            playlists.add(dto);
+        try {
+            recordSearchTerm(query);
+        } catch (Exception e) {
+            log.warn("❗ 검색어 기록 중 오류 발생: {}", e.getMessage());
         }
 
-        // 3. 사용자 검색
-        List<UserSearchDto> users =
-                usersRepository.searchUsersByQueryWithOffset(query, sort, offset, finalSize);
+        try {
+            List<PlaylistSearchDto> playlistsRaw =
+                    representativePlaylistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, finalSize);
 
-        // 4. 병합
-        List<SearchItem> merged = new ArrayList<>();
-        merged.addAll(playlists);
-        merged.addAll(users);
+            List<PlaylistSearchDto> playlists = new ArrayList<>();
+            for (PlaylistSearchDto raw : playlistsRaw) {
+                OnlyCdResponse cdResponse;
+                try {
+                    cdResponse = cdService.getOnlyCdByPlaylistId(raw.playlistId());
+                } catch (Exception e) {
+                    log.warn("❗ CD 정보 조회 실패: playlistId={} / {}", raw.playlistId(), e.getMessage());
+                    throw new CdException("CD 정보 조회 실패", CommonErrorCode.BAD_REQUEST);
+                }
 
-        boolean hasNext = playlists.size() == finalSize || users.size() == finalSize;
+                PlaylistSearchDto dto = PlaylistSearchDto.from(
+                        raw.playlistId(),
+                        raw.playlistName(),
+                        raw.creatorId(),
+                        raw.creatorNickname(),
+                        cdResponse
+                );
 
-        return new PageResponse<>(
-                new CombinedSearchResponse(merged),
-                page,
-                finalSize,
-                hasNext
-        );
+                playlists.add(dto);
+            }
+
+            List<UserSearchDto> users =
+                    usersRepository.searchUsersByQueryWithOffset(query, sort, offset, finalSize);
+
+            List<SearchItem> merged = new ArrayList<>();
+            merged.addAll(playlists);
+            merged.addAll(users);
+
+            boolean hasNext = playlists.size() == finalSize || users.size() == finalSize;
+
+            return new PageResponse<>(
+                    new CombinedSearchResponse(merged),
+                    page,
+                    finalSize,
+                    hasNext
+            );
+        } catch (Exception e) {
+            throw new PlaylistSearchException("제목 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
+        }
     }
-
-
-
-
 
     @Override
     public List<PopularItem> getPopularTerms(String range, int limit) {
@@ -155,17 +164,12 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 .toList();
     }
 
-    /*
-    내부 메소드
-     */
-
     private int validateLimit(Integer limit) {
         if (limit != null && limit > 0 && limit <= 50) {
             return limit;
         }
         return 10;
     }
-
 
     private String resolveKeyFromRange(String range) {
         LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));

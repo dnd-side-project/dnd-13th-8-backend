@@ -27,11 +27,16 @@ public class UsersService {
     @Transactional
     public UpdateProfileResponse updateProfile(String userId, UpdateProfileRequest req)
             throws IOException {
+
         Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         // 닉네임 업데이트 (중복 체크 포함)
         if (req.nickname() != null && !req.nickname().isBlank()) {
+            boolean duplicated = usersRepository.existsByUsername(req.nickname());
+            if (duplicated) {
+                throw new UserException(UserErrorCode.DUPLICATED_USERNAME);
+            }
             user.changeNickname(req.nickname());
         }
 

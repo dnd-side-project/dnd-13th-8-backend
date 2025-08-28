@@ -1,6 +1,11 @@
 package com.example.demo.domain.follow.service;
 
+
+import com.example.common.error.code.FollowErrorCode;
+import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
+import com.example.common.error.exception.FollowException;
+import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -29,12 +34,15 @@ public class PlaylistFollowService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Playlist playlist = playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new IllegalArgumentException("플레이리스트가 존재하지 않습니다. id=" + playlistId));
+                .orElseThrow(() -> new PlaylistException(
+                        "플레이리스트가 존재하지 않습니다. id=" + playlistId,
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
 
         // 대표 플레이리스트 여부 확인
         boolean isRepresentative = representativePlaylistRepository.existsByPlaylist_Id(playlistId);
         if (!isRepresentative) {
-            throw new IllegalStateException("대표 플레이리스트만 팔로우할 수 있습니다.");
+            throw new FollowException(FollowErrorCode.NOT_REPRESENTATIVE_PLAYLIST);
         }
 
         boolean exists = playlistFollowRepository.existsByUsersIdAndPlaylistId(userId, playlistId);
@@ -45,15 +53,17 @@ public class PlaylistFollowService {
         playlistFollowRepository.insertIfNotExists(me.getId(), playlist.getId());
     }
 
-
     @Transactional
     public void unfollow(String userId, Long playlistId) {
-        // 존재 검증(유저/플리) — 필요 없다면 생략 가능
         if (!usersRepository.existsById(userId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
+
         if (!playlistRepository.existsById(playlistId)) {
-            throw new IllegalArgumentException("플레이리스트가 존재하지 않습니다. id=" + playlistId);
+            throw new PlaylistException(
+                    "플레이리스트가 존재하지 않습니다. id=" + playlistId,
+                    PlaylistErrorCode.PLAYLIST_NOT_FOUND
+            );
         }
 
         boolean exists = playlistFollowRepository.existsByUsersIdAndPlaylistId(userId, playlistId);
@@ -61,5 +71,4 @@ public class PlaylistFollowService {
             playlistFollowRepository.deleteByUsersIdAndPlaylistId(userId, playlistId);
         }
     }
-
 }

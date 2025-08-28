@@ -32,7 +32,7 @@ public class RepresentativePlaylistService {
     @Transactional(readOnly = true)
     public PlaylistDetailResponse getMyRepresentativePlaylist(String userId) {
         RepresentativePlaylist rep = representativePlaylistRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new IllegalStateException("대표 플레이리스트가 존재하지 않습니다."));
+                .orElseThrow(() -> new PlaylistException("대표 플레이리스트가 존재하지 않습니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         Playlist playlist = rep.getPlaylist();
         List<Song> songs = songRepository.findByPlaylistId(playlist.getId());

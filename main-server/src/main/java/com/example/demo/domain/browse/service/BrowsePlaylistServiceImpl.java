@@ -1,6 +1,8 @@
 package com.example.demo.domain.browse.service;
 
+import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
+import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.browse.dto.BrowsePlaylistCursor;
 import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
@@ -105,7 +107,10 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Playlist playlist = playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 플레이리스트입니다."));
+                .orElseThrow(() -> new PlaylistException(
+                        "플레이리스트가 존재하지 않습니다. id=" + playlistId,
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
 
         UserPlaylistHistory history = UserPlaylistHistory.of(user, playlist);
         userPlaylistHistoryRepository.save(history);
