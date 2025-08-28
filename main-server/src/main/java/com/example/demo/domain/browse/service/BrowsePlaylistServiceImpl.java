@@ -56,9 +56,7 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
 
             int fallbackId = getRandomFallbackId();
 
-            Pageable page = PageRequest.of(0, size);
-
-            List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository.findByPositionAndUserIdNotOrderByIdAsc(fallbackId, userId, page);
+            List<BrowsePlaylistCard> fallbackCards = browsePlaylistRepository.findDistinctByPlaylistIdWithinPosition(fallbackId, userId, size);
 
             if (!fallbackCards.isEmpty()) {
 
@@ -97,7 +95,6 @@ public class BrowsePlaylistServiceImpl implements BrowsePlaylistService {
         Collections.shuffle(ids, new Random(System.nanoTime()));
         return ids.getFirst();
     }
-
 
 
     @Override
