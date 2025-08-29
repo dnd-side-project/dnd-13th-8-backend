@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface RepresentativePlaylistRepository extends JpaRepository<RepresentativePlaylist, Long>,
         RepresentativePlaylistRepositoryCustom {
+
     Optional<RepresentativePlaylist> findByUser_Id(String usersId);
 
 //    @Query("""
@@ -18,13 +19,7 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
 //    FROM RepresentativePlaylist rp
 //    """)
 //    List<Long> findAllPlaylistIds();
-//
-//    @Query("""
-//    SELECT rp.playlist.id
-//    FROM RepresentativePlaylist rp
-//    WHERE rp.playlist.users.id != :userId
-//""")
-//    List<Long> findAllPlaylistIdsExcludingUser(@Param("userId") String userId);
+
 
     boolean existsByPlaylist_Id(Long playlistId);
 
@@ -43,9 +38,16 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
 """)
     boolean isRepresentativePlaylist(@Param("userId") String userId, @Param("playlistId") Long playlistId);
 
-    void deleteByUser_Id(String userId);
-
     void deleteByPlaylist_Id(Long playlistId);
+
+    @Query(value = """
+    SELECT r.playlist_id
+    FROM representative_playlist r
+    WHERE r.user_id IN (:userIds)
+    ORDER BY FIELD(r.user_id, :userIds)
+""", nativeQuery = true)
+    List<Long> findAllPlaylistIdsInOrder(@Param("userIds") List<String> userIds);
+
 }
 
 
