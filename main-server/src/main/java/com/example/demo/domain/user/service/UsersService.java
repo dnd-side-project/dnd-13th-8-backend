@@ -45,7 +45,7 @@ public class UsersService {
                 r2Service.staticDelete(oldImageKey);
             }
 
-            String key = r2Service.newKey(req.profileImage().getOriginalFilename());
+            String key = r2Service.newStaticKey(req.profileImage().getOriginalFilename());
             r2Service.staticUpload(
                     req.profileImage().getBytes(),
                     req.profileImage().getContentType(),
