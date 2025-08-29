@@ -17,7 +17,6 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +82,7 @@ public class ChatRepository {
     private Map<String, AttributeValue> decodeLek(String base64) {
         try {
             byte[] raw = Base64.getUrlDecoder().decode(base64);
-            return objectMapper.readValue(raw, new TypeReference<Map<String, AttributeValue>>() {});
+            return objectMapper.readValue(raw, new TypeReference<>() {});
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid cursor", e);
         }

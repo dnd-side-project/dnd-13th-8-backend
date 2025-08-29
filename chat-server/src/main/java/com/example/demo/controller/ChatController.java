@@ -3,7 +3,6 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatInbound;
-import com.example.demo.dto.ChatOutbound;
 import com.example.demo.global.redis.ChatRedisCounter;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import com.example.demo.service.ChatService;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 
 
