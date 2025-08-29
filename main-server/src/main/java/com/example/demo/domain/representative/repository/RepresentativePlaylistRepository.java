@@ -14,21 +14,7 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
 
     Optional<RepresentativePlaylist> findByUser_Id(String usersId);
 
-//    @Query("""
-//    SELECT rp.playlist.id
-//    FROM RepresentativePlaylist rp
-//    """)
-//    List<Long> findAllPlaylistIds();
-
-
     boolean existsByPlaylist_Id(Long playlistId);
-
-    @Query("""
-    SELECT DISTINCT r.user.id
-    FROM RepresentativePlaylist r
-    WHERE r.user IS NOT NULL
-""")
-    List<String> findUserIdsWithRepPlaylist();
 
 
     @Query("""
@@ -40,8 +26,20 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
 
     void deleteByPlaylist_Id(Long playlistId);
 
-    @Query("SELECT r FROM RepresentativePlaylist r WHERE r.user.id IN :userIds")
-    List<RepresentativePlaylist> findByUserIds(@Param("userIds") List<String> userIds);
+
+    @Query("""
+    SELECT r.playlist.id
+    FROM RepresentativePlaylist r
+    WHERE r.user.id <> :excludedUserId
+""")
+    List<Long> findAllPlaylistIdsExcludingUser(@Param("excludedUserId") String excludedUserId);
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM RepresentativePlaylist r
+""")
+    Long countByAllUserId();
+
 
 }
 
