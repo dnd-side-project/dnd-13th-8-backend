@@ -14,7 +14,7 @@ public class WebMvcCorsConfig implements WebMvcConfigurer {
                         "http://localhost:5173",
                         "https://deulak-dev.vercel.app",
                         "https://deulak.com",
-                        "http://192.168.0.9"
+                        "http://192.168.0.9:5173"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
