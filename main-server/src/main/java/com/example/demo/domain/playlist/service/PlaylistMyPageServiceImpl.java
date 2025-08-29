@@ -18,16 +18,11 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsRespons
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.playlist.util.ShareCodeGenerator;
-import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
-import com.example.demo.domain.song.dto.SongMapper;
-import com.example.demo.domain.song.dto.SongResponseDto;
-import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -60,6 +55,16 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
 
         cdService.saveCdItemList(response.playlistId(), cdItemRequestList);
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, Long playlistId, PlaylistCreateRequest request,
+                                                                     List<CdItemRequest> cdItemRequestList) {
+        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId, request);
+        cdService.replaceCdItemList(playlistId, cdItemRequestList);
 
         return response;
     }
