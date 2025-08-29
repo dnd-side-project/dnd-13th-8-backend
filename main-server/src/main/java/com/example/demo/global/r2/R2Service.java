@@ -28,6 +28,9 @@ public class R2Service {
     @Value("${r2.static-bucket}")
     private String staticBucket;
 
+    @Value("${r2.deulak-base-url}")
+    private String deulakBaseUrl;
+
     @Value("${r2.static-base-url}")
     private String staticBaseUrl;
 
@@ -65,15 +68,20 @@ public class R2Service {
         );
     }
 
-    public String getPresignedUrl(String key) {
-        var get = GetObjectRequest.builder().bucket(bucket).key(key).build();
-        PresignedGetObjectRequest pre = presigner.presignGetObject(
-                GetObjectPresignRequest.builder()
-                        .signatureDuration(Duration.ofMinutes(expireMinute))
-                        .getObjectRequest(get)
-                        .build());
-        return pre.url().toString();
+    public String getPublicUrl (String key) {
+        return deulakBaseUrl + "/" + key;
     }
+
+
+//    public String getPresignedUrl(String key) {
+//        var get = GetObjectRequest.builder().bucket(bucket).key(key).build();
+//        PresignedGetObjectRequest pre = presigner.presignGetObject(
+//                GetObjectPresignRequest.builder()
+//                        .signatureDuration(Duration.ofMinutes(expireMinute))
+//                        .getObjectRequest(get)
+//                        .build());
+//        return pre.url().toString();
+//    }
 
     public String newStaticKey(String originalFilename) { // 버켓 키: prop/{uuid}.{ext}
         String ext = "bin";
