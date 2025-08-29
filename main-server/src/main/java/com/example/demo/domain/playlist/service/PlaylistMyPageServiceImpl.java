@@ -80,7 +80,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
         if (repOpt.isEmpty()) {
             return all.stream()
-                    .map(PlaylistResponse::from)
+                    .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
                     .toList();
         }
 
@@ -91,11 +91,14 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                 .toList();
 
         List<PlaylistResponse> result = new ArrayList<>(rest.size() + 1);
-        result.add(PlaylistResponse.from(rep));
-        result.addAll(rest.stream().map(PlaylistResponse::from).toList());
+        result.add(PlaylistResponse.from(rep, cdService.getOnlyCdByPlaylistId(rep.getId())));
+        result.addAll(rest.stream()
+                .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
+                .toList());
 
         return result;
     }
+
 
     @Override
     @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.dto.playlistdto;
 
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -15,14 +16,19 @@ public record PlaylistResponse(
         String playlistName,
 
         @Schema(description = "대표 플레이리스트 여부", example = "true")
-        boolean isRepresentative
+        boolean isRepresentative,
+
+        @Schema(description = "cd 정보")
+        OnlyCdResponse onlyCdResponse
 
 ) {
-    public static PlaylistResponse from(Playlist playlist) {
+    public static PlaylistResponse from(Playlist playlist, OnlyCdResponse cd) {
         return PlaylistResponse.builder()
                 .playlistId(playlist.getId())
                 .playlistName(playlist.getName())
                 .isRepresentative(playlist.isRepresentative())
+                .onlyCdResponse(cd)
                 .build();
     }
+
 }

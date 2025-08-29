@@ -1,5 +1,6 @@
 package com.example.demo.domain.playlist.dto.search;
 
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "플레이리스트 검색 결과 DTO")
@@ -15,6 +16,8 @@ public record PlaylistSearchResponse(
         String creatorId,
 
         @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
-        String creatorNickname
+        String creatorNickname,
 
+        @Schema(description = "cd 정보")
+        OnlyCdResponse onlyCdResponse
 ) {}

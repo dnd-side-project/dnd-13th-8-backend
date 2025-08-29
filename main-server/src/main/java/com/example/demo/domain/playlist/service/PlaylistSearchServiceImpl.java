@@ -65,16 +65,20 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             SearchResult<RepresentativePlaylist> reps = representativePlaylistRepository
                     .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1);
 
+
             return CursorPageConverter.toCursorResponse(
                     reps.getResults(),
                     finalLimit,
                     rep -> {
                         Playlist p = rep.getPlaylist();
+                        OnlyCdResponse cd = cdService.getOnlyCdByPlaylistId(p.getId());
                         return new PlaylistSearchResponse(
                                 p.getId(),
                                 p.getName(),
                                 p.getUsers().getId(),
-                                p.getUsers().getUsername()
+                                p.getUsers().getUsername(),
+                                cd
+
                         );
                     },
                     PlaylistSearchResponse::playlistId, // 커서 추출

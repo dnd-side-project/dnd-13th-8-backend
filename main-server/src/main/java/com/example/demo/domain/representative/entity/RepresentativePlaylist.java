@@ -22,9 +22,10 @@ public class RepresentativePlaylist {
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "playlist_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "playlist_id", nullable = false, unique = true)
     private Playlist playlist;
+
 
     public RepresentativePlaylist(Users user, Playlist playlist) {
         this.user = user;
