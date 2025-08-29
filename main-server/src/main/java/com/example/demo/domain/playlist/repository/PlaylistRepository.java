@@ -31,13 +31,24 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
 
     Optional<Playlist> findByIdAndUsers_Id(Long playlistId, String userId);
 
-    // 유저의 기존 플레이리스트 개수
-    int countByUsers_Id(String userId);
+    @Query(value = "SELECT COUNT(*) FROM playlist WHERE user_id = :userId", nativeQuery = true)
+    long countByUserIdNative(@Param("userId") String userId);
 
-//    // 기존 대표 플레이리스트 해제
-//    @Modifying(clearAutomatically = true)
-//    @Query("UPDATE Playlist p SET p.isRepresentative = false WHERE p.users.id = :userId AND p.isRepresentative = true")
-//    void clearPreviousRepresentative(String userId);
+    // 기존 대표 플레이리스트 해제(벌크연산)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Playlist p SET p.isRepresentative = false " +
+            "WHERE p.users.id = :userId AND p.isRepresentative = true")
+    int clearRepresentativeByUserId(@Param("userId") String userId);
+
+
+    @Query("""
+    SELECT p
+    FROM Playlist p
+    WHERE p.users.id = :userId
+      AND p.id <> :excludedId
+    ORDER BY p.createdAt DESC
+""")
+    Optional<Playlist> findMostRecentExcluding(@Param("userId") String userId, @Param("excludedId") Long excludedId);
 
 
     @Query("""
@@ -52,6 +63,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     @Modifying
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")
     int incrementVisitCount(@Param("id") Long id);
+
 
     //Optional<Playlist> findTopByGenreOrderByVisitCountDesc(PlaylistGenre genre);
 }

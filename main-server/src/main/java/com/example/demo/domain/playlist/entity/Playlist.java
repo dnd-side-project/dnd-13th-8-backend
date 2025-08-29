@@ -41,10 +41,6 @@ public class Playlist extends BaseTimeEntity {
         this.visitCount += 1;
     }
 
-    public void setIsRepresentative(boolean isRepresentative) {
-        this.isRepresentative = isRepresentative;
-    }
-
     @Builder
     public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre) {
         this.genre = genre;

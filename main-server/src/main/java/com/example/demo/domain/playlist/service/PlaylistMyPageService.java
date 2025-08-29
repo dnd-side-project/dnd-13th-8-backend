@@ -13,8 +13,6 @@ public interface PlaylistMyPageService {
 
     PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request, List<CdItemRequest> cdItemRequestList);
 
-    PlaylistWithSongsResponse savePlaylistWithSongs(String users, PlaylistCreateRequest request);
-
     List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
     PlaylistDetailResponse getPlaylistDetail(String id, Long playlistId);

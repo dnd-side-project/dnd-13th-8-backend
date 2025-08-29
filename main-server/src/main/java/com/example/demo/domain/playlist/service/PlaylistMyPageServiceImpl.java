@@ -27,13 +27,16 @@ import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
@@ -43,63 +46,17 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final UsersRepository usersRepository;
     private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final FollowRepository followRepository;
+    private final PlaylistSaveService playlistSaveService;
 
     private static final int DEFAULT_LIMIT = 20;
     private final CdService cdService;
-
-    @Transactional
-    public Playlist savePlaylist(String usersId, PlaylistCreateRequest request) {
-        Users users = usersRepository.findById(usersId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        boolean isFirst = playlistRepository.countByUsers_Id(usersId) == 0;
-
-        Playlist playlist = PlaylistMapper.toEntity(request, users);
-        Playlist saved = playlistRepository.save(playlist);
-
-        if (isFirst || request.isRepresentative()) {
-            upsertRepresentative(users, saved);
-        }
-
-        return saved;
-    }
-
-    private void upsertRepresentative(Users user, Playlist target) {
-        representativePlaylistRepository.findByUser_Id(user.getId())
-                .ifPresentOrElse(
-                        rep -> {
-                            if (!rep.getPlaylist().getId().equals(target.getId())) {
-                                rep.changePlaylist(target);
-                            }
-                        },
-                        () -> representativePlaylistRepository.save(new RepresentativePlaylist(user, target))
-                );
-    }
-
-    @Override
-    @Transactional
-    public PlaylistWithSongsResponse savePlaylistWithSongs(String usersId, PlaylistCreateRequest request) {
-        Playlist savedPlaylist = savePlaylist(usersId, request);
-
-        List<Song> songsToSave = new ArrayList<>();
-        for (YouTubeVideoInfoDto dto : request.youTubeVideoInfo()) {
-            songsToSave.add(SongMapper.toEntity(dto, savedPlaylist));
-        }
-
-        List<Song> savedSongs = songRepository.saveAll(songsToSave);
-        List<SongResponseDto> songDtos = savedSongs.stream()
-                .map(SongMapper::toDto)
-                .toList();
-
-        return new PlaylistWithSongsResponse(savedPlaylist.getId(), songDtos);
-    }
 
     @Override
     @Transactional
     public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request,
                                                                      List<CdItemRequest> cdItemRequestList){
 
-        PlaylistWithSongsResponse response = savePlaylistWithSongs(usersId, request);
+        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
 
         cdService.saveCdItemList(response.playlistId(), cdItemRequestList);
 
@@ -109,21 +66,31 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Override
     @Transactional(readOnly = true)
     public List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption) {
+        log.info("🔍 내 플레이리스트 조회 시작: userId={}, sortOption={}", userId, sortOption);
+
         List<Playlist> all = switch (sortOption) {
             case POPULAR -> playlistRepository.findByUserIdPopular(userId);
             case RECENT  -> playlistRepository.findByUserIdRecent(userId);
         };
 
+        log.info("🎵 조회된 플레이리스트 개수: {}", all.size());
+
         if (all.isEmpty()) {
+            log.info("⚠️ 유저의 플레이리스트가 존재하지 않음: userId={}", userId);
             return List.of();
         }
 
         var repOpt = representativePlaylistRepository.findByUser_Id(userId);
+
         if (repOpt.isEmpty()) {
-            return all.stream().map(PlaylistResponse::from).toList();
+            log.info("ℹ️ 대표 플레이리스트 없음: userId={}", userId);
+            return all.stream()
+                    .map(PlaylistResponse::from)
+                    .toList();
         }
 
         Playlist rep = repOpt.get().getPlaylist();
+        log.info("🏅 대표 플레이리스트 ID: {}", rep.getId());
 
         List<Playlist> rest = all.stream()
                 .filter(p -> !p.getId().equals(rep.getId()))
@@ -132,6 +99,8 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         List<PlaylistResponse> result = new ArrayList<>(rest.size() + 1);
         result.add(PlaylistResponse.from(rep));
         result.addAll(rest.stream().map(PlaylistResponse::from).toList());
+
+        log.info("✅ 최종 반환되는 플레이리스트 개수: {}", result.size());
         return result;
     }
 
@@ -150,25 +119,53 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Override
     @Transactional
     public void deletePlaylist(String userId, Long playlistId) {
+        // 1. 삭제 대상 존재 및 권한 검증
         Playlist toDelete = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
-                .orElseThrow(() -> new PlaylistException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+                .orElseThrow(() -> new PlaylistException(
+                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
 
-        var repOpt = representativePlaylistRepository.findByUser_Id(userId);
+        // 2. 유저가 가진 플레이리스트가 1개뿐이라면 삭제 불가
+        long totalCount = playlistRepository.countByUserIdNative(userId);
+        if (totalCount <= 1) {
+            throw new PlaylistException(
+                    "플레이리스트는 최소 1개 이상 존재해야 합니다.",
+                    PlaylistErrorCode.PLAYLIST_NOT_FOUND
+            );
+        }
 
+        // 3. 이 Playlist가 대표인지 확인
+        boolean isRepresentative = representativePlaylistRepository.isRepresentativePlaylist(userId, playlistId);
+
+        // 4. 만약 대표라면 기존 RepresentativePlaylist 정보 제거
+        if (isRepresentative) {
+            representativePlaylistRepository.deleteByUser_Id(userId);
+            representativePlaylistRepository.deleteByPlaylist_Id(playlistId);
+        }
+
+        // 5. 실제 Playlist 및 곡 삭제
         songRepository.deleteByPlaylistId(playlistId);
         playlistRepository.delete(toDelete);
 
-        if (repOpt.isPresent()) {
-            RepresentativePlaylist rep = repOpt.get();
-            if (rep.getPlaylist().getId().equals(playlistId)) {
-                playlistRepository.findNextRecent(userId, playlistId)
-                        .ifPresentOrElse(
-                                rep::changePlaylist,
-                                () -> representativePlaylistRepository.delete(rep)
-                        );
-            }
+        // 6. 대표였던 경우 → 삭제 이후 가장 최근 플레이리스트를 대표로 지정
+        if (isRepresentative) {
+            playlistRepository.findMostRecentExcluding(userId, playlistId)
+                    .ifPresent(newRepPlaylist -> {
+                        // Playlist에 대표 표시
+                        newRepPlaylist.changeToRepresentative();
+                        playlistRepository.save(newRepPlaylist);
+
+                        // RepresentativePlaylist 등록
+                        Users user = toDelete.getUsers();
+                        RepresentativePlaylist rep = new RepresentativePlaylist(user, newRepPlaylist);
+                        representativePlaylistRepository.save(rep);
+                    });
         }
     }
+
+
+
 
     @Transactional
     public String sharePlaylist(String userId) {
