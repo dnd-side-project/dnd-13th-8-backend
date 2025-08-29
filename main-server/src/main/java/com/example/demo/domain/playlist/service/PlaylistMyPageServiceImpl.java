@@ -171,7 +171,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                 .orElseThrow(() ->new PlaylistException(
                             "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
                             PlaylistErrorCode.PLAYLIST_NOT_FOUND));
-        target.changeToRepresentative();
         playlistSaveService.replaceRepresentativePlaylist(user, target);
     }
 

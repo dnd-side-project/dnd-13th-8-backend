@@ -81,7 +81,7 @@ public class PlaylistSaveService {
         playlistRepository.clearRepresentativeByUserId(userId);
 
         // 2. 새 대표 true 설정
-        if (newRepPlaylist.isRepresentative()) {
+        if (!newRepPlaylist.isRepresentative()) {
             newRepPlaylist.changeToRepresentative();
             playlistRepository.save(newRepPlaylist); // 안전하게 저장
         }
