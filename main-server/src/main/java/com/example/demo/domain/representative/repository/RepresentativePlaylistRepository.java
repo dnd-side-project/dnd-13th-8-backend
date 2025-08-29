@@ -48,6 +48,10 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
 """, nativeQuery = true)
     List<Long> findAllPlaylistIdsInOrder(@Param("userIds") List<String> userIds);
 
+
+    @Query("SELECT r FROM RepresentativePlaylist r WHERE r.user.id IN :userIds")
+    List<RepresentativePlaylist> findByUserIds(@Param("userIds") List<String> userIds);
+
 }
 
 
