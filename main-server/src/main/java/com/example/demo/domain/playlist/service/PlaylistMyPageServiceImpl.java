@@ -47,6 +47,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final FollowRepository followRepository;
     private final PlaylistSaveService playlistSaveService;
+    private final PlaylistDeleteService playlistDeleteService;
 
     private static final int DEFAULT_LIMIT = 20;
     private final CdService cdService;
@@ -54,7 +55,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Override
     @Transactional
     public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request,
-                                                                     List<CdItemRequest> cdItemRequestList){
+                                                                     List<CdItemRequest> cdItemRequestList) {
 
         PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
 
@@ -70,27 +71,22 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
         List<Playlist> all = switch (sortOption) {
             case POPULAR -> playlistRepository.findByUserIdPopular(userId);
-            case RECENT  -> playlistRepository.findByUserIdRecent(userId);
+            case RECENT -> playlistRepository.findByUserIdRecent(userId);
         };
 
-        log.info("🎵 조회된 플레이리스트 개수: {}", all.size());
-
         if (all.isEmpty()) {
-            log.info("⚠️ 유저의 플레이리스트가 존재하지 않음: userId={}", userId);
             return List.of();
         }
 
         var repOpt = representativePlaylistRepository.findByUser_Id(userId);
 
         if (repOpt.isEmpty()) {
-            log.info("ℹ️ 대표 플레이리스트 없음: userId={}", userId);
             return all.stream()
                     .map(PlaylistResponse::from)
                     .toList();
         }
 
         Playlist rep = repOpt.get().getPlaylist();
-        log.info("🏅 대표 플레이리스트 ID: {}", rep.getId());
 
         List<Playlist> rest = all.stream()
                 .filter(p -> !p.getId().equals(rep.getId()))
@@ -100,7 +96,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         result.add(PlaylistResponse.from(rep));
         result.addAll(rest.stream().map(PlaylistResponse::from).toList());
 
-        log.info("✅ 최종 반환되는 플레이리스트 개수: {}", result.size());
         return result;
     }
 
@@ -108,7 +103,8 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Transactional(readOnly = true)
     public PlaylistDetailResponse getPlaylistDetail(String userId, Long playlistId) {
         Playlist playlist = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
-                .orElseThrow(() -> new PlaylistException("플레이리스트가 존재하지 않거나 권한이 없습니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+                .orElseThrow(() -> new PlaylistException("플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         List<Song> songs = songRepository.findSongsByPlaylistId(playlistId);
         List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
@@ -119,52 +115,36 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Override
     @Transactional
     public void deletePlaylist(String userId, Long playlistId) {
-        // 1. 삭제 대상 존재 및 권한 검증
+        // 1. 삭제 대상 검증
         Playlist toDelete = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
                 .orElseThrow(() -> new PlaylistException(
-                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
-                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
-                ));
-
-        // 2. 유저가 가진 플레이리스트가 1개뿐이라면 삭제 불가
+                            "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                            PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                    ));
+        // 2. 유저가 가진 플리 개수 확인
         long totalCount = playlistRepository.countByUserIdNative(userId);
+
         if (totalCount <= 1) {
             throw new PlaylistException(
                     "플레이리스트는 최소 1개 이상 존재해야 합니다.",
                     PlaylistErrorCode.PLAYLIST_NOT_FOUND
             );
         }
-
-        // 3. 이 Playlist가 대표인지 확인
+        // 0. 대표 여부 확인
         boolean isRepresentative = representativePlaylistRepository.isRepresentativePlaylist(userId, playlistId);
-
-        // 4. 만약 대표라면 기존 RepresentativePlaylist 정보 제거
         if (isRepresentative) {
-            representativePlaylistRepository.deleteByUser_Id(userId);
+            // 1. Rep 테이블 먼저 삭제
             representativePlaylistRepository.deleteByPlaylist_Id(playlistId);
         }
-
-        // 5. 실제 Playlist 및 곡 삭제
+        // 2. 곡 삭제
         songRepository.deleteByPlaylistId(playlistId);
+        // 3. 플레이리스트 삭제
         playlistRepository.delete(toDelete);
-
-        // 6. 대표였던 경우 → 삭제 이후 가장 최근 플레이리스트를 대표로 지정
+        // 4. 대표였던 경우 → 새 대표 설정 시도
         if (isRepresentative) {
-            playlistRepository.findMostRecentExcluding(userId, playlistId)
-                    .ifPresent(newRepPlaylist -> {
-                        // Playlist에 대표 표시
-                        newRepPlaylist.changeToRepresentative();
-                        playlistRepository.save(newRepPlaylist);
-
-                        // RepresentativePlaylist 등록
-                        Users user = toDelete.getUsers();
-                        RepresentativePlaylist rep = new RepresentativePlaylist(user, newRepPlaylist);
-                        representativePlaylistRepository.save(rep);
-                    });
+            playlistDeleteService.assignNewRepresentativeIfNecessary(userId, toDelete.getId());
         }
     }
-
-
 
 
     @Transactional
@@ -190,7 +170,8 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Playlist target = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
-                .orElseThrow(() -> new PlaylistException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+                .orElseThrow(() -> new PlaylistException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         representativePlaylistRepository.findByUser_Id(userId)
                 .ifPresentOrElse(
@@ -222,7 +203,8 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         for (Playlist playlist : playlists) {
             List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
             List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
-            responses.add(PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlist.getId())));
+            responses.add(
+                    PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlist.getId())));
         }
         return responses;
     }

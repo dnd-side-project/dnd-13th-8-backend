@@ -74,7 +74,7 @@ public class PlaylistSaveService {
     /**
      * 기존 대표 해제 → 새 대표 설정 → RepresentativePlaylist 갱신
      */
-    private void replaceRepresentativePlaylist(Users user, Playlist newRepPlaylist) {
+    public void replaceRepresentativePlaylist(Users user, Playlist newRepPlaylist) {
         String userId = user.getId();
 
         // 1. 기존 대표 isRepresentative false 처리

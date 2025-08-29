@@ -41,15 +41,11 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     int clearRepresentativeByUserId(@Param("userId") String userId);
 
 
-    @Query("""
-    SELECT p
-    FROM Playlist p
-    WHERE p.users.id = :userId
-      AND p.id <> :excludedId
-    ORDER BY p.createdAt DESC
-""")
-    Optional<Playlist> findMostRecentExcluding(@Param("userId") String userId, @Param("excludedId") Long excludedId);
-
+    @Query(value = "SELECT * FROM playlist " +
+            "WHERE user_id = :userId AND id <> :excludePlaylistId " +
+            "ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
+    Optional<Playlist> findMostRecentExcluding(@Param("userId") String userId,
+                                               @Param("excludePlaylistId") Long excludePlaylistId);
 
     @Query("""
         SELECT p
