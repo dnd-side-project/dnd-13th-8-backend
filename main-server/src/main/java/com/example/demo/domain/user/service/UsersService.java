@@ -53,8 +53,6 @@ public class UsersService {
             );
             String profileUrl = r2Service.staticUrl(key);
             user.changeProfileImage(profileUrl);
-        } else {
-            user.changeProfileImage("NULL"); // DB에도 "NULL" 저장
         }
 
         return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
