@@ -49,7 +49,6 @@ public class ChatRepository {
                 .scanIndexForward(false) // 최신순 (DESC)
                 .limit(pageSize);
 
-        // ★ 직전 nextCursor(=LEK)가 있으면 exclusiveStartKey로 이어붙이기
         if (beforeCursorBase64 != null && !beforeCursorBase64.isBlank()) {
             qb.exclusiveStartKey(decodeLek(beforeCursorBase64));
         }
