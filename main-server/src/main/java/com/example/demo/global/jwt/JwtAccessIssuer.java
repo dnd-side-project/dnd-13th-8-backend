@@ -10,10 +10,10 @@ public class JwtAccessIssuer {
 
     private final JwtProvider jwtProvider;
 
-    /** 일반 회원용 access 토큰 (30분) */
+    /** 일반 회원용 access 토큰 (3일) */
     public String issueUserToken(String userId) {
         jwtProvider.validateSubject(userId);
-        return jwtProvider.buildToken(userId, 30 * 60L, Map.of(
+        return jwtProvider.buildToken(userId, 72  * 60 * 60L, Map.of(
                 "typ", "access",
                 "role", JwtRoleType.USER.value()
         ));
