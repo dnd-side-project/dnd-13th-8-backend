@@ -74,18 +74,11 @@ public class ChatController {
     )
     public ResponseEntity<ChatHistoryResponseDto> history(
             @PathVariable String roomId,
-            @RequestParam(required = false) String before,
+            @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "50") int limit
     ) {
-        List<ChatOutbound> messages = chatService.loadRecent(roomId, before, limit);
-        String nextCursor = messages.isEmpty() ? null : messages.getLast().getSentAt();
-
-        ChatHistoryResponseDto chatHistoryResponseDto = ChatHistoryResponseDto.builder()
-                .messages(messages)
-                .nextCursor(nextCursor)
-                .build();
-
-        return ResponseEntity.ok(chatHistoryResponseDto);
+        ChatHistoryResponseDto dto = chatService.loadRecent(roomId, cursor, limit);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/chat/token")

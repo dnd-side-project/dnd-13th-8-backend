@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatInbound;
 import com.example.demo.dto.ChatMapper;
 import com.example.demo.dto.ChatOutbound;
@@ -64,10 +65,12 @@ public class ChatService {
         }
     }
 
-    public List<ChatOutbound> loadRecent(String roomId, String before, int limit) {
-        int safeLimit = Math.min(Math.max(limit, 1), 50); // 1~50 제한
-        return chatRepository.queryRecent(roomId, before, safeLimit)
-                .stream()
+    public ChatHistoryResponseDto loadRecent(String roomId, String before, int limit) {
+        int pageSize = Math.min(Math.max(limit, 1), 50); // 1~50 가드
+
+        var slice = chatRepository.queryRecentSlice(roomId, before, pageSize);
+
+        var messages = slice.items().stream()
                 .map(chat -> ChatOutbound.builder()
                         .roomId(chat.getRoomId())
                         .messageId(chat.getMessageId())
@@ -77,7 +80,12 @@ public class ChatService {
                         .sentAt(chat.getSentAt())
                         .profileImage(chat.getProfileImage())
                         .systemMessage(chat.isSystemMessage())
-                        .build())
-                .toList();
+                        .build()
+                ).toList();
+
+        return ChatHistoryResponseDto.builder()
+                .messages(messages)
+                .nextCursor(slice.nextCursor()) // 마지막 페이지면 null
+                .build();
     }
 }

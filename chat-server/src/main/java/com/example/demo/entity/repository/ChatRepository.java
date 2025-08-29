@@ -1,6 +1,9 @@
 package com.example.demo.entity.repository;
 
+import com.example.demo.dto.ChatSlice;
 import com.example.demo.entity.Chat;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -8,17 +11,23 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
 public class ChatRepository {
 
     private final DynamoDbEnhancedClient enhancedClient;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${aws.dynamodb.table}")
     private String tableName;
@@ -31,30 +40,52 @@ public class ChatRepository {
         table().putItem(chat);
     }
 
-    // 최근 limit개
-    public List<Chat> queryRecent(String roomId, String before, int limit) {
+    public ChatSlice queryRecentSlice(String roomId, String beforeCursorBase64, int pageSize) {
         DynamoDbTable<Chat> t = table();
 
-        QueryConditional queryConditional;
-        if (before == null) {
-            queryConditional = QueryConditional.keyEqualTo(Key.builder().partitionValue(roomId).build());
-        } else {
-            queryConditional = QueryConditional.sortLessThanOrEqualTo(
-                    Key.builder().partitionValue(roomId).sortValue(before).build()
-            );
+        QueryEnhancedRequest.Builder qb = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(
+                        Key.builder().partitionValue(roomId).build()
+                ))
+                .scanIndexForward(false) // 최신순 (DESC)
+                .limit(pageSize);
+
+        // ★ 직전 nextCursor(=LEK)가 있으면 exclusiveStartKey로 이어붙이기
+        if (beforeCursorBase64 != null && !beforeCursorBase64.isBlank()) {
+            qb.exclusiveStartKey(decodeLek(beforeCursorBase64));
         }
 
-        QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
-                .queryConditional(queryConditional)
-                .scanIndexForward(false) // 최신순 정렬
-                .limit(limit)
-                .build();
+        QueryEnhancedRequest req = qb.build();
 
-        List<Chat> result = new ArrayList<>();
-        t.query(queryEnhancedRequest).stream()
-                .flatMap(p -> p.items().stream())
-                .forEach(result::add);
 
-        return result;
+        PageIterable<Chat> pages = t.query(req);
+        Page<Chat> first = pages.stream().findFirst().orElse(null);
+        if (first == null) {
+            return new ChatSlice(List.of(), null);
+        }
+
+        List<Chat> items = first.items();
+        Map<String, AttributeValue> lek = first.lastEvaluatedKey();
+
+        String nextCursor = (lek == null || lek.isEmpty()) ? null : encodeLek(lek);
+        return new ChatSlice(items, nextCursor);
+    }
+
+    private String encodeLek(Map<String, AttributeValue> lek) {
+        try {
+            byte[] json = objectMapper.writeValueAsBytes(lek);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(json);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to encode LEK", e);
+        }
+    }
+
+    private Map<String, AttributeValue> decodeLek(String base64) {
+        try {
+            byte[] raw = Base64.getUrlDecoder().decode(base64);
+            return objectMapper.readValue(raw, new TypeReference<Map<String, AttributeValue>>() {});
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid cursor", e);
+        }
     }
 }
