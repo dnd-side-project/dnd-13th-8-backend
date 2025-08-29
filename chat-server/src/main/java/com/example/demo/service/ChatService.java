@@ -5,7 +5,6 @@ import com.example.common.error.exception.UserException;
 import com.example.demo.dto.ChatInbound;
 import com.example.demo.dto.ChatMapper;
 import com.example.demo.dto.ChatOutbound;
-import com.example.demo.entity.Chat;
 import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
 import com.example.demo.entity.repository.UsersRepository;
@@ -76,6 +75,7 @@ public class ChatService {
                         .username(chat.getUsername())
                         .content(chat.getContent())
                         .sentAt(chat.getSentAt())
+                        .profileImage(chat.getProfileImage())
                         .systemMessage(chat.isSystemMessage())
                         .build())
                 .toList();
