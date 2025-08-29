@@ -26,4 +26,5 @@ public interface FollowRepository extends JpaRepository<Follow, Long>, FollowRep
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     void deleteByUsersIdAndPlaylistId(String usersId, Long playlistId);
 
+    void deleteByPlaylistId(Long playlistId);
 }

@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserPlaylistHistoryRepository extends JpaRepository<UserPlaylistHistory, Long>,
         UserPlaylistHistoryRepositoryCustom {
+    void deleteByPlaylistId(Long playlistId);
 }
