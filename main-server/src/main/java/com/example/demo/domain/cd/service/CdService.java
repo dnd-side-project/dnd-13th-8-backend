@@ -129,7 +129,7 @@ public class CdService {
             return "DEFAULT";
         }
         if (imageKey != null && !imageKey.isBlank()) {
-            return cache.computeIfAbsent(imageKey, r2Service::getPresignedUrl);
+            return cache.computeIfAbsent(imageKey, r2Service::getPublicUrl);
         }
         return null;
     }
