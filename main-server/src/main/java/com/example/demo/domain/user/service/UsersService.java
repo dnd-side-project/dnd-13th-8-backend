@@ -31,24 +31,27 @@ public class UsersService {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        // 닉네임 업데이트 (중복 체크 포함)
+        // 닉네임 업데이트
         if (req.nickname() != null && !req.nickname().isBlank()) {
-            boolean duplicated = usersRepository.existsByUsername(req.nickname());
-            if (duplicated) {
-                throw new UserException(UserErrorCode.DUPLICATED_USERNAME);
-            }
             user.changeNickname(req.nickname());
         }
 
         // 프로필 이미지 업데이트
         if (req.profileImage() != null && !req.profileImage().isEmpty()) {
-            String key = r2Service.newKey(req.profileImage().getOriginalFilename());
-            r2Service.upload(
+
+            //가존 이미지가 R2에 저장되어있다면 R2에서 삭제
+            String oldImageKey = r2Service.extractStaticKey(user.getProfileUrl());
+            if (oldImageKey != null && !oldImageKey.isBlank()) {
+                r2Service.staticDelete(oldImageKey);
+            }
+
+            String key = r2Service.newStaticKey(req.profileImage().getOriginalFilename());
+            r2Service.staticUpload(
                     req.profileImage().getBytes(),
                     req.profileImage().getContentType(),
                     key
             );
-            String profileUrl = r2Service.getPresignedUrl(key);
+            String profileUrl = r2Service.staticUrl(key);
             user.changeProfileImage(profileUrl);
         } else {
             user.changeProfileImage("NULL"); // DB에도 "NULL" 저장
