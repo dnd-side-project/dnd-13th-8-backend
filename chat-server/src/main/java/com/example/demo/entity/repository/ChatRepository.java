@@ -117,11 +117,4 @@ public class ChatRepository {
         Chat deleted = t.deleteItem(r -> r.key(key));
         return deleted != null; // 존재했으면 삭제된 엔티티 반환
     }
-
-    // roomId + messageId로 삭제 (내부적으로 sentAt 조회 후 PK로 삭제)
-    public boolean deleteByMessageId(String roomId, String messageId) {
-        Optional<Chat> found = findOneByMessageId(roomId, messageId);
-        if (found.isEmpty()) return false;
-        return deleteByPk(roomId, found.get().getSentAt());
-    }
 }
