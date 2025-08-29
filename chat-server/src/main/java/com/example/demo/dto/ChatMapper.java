@@ -18,16 +18,4 @@ public class ChatMapper {
                 .systemMessage(chatOutbound.isSystemMessage())
                 .build();
     }
-
-    public static ChatOutbound toOutbound(Chat chat) {
-        return ChatOutbound.builder()
-                .roomId(chat.getRoomId())
-                .sentAt(chat.getSentAt())
-                .messageId(chat.getMessageId())
-                .senderId(chat.getSenderId())
-                .username(chat.getUsername())
-                .content(chat.getContent())
-                .systemMessage(chat.isSystemMessage())
-                .build();
-    }
 }
