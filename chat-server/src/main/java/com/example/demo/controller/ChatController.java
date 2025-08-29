@@ -3,7 +3,6 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatInbound;
-import com.example.demo.dto.ChatOutbound;
 import com.example.demo.global.redis.ChatRedisCounter;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import com.example.demo.service.ChatService;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 
 
@@ -74,18 +72,11 @@ public class ChatController {
     )
     public ResponseEntity<ChatHistoryResponseDto> history(
             @PathVariable String roomId,
-            @RequestParam(required = false) String before,
+            @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "50") int limit
     ) {
-        List<ChatOutbound> messages = chatService.loadRecent(roomId, before, limit);
-        String nextCursor = messages.isEmpty() ? null : messages.getLast().getSentAt();
-
-        ChatHistoryResponseDto chatHistoryResponseDto = ChatHistoryResponseDto.builder()
-                .messages(messages)
-                .nextCursor(nextCursor)
-                .build();
-
-        return ResponseEntity.ok(chatHistoryResponseDto);
+        ChatHistoryResponseDto dto = chatService.loadRecent(roomId, cursor, limit);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/chat/token")
