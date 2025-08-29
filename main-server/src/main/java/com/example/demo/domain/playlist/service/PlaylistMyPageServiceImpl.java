@@ -65,6 +65,16 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     }
 
     @Override
+    @Transactional
+    public PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, Long playlistId, PlaylistCreateRequest request,
+                                                                     List<CdItemRequest> cdItemRequestList) {
+        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId, request);
+        cdService.replaceCdItemList(playlistId, cdItemRequestList);
+
+        return response;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption) {
         List<Playlist> all = switch (sortOption) {

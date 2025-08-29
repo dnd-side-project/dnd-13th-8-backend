@@ -59,4 +59,11 @@ public class Playlist extends BaseTimeEntity {
         this.visitCount += delta;
     }
 
+    public void editPlaylist(String name, PlaylistGenre genre, Boolean isRepresentative) {
+        this.name = name;
+        this.genre = genre;
+        this.isRepresentative = isRepresentative;
+    }
+
+
 }
