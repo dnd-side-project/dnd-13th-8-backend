@@ -88,6 +88,35 @@ public class PlaylistMyPageController {
     }
 
     @Operation(
+            summary = "플레이리스트 수정(세션 임시본 사용 + Cd 수정)",
+            description = "세션에 저장된 임시본과 CD 요청을 사용하여 플레이리스트를 수정합니다"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "생성된 플레이리스트 상세",
+            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+    )
+    @ApiResponse(responseCode = "409", description = "세션에 임시 저장본 없음")
+    @PatchMapping("/final")
+    public ResponseEntity<PlaylistWithSongsResponse> editPlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody EditFinalPlaylistRequest editFinalPlaylistRequest,
+            HttpSession session
+    ) {
+        PlaylistCreateRequest request = (PlaylistCreateRequest) session.getAttribute("tempPlaylist");
+        if (request == null) {
+            throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
+        }
+
+        PlaylistWithSongsResponse response = playlistMyPageService.editFinalPlaylistWithSongsAndCd(user.getId(), editFinalPlaylistRequest.playlistId(),
+                                                                                                        request, editFinalPlaylistRequest.saveCdRequestDto().cdItems());
+
+        session.removeAttribute("tempPlaylist");
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
             summary = "내 플레이리스트 목록 조회",
             description = "정렬 옵션(POPULAR/RECENT)에 맞춰 내 플레이리스트를 조회합니다."
     )

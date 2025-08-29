@@ -40,13 +40,8 @@ public interface RepresentativePlaylistRepository extends JpaRepository<Represen
 
     void deleteByPlaylist_Id(Long playlistId);
 
-    @Query(value = """
-    SELECT r.playlist_id
-    FROM representative_playlist r
-    WHERE r.user_id IN (:userIds)
-    ORDER BY FIELD(r.user_id, :userIds)
-""", nativeQuery = true)
-    List<Long> findAllPlaylistIdsInOrder(@Param("userIds") List<String> userIds);
+    @Query("SELECT r FROM RepresentativePlaylist r WHERE r.user.id IN :userIds")
+    List<RepresentativePlaylist> findByUserIds(@Param("userIds") List<String> userIds);
 
 }
 

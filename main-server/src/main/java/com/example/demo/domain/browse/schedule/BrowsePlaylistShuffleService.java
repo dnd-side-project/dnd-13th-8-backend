@@ -10,6 +10,7 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
+import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
@@ -17,12 +18,16 @@ import com.example.demo.domain.song.util.DurationFormatUtil;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Slf4j
 @Service
@@ -37,13 +42,44 @@ public class BrowsePlaylistShuffleService {
     private final BrowsePlaylistRepository browseSnapshotRepository;
     private final ObjectMapper objectMapper;
     private final PlaylistMyPageService playlistMyPageService;
+    private final TransactionTemplate txTemplate;
 
-    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+
+    @PostConstruct
+    public void scheduleOnceAfter3Min() {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                txTemplate.execute(status -> {
+                    scheduledShuffle();
+                    return null;
+                });
+            }
+        }, Duration.ofMinutes(1).toMillis());
+    }
+
+
+
+    //@Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     @Transactional
     public void scheduledShuffle() {
         // 1. 대표 플레이리스트 보유한 유저만 조회
-        List<String> userIds = representativePlaylistRepository.findUserIdsWithRepPlaylist();
-        List<Long> playlistIds = representativePlaylistRepository.findAllPlaylistIdsInOrder(userIds);
+        List<String> userIds = representativePlaylistRepository.findUserIdsWithRepPlaylist(); // 순서 중요
+
+        List<RepresentativePlaylist> reps = representativePlaylistRepository.findByUserIds(userIds);
+
+        // userId → playlistId 매핑
+        Map<String, Long> userToPlaylistId = reps.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getUser().getId(),
+                        r -> r.getPlaylist().getId()
+                ));
+
+        // 순서 맞게 playlistIds 재정렬
+        List<Long> playlistIds = userIds.stream()
+                .map(userToPlaylistId::get)
+                .toList();
+
 
         int n = userIds.size();
 
