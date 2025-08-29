@@ -34,6 +34,7 @@ public class KakaoAuthService {
         requireText(codeVerifier, "code_verifier");
 
         log.info("[KakaoAuth] 카카오 토큰 요청 시작");
+        log.info("[KakaoAuth] 토큰 요청 redirect_uri={}", redirectUri);
 
         try {
             KakaoTokenResponse token = kakaoAuthHttp.token(
