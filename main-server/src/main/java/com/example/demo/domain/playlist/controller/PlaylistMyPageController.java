@@ -7,7 +7,6 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
-import com.example.demo.domain.playlist.service.PlaylistSaveService;
 import com.example.demo.domain.representative.entity.RepresentativePlaylist;
 import com.example.demo.domain.representative.service.RepresentativePlaylistService;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;

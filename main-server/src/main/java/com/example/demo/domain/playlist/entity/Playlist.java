@@ -1,12 +1,9 @@
 package com.example.demo.domain.playlist.entity;
 
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
