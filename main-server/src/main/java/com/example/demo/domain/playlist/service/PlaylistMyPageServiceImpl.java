@@ -67,8 +67,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Override
     @Transactional(readOnly = true)
     public List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption) {
-        log.info("🔍 내 플레이리스트 조회 시작: userId={}, sortOption={}", userId, sortOption);
-
         List<Playlist> all = switch (sortOption) {
             case POPULAR -> playlistRepository.findByUserIdPopular(userId);
             case RECENT -> playlistRepository.findByUserIdRecent(userId);
@@ -170,19 +168,13 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Playlist target = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
-                .orElseThrow(() -> new PlaylistException("해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
-                        PlaylistErrorCode.PLAYLIST_NOT_FOUND));
-
-        representativePlaylistRepository.findByUser_Id(userId)
-                .ifPresentOrElse(
-                        rep -> {
-                            if (!rep.getPlaylist().getId().equals(target.getId())) {
-                                rep.changePlaylist(target);
-                            }
-                        },
-                        () -> representativePlaylistRepository.save(new RepresentativePlaylist(user, target))
-                );
+                .orElseThrow(() ->new PlaylistException(
+                            "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                            PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+        target.changeToRepresentative();
+        playlistSaveService.replaceRepresentativePlaylist(user, target);
     }
+
 
     @Override
     @Transactional(readOnly = true)
