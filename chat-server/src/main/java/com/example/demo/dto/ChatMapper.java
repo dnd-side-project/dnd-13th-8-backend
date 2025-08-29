@@ -27,6 +27,7 @@ public class ChatMapper {
                 .senderId(chat.getSenderId())
                 .username(chat.getUsername())
                 .content(chat.getContent())
+                .profileImage(chat.getProfileImage())
                 .systemMessage(chat.isSystemMessage())
                 .build();
     }

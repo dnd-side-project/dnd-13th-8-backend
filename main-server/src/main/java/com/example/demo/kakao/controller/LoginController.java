@@ -68,7 +68,8 @@ public class LoginController {
     @GetMapping("/auth/anonymous")
     public ResponseEntity<String> anonymousLogin() {
         Users user = new Users();
-        user.setUsername("anonymous");
+        String nickname = nicknameGenerator.generateUniqueNickname();
+        user.setUsername(nickname);
         user.setRole(JwtRoleType.ANONYMOUS);
         user.setProfileUrl("NULL");
         Users savedUser = usersRepository.save(user);

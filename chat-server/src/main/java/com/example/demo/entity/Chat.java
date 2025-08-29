@@ -17,6 +17,7 @@ public class Chat {
     private String senderId;
     private String username;
     private String content;
+    private String profileImage;
     private boolean systemMessage;
 
     @DynamoDbPartitionKey
@@ -30,13 +31,21 @@ public class Chat {
     }
 
     @Builder
-    public Chat(String roomId, String sentAt, String username, String messageId, String senderId, String content, boolean systemMessage) {
+    public Chat(String roomId,
+                String sentAt,
+                String username,
+                String messageId,
+                String senderId,
+                String content,
+                String profileImage,
+                boolean systemMessage) {
         this.roomId = roomId;
         this.sentAt = sentAt;
         this.username = username;
         this.messageId = messageId;
         this.senderId = senderId;
         this.content = content;
+        this.profileImage = profileImage;
         this.systemMessage = systemMessage;
     }
 }
