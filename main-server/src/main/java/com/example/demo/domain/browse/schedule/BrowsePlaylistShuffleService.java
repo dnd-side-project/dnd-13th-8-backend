@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import java.util.*;
 
 @Slf4j
@@ -39,133 +37,109 @@ public class BrowsePlaylistShuffleService {
     private final BrowsePlaylistRepository browseSnapshotRepository;
     private final ObjectMapper objectMapper;
 
-    private final TransactionTemplate txTemplate;
-
-    private static final int SHUFFLE_SIZE = 20;
-
-//    @PostConstruct
-//    public void scheduleOnceAfter3Min() {
-//        new Timer().schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                txTemplate.execute(status -> {
-//                    scheduledShuffle();
-//                    return null;
-//                });
+//    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+//    @Transactional
+//    public void scheduledShuffle() {
+//
+//        List<String> userIds = representativePlaylistRepository.findUserIdsWithRepPlaylist();
+//        int userCount = userIds.size();
+//
+//        if (userCount == 0) {
+//            log.warn("대표 플레이리스트가 있는 유저가 없습니다.");
+//            return;
+//        }
+//
+//        List<Long> playlistIds = representativePlaylistRepository.findAllPlaylistIdsInOrder(userIds);
+//
+//        if (playlistIds.size() != userCount) {
+//            log.error("대표 플레이리스트 개수와 유저 수가 일치하지 않습니다. userCount={}, playlistCount={}", userCount, playlistIds.size());
+//            return;
+//        }
+//
+//        for (int i = 0; i < userCount; i++) {
+//            String userId = userIds.get(i);
+//
+//            List<Long> assignedPlaylistIds = new ArrayList<>();
+//            for (int j = 1; j < userCount; j++) {
+//                int targetIndex = (i + j) % userCount;
+//                assignedPlaylistIds.add(playlistIds.get(targetIndex));
 //            }
-//        }, Duration.ofMinutes(1).toMillis());
+//
+//            try {
+//                assignShuffledCards(userId, assignedPlaylistIds);
+//            } catch (Exception e) {
+//                log.error("셔플 실패: userId={}, error={}", userId, e.getMessage(), e);
+//            }
+//        }
+//
+//        log.info("BrowsePlaylistCard 셔플 완료 - 대상 유저 수: {}", userCount);
 //    }
-
-
-
-    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
-    @Transactional
-    public void scheduledShuffle() {
-        List<String> userIds = usersRepository.findAllUserIds();
-        log.info(" 셔플 대상 유저 수: {}", userIds.size());
-
-        for (String userId : userIds) {
-            try {
-                shuffleAndStore(userId);
-            } catch (Exception e) {
-                log.error(" 셔플 실패: userId={}", userId, e);
-            }
-        }
-
-        log.info(" BrowseSnapshot 셔플 완료 - 전체 유저 대상");
-    }
-
-    @Transactional
-    public void shuffleAndStore(String userId) {
-        // 1. 기존 스냅샷 삭제
-        browseSnapshotRepository.deleteByUserId(userId);
-
-        // 2. 대표 플레이리스트 ID 셔플
-        List<Long> original = representativePlaylistRepository.findAllPlaylistIdsExcludingUser(userId);
-        if (original == null || original.isEmpty()) {
-            log.warn(" 대표 플레이리스트가 비어있습니다. userId={}", userId);
-            return;
-        }
-
-        List<Long> playlistIds = new ArrayList<>(original);
-        long seed = System.nanoTime() ^ UUID.randomUUID().getMostSignificantBits();
-        Collections.shuffle(playlistIds, new Random(seed));
-
-        List<Long> selectedIds = playlistIds.stream()
-                .limit(SHUFFLE_SIZE)
-                .toList();
-
-        log.info(" 셔플 완료: userId={}, selectedPlaylistIds={}", userId, selectedIds);
-
-        // 3. CD Map 조회
-        Map<Long, List<CdItemResponse>> cdItemsMap = getCdMap(selectedIds);
-
-        // 4. 유저 조회
-        Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 없음: " + userId));
-
-        // 5. 카드 생성
-        List<BrowsePlaylistCard> snapshots = new ArrayList<>();
-        for (int i = 0; i < selectedIds.size(); i++) {
-            Long playlistId = selectedIds.get(i);
-            Playlist playlist = playlistRepository.findById(playlistId)
-                    .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음: " + playlistId));
-
-            List<Song> songs = songRepository.findByPlaylistId(playlistId);
-            List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
-
-            String songsJson;
-            try {
-                songsJson = objectMapper.writeValueAsString(songDtos);
-            } catch (JsonProcessingException e) {
-                log.warn(" 곡 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
-                continue;
-            }
-
-            String cdItemsJson;
-            try {
-                List<CdItemResponse> cdItems = cdItemsMap.getOrDefault(playlistId, Collections.emptyList());
-                cdItemsJson = objectMapper.writeValueAsString(cdItems);
-            } catch (JsonProcessingException e) {
-                log.warn(" CD 아이템 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
-                continue;
-            }
-
-            String shareUrl = "https://deulak.com/share/" + user.getShareCode();
-            long totalSec = songs.stream().mapToLong(Song::getYoutubeLength).sum();
-
-            BrowsePlaylistCard snapshot = BrowsePlaylistCard.builder()
-                    .userId(userId)
-                    .playlistId(playlistId)
-                    .position(i)
-                    .playlistTitle(playlist.getName())
-                    .genre(playlist.getGenre().name())
-                    .creatorId(playlist.getUsers().getId())
-                    .creatorName(playlist.getUsers().getUsername())
-                    .songsJson(songsJson)
-                    .cdItemsJson(cdItemsJson)
-                    .isRepresentative(true)
-                    .shareUrl(shareUrl)
-                    .totalTime(DurationFormatUtil.formatToHumanReadable(totalSec))
-                    .build();
-
-            snapshots.add(snapshot);
-        }
-
-        // 6. 저장
-        browseSnapshotRepository.saveAll(snapshots);
-        log.info(" 저장 완료: userId={}, 저장된 스냅샷 개수={}", userId, snapshots.size());
-    }
-
-    private Map<Long, List<CdItemResponse>> getCdMap(List<Long> playlistIds) {
-        CdListResponseDto cdList = cdService.getAllCdByPlaylistIdList(playlistIds);
-        Map<Long, List<CdItemResponse>> result = new HashMap<>();
-        for (CdResponse cdResponse : cdList.cds()) {
-            result.put(
-                    cdResponse.playlistId(),
-                    cdResponse.cdItems() != null ? cdResponse.cdItems() : Collections.emptyList()
-            );
-        }
-        return result;
-    }
+//
+//    @Transactional
+//    public void assignShuffledCards(String userId, List<Long> assignedPlaylistIds) {
+//        browseSnapshotRepository.deleteByUserId(userId);
+//
+//        Users user = usersRepository.findById(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("유저 없음: " + userId));
+//
+//        Map<Long, List<CdItemResponse>> cdMap = getCdMap(assignedPlaylistIds);
+//        List<BrowsePlaylistCard> cards = new ArrayList<>();
+//
+//        for (int i = 0; i < assignedPlaylistIds.size(); i++) {
+//            Long playlistId = assignedPlaylistIds.get(i);
+//            Playlist playlist = playlistRepository.findById(playlistId)
+//                    .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음: " + playlistId));
+//
+//            List<Song> songs = songRepository.findByPlaylistId(playlistId);
+//            String songsJson;
+//            try {
+//                songsJson = objectMapper.writeValueAsString(songs.stream().map(SongDto::from).toList());
+//            } catch (JsonProcessingException e) {
+//                log.warn("곡 JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
+//                continue;
+//            }
+//
+//            String cdJson;
+//            try {
+//                cdJson = objectMapper.writeValueAsString(cdMap.getOrDefault(playlistId, List.of()));
+//            } catch (JsonProcessingException e) {
+//                log.warn("CD JSON 변환 실패: playlistId={}, userId={}", playlistId, userId, e);
+//                continue;
+//            }
+//
+//            BrowsePlaylistCard card = BrowsePlaylistCard.builder()
+//                    .userId(userId)
+//                    .playlistId(playlistId)
+//                    .position(i)
+//                    .playlistTitle(playlist.getName())
+//                    .genre(playlist.getGenre().name())
+//                    .creatorId(playlist.getUsers().getId())
+//                    .creatorName(playlist.getUsers().getUsername())
+//                    .songsJson(songsJson)
+//                    .cdItemsJson(cdJson)
+//                    .isRepresentative(true)
+//                    .shareUrl("https://deulak.com/share/" + user.getShareCode())
+//                    .totalTime(DurationFormatUtil.formatToHumanReadable(
+//                            songs.stream().mapToLong(Song::getYoutubeLength).sum()
+//                    ))
+//                    .build();
+//
+//            cards.add(card);
+//        }
+//
+//        browseSnapshotRepository.saveAll(cards);
+//        log.info("카드 저장 완료: userId={}, 개수={}", userId, cards.size());
+//    }
+//
+//    private Map<Long, List<CdItemResponse>> getCdMap(List<Long> playlistIds) {
+//        CdListResponseDto cdList = cdService.getAllCdByPlaylistIdList(playlistIds);
+//        Map<Long, List<CdItemResponse>> result = new HashMap<>();
+//        for (CdResponse cdResponse : cdList.cds()) {
+//            result.put(
+//                    cdResponse.playlistId(),
+//                    cdResponse.cdItems() != null ? cdResponse.cdItems() : Collections.emptyList()
+//            );
+//        }
+//        return result;
+//    }
 }
