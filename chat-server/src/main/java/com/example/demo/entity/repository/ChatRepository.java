@@ -7,10 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
@@ -20,6 +17,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -85,5 +83,38 @@ public class ChatRepository {
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid cursor", e);
         }
+    }
+
+    public Optional<Chat> findOneByMessageId(String roomId, String messageId) {
+        DynamoDbTable<Chat> t = table();
+
+        Expression filter = Expression.builder()
+                .expression("messageId = :mid")
+                .putExpressionValue(":mid", AttributeValue.builder().s(messageId).build())
+                .build();
+
+        QueryEnhancedRequest req = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(
+                        Key.builder().partitionValue(roomId).build()))
+                .filterExpression(filter)
+                .build();
+
+        for (Page<Chat> page : t.query(req)) {
+            for (Chat c : page.items()) {
+                if (messageId.equals(c.getMessageId())) {
+                    return Optional.of(c);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    // PK(roomId) + SK(sentAt)로 삭제
+    public boolean deleteByPk(String roomId, String sentAt) {
+        DynamoDbTable<Chat> t = table();
+        Key key = Key.builder().partitionValue(roomId).sortValue(sentAt).build();
+
+        Chat deleted = t.deleteItem(r -> r.key(key));
+        return deleted != null; // 존재했으면 삭제된 엔티티 반환
     }
 }
