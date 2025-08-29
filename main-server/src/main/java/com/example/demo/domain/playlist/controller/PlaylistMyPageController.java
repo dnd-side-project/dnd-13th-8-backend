@@ -242,6 +242,11 @@ public class PlaylistMyPageController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "프로필 변경",
+            description = "프로필 이름과 사진을 변경합니다"
+    )
+    @ApiResponse(content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
     @PatchMapping("/me")
     public ResponseEntity<UpdateProfileResponse> updateProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,

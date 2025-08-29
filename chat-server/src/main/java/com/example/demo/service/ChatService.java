@@ -1,10 +1,14 @@
 package com.example.demo.service;
 
+import com.example.common.error.code.UserErrorCode;
+import com.example.common.error.exception.UserException;
+import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatInbound;
 import com.example.demo.dto.ChatMapper;
 import com.example.demo.dto.ChatOutbound;
-import com.example.demo.entity.Chat;
+import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
+import com.example.demo.entity.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +16,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,11 +25,15 @@ public class ChatService {
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepository;
+    private final UsersRepository usersRepository;
 
     @Value("${chat.redis.topic-prefix:chat.room.}")
     private String topicPrefix;
 
     public void handleInbound(String roomId, ChatInbound chatInbound) {
+
+        Users users = usersRepository.findById(chatInbound.getSenderId())
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         // 1) 브로드캐스트용 아웃바운드 DTO 구성
         ChatOutbound chatOutbound = ChatOutbound.builder()
@@ -36,6 +43,7 @@ public class ChatService {
                 .username(chatInbound.getUsername())
                 .content(chatInbound.getContent())
                 .sentAt(Instant.now().toString())
+                .profileImage(users.getProfileUrl())
                 .systemMessage(chatInbound.isSystemMessage())
                 .build();
 
@@ -56,10 +64,12 @@ public class ChatService {
         }
     }
 
-    public List<ChatOutbound> loadRecent(String roomId, String before, int limit) {
-        int safeLimit = Math.min(Math.max(limit, 1), 50); // 1~50 제한
-        return chatRepository.queryRecent(roomId, before, safeLimit)
-                .stream()
+    public ChatHistoryResponseDto loadRecent(String roomId, String before, int limit) {
+        int pageSize = Math.min(Math.max(limit, 1), 50); // 1~50 가드
+
+        var slice = chatRepository.queryRecentSlice(roomId, before, pageSize);
+
+        var messages = slice.items().stream()
                 .map(chat -> ChatOutbound.builder()
                         .roomId(chat.getRoomId())
                         .messageId(chat.getMessageId())
@@ -67,8 +77,14 @@ public class ChatService {
                         .username(chat.getUsername())
                         .content(chat.getContent())
                         .sentAt(chat.getSentAt())
+                        .profileImage(chat.getProfileImage())
                         .systemMessage(chat.isSystemMessage())
-                        .build())
-                .toList();
+                        .build()
+                ).toList();
+
+        return ChatHistoryResponseDto.builder()
+                .messages(messages)
+                .nextCursor(slice.nextCursor()) // 마지막 페이지면 null
+                .build();
     }
 }

@@ -12,5 +12,6 @@ public class ChatOutbound {
     private String username;
     private String content;
     private String sentAt;
+    private String profileImage;
     private boolean systemMessage;
 }

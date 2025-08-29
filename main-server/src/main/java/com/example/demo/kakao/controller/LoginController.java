@@ -3,12 +3,7 @@ package com.example.demo.kakao.controller;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.domain.user.service.NicknameGenerator;
-import com.example.demo.global.auth.refresh.store.RedisRefreshTokenStore;
-import com.example.demo.global.http.service.RefreshTokenCookieService;
 import com.example.demo.global.jwt.JwtAccessIssuer;
-import com.example.demo.global.jwt.JwtProps;
-import com.example.demo.global.jwt.JwtProvider;
-import com.example.demo.global.jwt.JwtRefreshIssuer;
 import com.example.demo.global.jwt.JwtRoleType;
 import com.example.demo.kakao.dto.KakaoLoginRequest;
 import com.example.demo.kakao.dto.KakaoLoginResponse;
@@ -19,9 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,7 +61,8 @@ public class LoginController {
     @GetMapping("/auth/anonymous")
     public ResponseEntity<String> anonymousLogin() {
         Users user = new Users();
-        user.setUsername("anonymous");
+        String nickname = nicknameGenerator.generateUniqueNickname();
+        user.setUsername(nickname);
         user.setRole(JwtRoleType.ANONYMOUS);
         user.setProfileUrl("NULL");
         Users savedUser = usersRepository.save(user);
