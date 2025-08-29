@@ -1,7 +1,6 @@
 package com.example.demo.domain.song.repository;
 
 import com.example.demo.domain.song.entity.Song;
-import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +18,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     void deleteByPlaylistId(Long playlistId);
 
     List<Song> findByPlaylistId(Long id);
+
+    void deleteAllByIdIn(List<Long> playlistIds);
 }

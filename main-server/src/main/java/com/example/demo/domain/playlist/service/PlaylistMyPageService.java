@@ -26,4 +26,7 @@ public interface PlaylistMyPageService {
     FollowPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort);
 
     List<PlaylistDetailResponse> getPlaylistsByCreatorId(String creatorId);
+
+   PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, Long playlistId, PlaylistCreateRequest request,
+                                                                     List<CdItemRequest> cdItemRequestList);
 }
