@@ -17,10 +17,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -85,5 +82,17 @@ public class ChatController {
     )
     public ResponseEntity<String> testToken(@AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok().body(user.getUsername());
+    }
+
+    @DeleteMapping("/chat/rooms/{roomId}/messages/{messageId}")
+    @Operation(
+            summary = "채팅 메시지 삭제",
+            description = "특정 채팅 메세지을 삭제합니다"
+    )
+    public ResponseEntity<String> deleteChat (@PathVariable String roomId,
+                                              @PathVariable String messageId,
+                                              @AuthenticationPrincipal CustomUserDetails user) {
+        chatService.deleteMessage(roomId,messageId, user.getId());
+        return ResponseEntity.ok().body("삭제 성공");
     }
 }

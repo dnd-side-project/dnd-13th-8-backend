@@ -6,6 +6,7 @@ import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatInbound;
 import com.example.demo.dto.ChatMapper;
 import com.example.demo.dto.ChatOutbound;
+import com.example.demo.entity.Chat;
 import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
 import com.example.demo.entity.repository.UsersRepository;
@@ -60,7 +61,7 @@ public class ChatService {
         try {
             chatRepository.save(ChatMapper.toEntity(chatOutbound));
         } catch (Exception e) {
-            throw new RuntimeException("DynamoDB putItem failed", e);
+            throw new RuntimeException("DB 저장 실패", e);
         }
     }
 
@@ -86,5 +87,21 @@ public class ChatService {
                 .messages(messages)
                 .nextCursor(slice.nextCursor()) // 마지막 페이지면 null
                 .build();
+    }
+
+    public void deleteMessage(String roomId, String messageId, String userId) {
+        Chat chat = chatRepository.findOneByMessageId(roomId, messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+
+        // 2) 본인 확인
+        if (!userId.equals(chat.getSenderId())) {
+            throw new IllegalStateException("id 불일치");
+        }
+
+        // 3) PK(roomId) + SK(sentAt)로 삭제
+        boolean ok = chatRepository.deleteByPk(roomId, chat.getSentAt());
+        if (!ok) {
+            throw new IllegalStateException("삭제 실패");
+        }
     }
 }
