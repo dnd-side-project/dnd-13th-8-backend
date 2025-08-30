@@ -46,7 +46,7 @@ public class PropService {
                 .build();
         Prop saved = propRepository.save(prop);
 
-        String imageUrl = r2Service.getPresignedUrl(imageKey);
+        String imageUrl = r2Service.getPublicUrl(imageKey);
 
         return PropResponse.builder()
                 .propId(saved.getId())
@@ -81,6 +81,6 @@ public class PropService {
     }
 
     public String getPropImageUrl (String imageKey) {
-        return r2Service.getPresignedUrl(imageKey);
+        return r2Service.getPublicUrl(imageKey);
     }
 }
