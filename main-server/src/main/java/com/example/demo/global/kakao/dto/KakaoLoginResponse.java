@@ -1,4 +1,4 @@
-package com.example.demo.kakao.dto;
+package com.example.demo.global.kakao.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

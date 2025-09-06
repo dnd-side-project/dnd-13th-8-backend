@@ -1,10 +1,10 @@
-package com.example.demo.kakao.service;
+package com.example.demo.global.kakao.service;
 
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.jwt.JwtAccessIssuer;
-import com.example.demo.kakao.dto.KakaoLoginResponse;
-import com.example.demo.kakao.dto.KakaoProfileMapper;
-import com.example.demo.kakao.dto.KakaoProfileResponse;
+import com.example.demo.global.kakao.dto.KakaoLoginResponse;
+import com.example.demo.global.kakao.dto.KakaoProfileMapper;
+import com.example.demo.global.kakao.dto.KakaoProfileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

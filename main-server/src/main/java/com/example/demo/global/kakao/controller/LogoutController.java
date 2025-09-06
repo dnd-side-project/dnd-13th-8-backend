@@ -1,8 +1,8 @@
-package com.example.demo.kakao.controller;
+package com.example.demo.global.kakao.controller;
 
 import com.example.demo.global.http.util.AuthContextExtractor;
 import com.example.demo.global.security.filter.CustomUserDetails;
-import com.example.demo.kakao.service.LogoutService;
+import com.example.demo.global.kakao.service.LogoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
