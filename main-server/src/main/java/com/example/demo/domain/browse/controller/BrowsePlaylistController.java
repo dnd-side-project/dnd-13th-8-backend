@@ -92,7 +92,7 @@ public class BrowsePlaylistController {
 
     @PostMapping("/confirm")
     @Operation(
-            summary = "하트비트 확정 (15초 이상 재생)",
+            summary = "하트비트 확정 (10초 이상 재생)",
             description = """
             사용자가 15초 이상 곡을 재생한 경우 호출됩니다.
             Redis에 중복 확인 후, 조회수가 1 증가하며 하루에 한 번만 카운트됩니다.
