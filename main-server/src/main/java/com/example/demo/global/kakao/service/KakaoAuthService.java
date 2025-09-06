@@ -1,9 +1,9 @@
-package com.example.demo.kakao.service;
+package com.example.demo.global.kakao.service;
 
-import com.example.demo.kakao.dto.KakaoProfileResponse;
-import com.example.demo.kakao.dto.KakaoTokenResponse;
-import com.example.demo.kakao.controller.KakaoApiHttp;
-import com.example.demo.kakao.controller.KakaoAuthHttp;
+import com.example.demo.global.kakao.dto.KakaoProfileResponse;
+import com.example.demo.global.kakao.dto.KakaoTokenResponse;
+import com.example.demo.global.kakao.controller.KakaoApiHttp;
+import com.example.demo.global.kakao.controller.KakaoAuthHttp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

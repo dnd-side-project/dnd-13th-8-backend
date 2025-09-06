@@ -1,4 +1,4 @@
-package com.example.demo.kakao.dto;
+package com.example.demo.global.kakao.dto;
 
 import com.example.common.error.code.KakaoErrorCode;
 import com.example.common.error.exception.KakoException;

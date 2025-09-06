@@ -1,13 +1,13 @@
-package com.example.demo.kakao.controller;
+package com.example.demo.global.kakao.controller;
 
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.domain.user.service.NicknameGenerator;
 import com.example.demo.global.jwt.JwtAccessIssuer;
 import com.example.demo.global.jwt.JwtRoleType;
-import com.example.demo.kakao.dto.KakaoLoginRequest;
-import com.example.demo.kakao.dto.KakaoLoginResponse;
-import com.example.demo.kakao.service.AuthService;
+import com.example.demo.global.kakao.dto.KakaoLoginRequest;
+import com.example.demo.global.kakao.dto.KakaoLoginResponse;
+import com.example.demo.global.kakao.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
