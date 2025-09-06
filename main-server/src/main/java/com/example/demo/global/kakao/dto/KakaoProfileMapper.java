@@ -45,9 +45,7 @@ public class KakaoProfileMapper {
             String imageUrl = profileResponse.kakao_account().profile().profileImageUrl();
             if (imageUrl != null && !imageUrl.isBlank()) {
                 return imageUrl;
-            } else {
             }
-        } else {
         }
         return "NULL";
     }
