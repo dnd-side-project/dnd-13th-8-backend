@@ -1,6 +1,6 @@
 package com.example.demo.global.auth.refresh.service;
 
-import com.example.demo.kakao.service.LogoutService;
+import com.example.demo.global.kakao.service.LogoutService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

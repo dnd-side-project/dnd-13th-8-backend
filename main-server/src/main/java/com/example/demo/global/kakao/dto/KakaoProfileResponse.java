@@ -1,4 +1,4 @@
-package com.example.demo.kakao.dto;
+package com.example.demo.global.kakao.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

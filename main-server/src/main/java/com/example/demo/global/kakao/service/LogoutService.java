@@ -1,4 +1,4 @@
-package com.example.demo.kakao.service;
+package com.example.demo.global.kakao.service;
 
 import com.example.demo.global.auth.refresh.store.RefreshTokenStore;
 import lombok.RequiredArgsConstructor;

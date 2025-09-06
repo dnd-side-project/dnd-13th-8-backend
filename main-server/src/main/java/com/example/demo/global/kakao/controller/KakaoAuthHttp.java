@@ -1,6 +1,6 @@
-package com.example.demo.kakao.controller;
+package com.example.demo.global.kakao.controller;
 
-import com.example.demo.kakao.dto.KakaoTokenResponse;
+import com.example.demo.global.kakao.dto.KakaoTokenResponse;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
