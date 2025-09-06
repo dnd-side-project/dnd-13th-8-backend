@@ -40,18 +40,18 @@ public class UsersService {
         if (req.profileImage() != null && !req.profileImage().isEmpty()) {
 
             //가존 이미지가 R2에 저장되어있다면 R2에서 삭제
-            String oldImageKey = r2Service.extractStaticKey(user.getProfileUrl());
+            String oldImageKey = r2Service.extractKey(user.getProfileUrl());
             if (oldImageKey != null && !oldImageKey.isBlank()) {
-                r2Service.staticDelete(oldImageKey);
+                r2Service.delete(oldImageKey);
             }
 
-            String key = r2Service.newStaticKey(req.profileImage().getOriginalFilename());
-            r2Service.staticUpload(
+            String key = r2Service.newKey(req.profileImage().getOriginalFilename());
+            r2Service.upload(
                     req.profileImage().getBytes(),
                     req.profileImage().getContentType(),
                     key
             );
-            String profileUrl = r2Service.staticUrl(key);
+            String profileUrl = r2Service.getPublicUrl(key);
             user.changeProfileImage(profileUrl);
         }
 
