@@ -4,9 +4,12 @@ import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PlaylistServiceImpl implements PlaylistService {
 
     private final PlaylistRepository playlistRepository;
+    private final PlaylistSaveService playlistSaveService;
     private final UsersRepository userRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
@@ -51,5 +55,27 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
         return MainPlaylistDetailResponse.from(playlist, songDtos, cdResponse);
+    }
+
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request,
+                                                                     List<CdItemRequest> cdItemRequestList) {
+
+        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
+
+        cdService.saveCdItemList(response.playlistId(), cdItemRequestList);
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, Long playlistId, PlaylistCreateRequest request,
+                                                                     List<CdItemRequest> cdItemRequestList) {
+        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId, request);
+        cdService.replaceCdItemList(playlistId, cdItemRequestList);
+
+        return response;
     }
 }

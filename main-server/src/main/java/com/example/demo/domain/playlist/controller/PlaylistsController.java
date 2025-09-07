@@ -1,9 +1,11 @@
 package com.example.demo.domain.playlist.controller;
 
+import com.example.demo.domain.playlist.dto.EditFinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.FinalPlaylistRequest;
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
+import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.service.PlaylistService;
-import com.example.demo.domain.representative.service.RepresentativePlaylistService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,35 +13,23 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
 @RestController
-@RequestMapping("/main/playlists")
-@Tag(name = "Playlist", description = "플레이리스트 상세보기")
+@RequestMapping("/main/playlist")
+@Tag(name = "Playlist CRUD", description = "플레이리스트 기본 CRUD API")
 @RequiredArgsConstructor
 public class PlaylistsController {
 
     private final PlaylistService playlistService;
-    private final RepresentativePlaylistService representativePlaylistService;
-
-    @GetMapping("/representative")
-    @Operation(summary = "내 대표 플레이리스트 조회")
-    public ResponseEntity<PlaylistDetailResponse> getMyRepresentativePlaylist(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        PlaylistDetailResponse dto = representativePlaylistService.getMyRepresentativePlaylist(userDetails.getId());
-        return ResponseEntity.ok(dto);
-    }
 
     @Operation(
             summary = "플레이리스트 상세 조회 + 재생 기록 저장",
@@ -58,6 +48,81 @@ public class PlaylistsController {
             @AuthenticationPrincipal CustomUserDetails user
     ) {
         MainPlaylistDetailResponse response = playlistService.getPlaylistDetail(playlistId, user.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "임시 플레이리스트 저장(세션)",
+            description = "플레이리스트 생성 전 단계에서 본문을 세션에 임시 저장합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "임시 저장 완료")
+    @PostMapping("/temp")
+    public ResponseEntity<Void> saveTempPlaylist(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = PlaylistCreateRequest.class))
+            )
+            @RequestBody @Valid PlaylistCreateRequest request,
+            HttpSession session
+    ) {
+        session.setAttribute("tempPlaylist", request);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+            summary = "플레이리스트 생성(세션 임시본 사용 + Cd 요청)",
+            description = "세션에 저장된 임시본과 CD 요청을 사용하여 실제 플레이리스트를 생성합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "생성된 플레이리스트 상세",
+            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+    )
+    @ApiResponse(responseCode = "409", description = "세션에 임시 저장본 없음")
+    @PostMapping("/final")
+    public ResponseEntity<PlaylistWithSongsResponse> savePlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody FinalPlaylistRequest finalPlaylistRequest,
+            HttpSession session
+    ) {
+        PlaylistCreateRequest request = (PlaylistCreateRequest) session.getAttribute("tempPlaylist");
+        if (request == null) {
+            throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
+        }
+
+        PlaylistWithSongsResponse response = playlistService.saveFinalPlaylistWithSongsAndCd(user.getId(), request, finalPlaylistRequest.saveCdRequestDto().cdItems());
+
+        session.removeAttribute("tempPlaylist");
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "플레이리스트 수정(세션 임시본 사용 + Cd 수정)",
+            description = "세션에 저장된 임시본과 CD 요청을 사용하여 플레이리스트를 수정합니다"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "생성된 플레이리스트 상세",
+            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+    )
+    @ApiResponse(responseCode = "409", description = "세션에 임시 저장본 없음")
+    @PatchMapping("/final")
+    public ResponseEntity<PlaylistWithSongsResponse> editPlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody EditFinalPlaylistRequest editFinalPlaylistRequest,
+            HttpSession session
+    ) {
+        PlaylistCreateRequest request = (PlaylistCreateRequest) session.getAttribute("tempPlaylist");
+        if (request == null) {
+            throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
+        }
+
+        PlaylistWithSongsResponse response = playlistService.editFinalPlaylistWithSongsAndCd(user.getId(), editFinalPlaylistRequest.playlistId(),
+                request, editFinalPlaylistRequest.saveCdRequestDto().cdItems());
+
+        session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
     }
 
