@@ -2,7 +2,7 @@ package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
-import com.example.demo.domain.playlist.service.PlaylistMainPageService;
+import com.example.demo.domain.playlist.service.PlaylistService;
 import com.example.demo.domain.representative.service.RepresentativePlaylistService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,11 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/main/playlists")
-@Tag(name = "playlist-detail", description = "플레이리스트 상세보기")
+@Tag(name = "Playlist", description = "플레이리스트 상세보기")
 @RequiredArgsConstructor
 public class PlaylistsController {
 
-    private final PlaylistMainPageService playlistMainPageService;
+    private final PlaylistService playlistService;
     private final RepresentativePlaylistService representativePlaylistService;
 
     @GetMapping("/representative")
@@ -57,7 +57,7 @@ public class PlaylistsController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        MainPlaylistDetailResponse response = playlistMainPageService.getPlaylistDetail(playlistId, user.getId());
+        MainPlaylistDetailResponse response = playlistService.getPlaylistDetail(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
 
