@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/main/mypage/playlist")
+@RequestMapping("/main/playlist/mypage")
 @RequiredArgsConstructor
-@Tag(name = "MyPage - Playlists", description = "마이페이지 내 플레이리스트 관리 API")
+@Tag(name = "Playlist - MyPage", description = "마이페이지 플레이리스트 관리 API")
 @SecurityRequirement(name = "bearerAuth")
 public class PlaylistMyPageController {
 
@@ -144,23 +144,6 @@ public class PlaylistMyPageController {
         RepresentativePlaylist representativePlaylist = representativePlaylistService.findRepresentativePlaylistByUserId(user.getId());
         PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), representativePlaylist.getPlaylist().getId());
         return ResponseEntity.ok(response);
-    }
-
-    @Operation(
-            summary = "내 플레이리스트 삭제",
-            description = "플레이리스트를 삭제합니다."
-    )
-    @ApiResponse(responseCode = "204", description = "삭제 완료")
-    @ApiResponse(responseCode = "403", description = "권한 없음")
-    @DeleteMapping("/me/{playlistId}")
-    public ResponseEntity<Void> deletePlaylist(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails user,
-            @Parameter(description = "플레이리스트 ID", example = "123")
-            @PathVariable Long playlistId
-    ) {
-        playlistMyPageService.deletePlaylist(user.getId(), playlistId);
-        return ResponseEntity.noContent().build();
     }
 
     @Operation(

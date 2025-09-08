@@ -5,7 +5,9 @@ import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
+import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.service.CdService;
+import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
@@ -14,6 +16,7 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
+import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
@@ -36,6 +39,10 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
     private final CdService cdService;
+    private final PlaylistDeleteService playlistDeleteService;
+    private final CdRepository cdRepository;
+    private final FollowRepository userFollowPlaylistRepository; // 팔로우
+    private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override
     @Transactional
@@ -77,5 +84,45 @@ public class PlaylistServiceImpl implements PlaylistService {
         cdService.replaceCdItemList(playlistId, cdItemRequestList);
 
         return response;
+    }
+
+    @Override
+    @Transactional
+    public void deletePlaylist(String userId, Long playlistId) {
+        // 1. 삭제 대상 검증
+        Playlist toDelete = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() -> new PlaylistException(
+                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
+
+        // 2. 유저가 가진 플리 개수 확인
+        long totalCount = playlistRepository.countByUserIdNative(userId);
+        if (totalCount <= 1) {
+            throw new PlaylistException(
+                    "플레이리스트는 최소 1개 이상 존재해야 합니다.",
+                    PlaylistErrorCode.PLAYLIST_NOT_FOUND
+            );
+        }
+
+        // 3. 대표 여부 확인
+        boolean isRepresentative = representativePlaylistRepository.isRepresentativePlaylist(userId, playlistId);
+        if (isRepresentative) {
+            representativePlaylistRepository.deleteByPlaylist_Id(playlistId);
+        }
+
+        //  4. 참조 테이블 순차 삭제 (중요!)
+        cdRepository.deleteByPlaylistId(playlistId); // CD 테이블
+        songRepository.deleteByPlaylistId(playlistId); // 곡
+        userFollowPlaylistRepository.deleteByPlaylistId(playlistId); // 팔로우
+        userPlaylistHistoryRepository.deleteByPlaylistId(playlistId); // 재생기록
+
+        // 5. 플레이리스트 삭제
+        playlistRepository.delete(toDelete);
+
+        // 6. 대표였던 경우 → 새 대표 설정
+        if (isRepresentative) {
+            playlistDeleteService.assignNewRepresentativeIfNecessary(userId, toDelete.getId());
+        }
     }
 }

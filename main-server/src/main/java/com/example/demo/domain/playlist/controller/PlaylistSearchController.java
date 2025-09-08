@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/main/playlist/search")
 @RequiredArgsConstructor
-@Tag(name = "Playlist Search", description = "플레이리스트 검색 API")
+@Tag(name = "Playlist - Search", description = "플레이리스트 검색 API")
 public class PlaylistSearchController {
 
     private final PlaylistSearchService playlistSearchService;

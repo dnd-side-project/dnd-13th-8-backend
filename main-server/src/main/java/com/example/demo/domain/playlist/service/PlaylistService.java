@@ -16,5 +16,6 @@ public interface PlaylistService {
     PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, Long playlistId, PlaylistCreateRequest request,
                                                               List<CdItemRequest> cdItemRequestList);
 
+    void deletePlaylist(String userId, Long playlistId);
 
 }

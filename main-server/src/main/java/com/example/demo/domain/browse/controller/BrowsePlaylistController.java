@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "둘러보기", description = "둘러보기 페이지 관련 API")
-@RequestMapping("/main/browse/playlist")
+@Tag(name = "Playlist - Browse", description = "둘러보기 페이지 유틸 API")
+@RequestMapping("/main/playlist/browse")
 public class BrowsePlaylistController {
 
     private final BrowsePlaylistService browsePlaylistService;

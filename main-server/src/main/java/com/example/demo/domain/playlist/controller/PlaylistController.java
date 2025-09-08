@@ -25,9 +25,9 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/main/playlist")
-@Tag(name = "Playlist CRUD", description = "플레이리스트 기본 CRUD API")
+@Tag(name = "Playlist - CRUD", description = "플레이리스트 CRUD API")
 @RequiredArgsConstructor
-public class PlaylistsController {
+public class PlaylistController {
 
     private final PlaylistService playlistService;
 
@@ -124,6 +124,23 @@ public class PlaylistsController {
 
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "내 플레이리스트 삭제",
+            description = "플레이리스트를 삭제합니다."
+    )
+    @ApiResponse(responseCode = "204", description = "삭제 완료")
+    @ApiResponse(responseCode = "403", description = "권한 없음")
+    @DeleteMapping("/{playlistId}")
+    public ResponseEntity<Void> deletePlaylist(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "플레이리스트 ID", example = "123")
+            @PathVariable Long playlistId
+    ) {
+        playlistService.deletePlaylist(user.getId(), playlistId);
+        return ResponseEntity.noContent().build();
     }
 
 }
