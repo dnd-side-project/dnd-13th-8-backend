@@ -34,7 +34,7 @@ public class PlaylistMyPageController {
     private final RepresentativePlaylistService representativePlaylistService;
     private final UsersService usersService;
 
-    @GetMapping("/representative")
+    @GetMapping("/me/representative")
     @Operation(summary = "내 대표 플레이리스트 조회")
     public ResponseEntity<PlaylistDetailResponse> getMyRepresentativePlaylist(
             @Parameter(hidden = true)
@@ -73,7 +73,7 @@ public class PlaylistMyPageController {
             description = "팔로우한 유저들의 플레이리스트 응답",
             content = @Content(schema = @Schema(implementation = FollowPlaylistsResponse.class))
     )
-    @GetMapping("/follows")
+    @GetMapping("/me/follows")
     public ResponseEntity<FollowPlaylistsResponse> getFolloweePlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
