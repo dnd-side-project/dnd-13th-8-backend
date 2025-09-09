@@ -1,31 +1,34 @@
-package com.example.demo.domain.playlist.controller;
+package com.example.demo.domain.recommendation.controller;
 
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
-import com.example.demo.domain.playlist.service.PlaylistMainPageService;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
+import com.example.demo.domain.recommendation.service.RecommendationService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.*;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.util.List;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/main/playlists")
+@RequestMapping("/main/recommendation")
 @RequiredArgsConstructor
-@Tag(name = "MainPage - Playlists", description = "메인 페이지 플레이리스트/추천 API")
+@Tag(name = "Recommendation", description = "추천 API")
 @SecurityRequirement(name = "bearerAuth")
-public class PlaylistsMainPageController {
+public class RecommendationController {
 
-    private final PlaylistMainPageService playlistMainPageService;
-
+    private final RecommendationService recommendationService;
 
     @Operation(
             summary = "최근 들은 장르 기반 추천",
@@ -36,12 +39,12 @@ public class PlaylistsMainPageController {
             description = "추천 플레이리스트 목록",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCardResponse.class)))
     )
-    @GetMapping("/recommendations/playlist")
+    @GetMapping("/playlist")
     public ResponseEntity<List<PlaylistCardResponse>> getRecommendations(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<PlaylistCardResponse> response = playlistMainPageService.getRecommendations(user.getId());
+        List<PlaylistCardResponse> response = recommendationService.getRecommendations(user.getId());
         return ResponseEntity.ok(response);
     }
 
@@ -54,12 +57,12 @@ public class PlaylistsMainPageController {
             description = "추천된 플레이리스트 카드 목록",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCardResponse.class)))
     )
-    @GetMapping("/recommendations/follow")
+    @GetMapping("/follow")
     public ResponseEntity<List<PlaylistCardResponse>> recommendFromLikedPlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<PlaylistCardResponse> response = playlistMainPageService.recommendFromLikedPlaylists(user.getId());
+        List<PlaylistCardResponse> response = recommendationService.recommendFromLikedPlaylists(user.getId());
         return ResponseEntity.ok(response);
     }
 
@@ -67,11 +70,10 @@ public class PlaylistsMainPageController {
     @Operation(summary = "추천 장르 기반 대표 플레이리스트 목록")
     @ApiResponse(responseCode = "200", description = "추천 플레이리스트 상세 목록",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedGenreResponse.class))))
-    @GetMapping("/recommendations/genres")
+    @GetMapping("/genres")
     public ResponseEntity<List<RecommendedGenreResponse>> recommendGenres(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user
     ) {
-        return ResponseEntity.ok(playlistMainPageService.recommendGenres(user.getId()));
+        return ResponseEntity.ok(recommendationService.recommendGenres(user.getId()));
     }
-
 }
