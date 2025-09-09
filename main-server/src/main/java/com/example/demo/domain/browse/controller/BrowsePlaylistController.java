@@ -5,8 +5,6 @@ import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
 import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.browse.service.BrowseViewCountService;
-import com.example.demo.domain.follow.dto.IsUserFollowingResponse;
-import com.example.demo.domain.follow.service.PlaylistFollowService;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,11 +12,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,11 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/main/browse/playlists")
+@Tag(name = "Playlist - Browse", description = "둘러보기 페이지 유틸 API")
+@RequestMapping("/main/playlist/browse")
 public class BrowsePlaylistController {
 
     private final BrowsePlaylistService browsePlaylistService;
-    private final PlaylistFollowService playlistFollowService;
     private final BrowseViewCountService browseViewCountService;
 
     @Operation(
@@ -41,7 +39,7 @@ public class BrowsePlaylistController {
             description = """
         사용자의 Redis에 캐싱된 셔플된 둘러보기(BrowsePlaylist) 목록을 커서 기반으로 조회합니다.
         각 유저는 매일 새벽 3시에 셔플된 position 기반의 카드 목록을 가지며, position과 cardId를 함께 사용해 커서 페이징합니다.
-        🔁 [Fallback 처리 안내]
+        [Fallback 처리 안내]
         - 신규 가입자 등 캐시 데이터가 없는 경우: BrowsePlaylist 테이블의 ID 1~5번 중 하나를 무작위로 선택하여 반환합니다.
         - 이 경우 nextCursor는 null입니다.
     """
@@ -123,50 +121,5 @@ public class BrowsePlaylistController {
             Long playlistId
     ) {
         return browseViewCountService.getViewCount(playlistId);
-    }
-
-
-    @GetMapping("/{playlistId}/follow")
-    @Operation(
-            summary = "플레이리스트 팔로우 여부 확인 True/False",
-            description = "현재 로그인한 사용자가 playlistId를 팔로우 중인지 확인합니다."
-    )
-    public ResponseEntity<IsUserFollowingResponse> checkFollow(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails me,
-            @PathVariable Long playlistId
-    ) {
-        return ResponseEntity.ok().body(IsUserFollowingResponse.builder()
-                .isFollowing(playlistFollowService.isUserFollowing(me.getId(), playlistId))
-                .build());
-    }
-
-
-    @PostMapping("/{playlistId}/follow")
-    @Operation(
-            summary = "플레이리스트 팔로우",
-            description = "현재 로그인한 사용자가 지정된 playlistId를 팔로우합니다. 중복 팔로우는 무시됩니다."
-    )
-    public ResponseEntity<Void> followPlaylist(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails me,
-            @PathVariable Long playlistId
-    ) {
-        playlistFollowService.follow(me.getId(), playlistId);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{playlistId}/follow")
-    @Operation(
-            summary = "플레이리스트 팔로우 취소",
-            description = "현재 로그인한 사용자가 지정된 playlistId를 언팔로우합니다. 팔로우 상태가 아니라면 아무 동작도 하지 않습니다."
-    )
-    public ResponseEntity<Void> unfollowPlaylist(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails me,
-            @PathVariable Long playlistId
-    ) {
-        playlistFollowService.unfollow(me.getId(), playlistId);
-        return ResponseEntity.ok().build();
     }
 }
