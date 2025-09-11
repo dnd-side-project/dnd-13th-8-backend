@@ -51,10 +51,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
             case RECENT -> playlistRepository.findByUserIdRecent(userId);
         };
 
-        if (all.isEmpty()) {
-            return List.of();
-        }
-
         var repOpt = representativePlaylistRepository.findByUser_Id(userId);
 
         if (repOpt.isEmpty()) {
@@ -77,7 +73,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
         return result;
     }
-
 
     @Override
     @Transactional(readOnly = true)
