@@ -88,34 +88,56 @@ public class PlaylistSaveService {
 
         playlistRepository.save(playlist); // playlist부터 수정
 
+        // 기존 곡
         List<Song> existingSongs = songRepository.findSongsByPlaylistId(playlistId);
 
-        // 요청 링크 세트(검증된 링크라고 가정)
-        Set<String> requestedLinks = request.youTubeVideoInfo().stream()
+        // 새로 요청된 곡
+        List<String> requestedLinks = request.youTubeVideoInfo().stream()
                 .map(YouTubeVideoInfoDto::link)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // 기존 링크 세트
-        Set<String> existingLinks = existingSongs.stream()
-                .map(Song::getYoutubeUrl)
-                .collect(Collectors.toSet());
-
-        // 1) 삭제: 기존엔 있으나 요청엔 없는 링크 -> id 수집 후 deleteAllByIdIn
-        List<Long> deleteIds = existingSongs.stream()
-                .filter(s -> !requestedLinks.contains(s.getYoutubeUrl()))
-                .map(Song::getId)
+                .map(String::trim)
                 .toList();
 
+        Map<String, Long> existingCount = existingSongs.stream()
+                .collect(Collectors.groupingBy(Song::getYoutubeUrl, Collectors.counting()));
+
+        Map<String, Long> requestedCount = requestedLinks.stream()
+                .collect(Collectors.groupingBy(link -> link, Collectors.counting()));
+
+        // 삭제 로직
+        List<Long> deleteIds = new ArrayList<>();
+        for (Song song : existingSongs) {
+            String url = song.getYoutubeUrl();
+            long reqCnt = requestedCount.getOrDefault(url, 0L);
+            long existCnt = existingCount.getOrDefault(url, 0L);
+
+            if (existCnt > reqCnt) {
+                // 삭제 필요 → 하나씩 줄여나감
+                deleteIds.add(song.getId());
+                existingCount.put(url, existCnt - 1); // 카운트 감소
+            }
+        }
         if (!deleteIds.isEmpty()) {
             songRepository.deleteAllByIdIn(deleteIds);
         }
 
-        // 2) 추가: 요청엔 있으나 기존엔 없는 링크만 저장
-        List<Song> toAdd = request.youTubeVideoInfo().stream()
-                .filter(dto -> !existingLinks.contains(dto.link()))
-                .map(dto -> SongMapper.toEntity(dto, playlist))
-                .toList();
+        // 추가
+        List<Song> toAdd = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : requestedCount.entrySet()) {
+            String url = entry.getKey();
+            long reqCnt = entry.getValue();
 
+            long existCnt = existingSongs.stream()
+                    .filter(s -> s.getYoutubeUrl().equals(url))
+                    .count();
+
+            if (reqCnt > existCnt) {
+                long needToAdd = reqCnt - existCnt;
+                request.youTubeVideoInfo().stream()
+                        .filter(dto -> dto.link().equals(url))
+                        .limit(needToAdd) // 필요한 만큼만 생성
+                        .forEach(dto -> toAdd.add(SongMapper.toEntity(dto, playlist)));
+            }
+        }
         if (!toAdd.isEmpty()) {
             songRepository.saveAll(toAdd);
         }
