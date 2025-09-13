@@ -155,9 +155,6 @@ public class PlaylistSaveService {
         return new PlaylistWithSongsResponse(playlist.getId(), songDtos);
     }
 
-    /**
-     * 기존 대표 해제 → 새 대표 설정 → RepresentativePlaylist 갱신
-     */
     public void replaceRepresentativePlaylist(Users user, Playlist newRepPlaylist) {
         String userId = user.getId();
 
