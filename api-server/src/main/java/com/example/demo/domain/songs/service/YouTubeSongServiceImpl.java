@@ -54,7 +54,9 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
                 .filter(this::isValidYouTubeUrl)
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        this::extractVideoId
+                        this::extractVideoId,
+                        (exist, dup) -> exist,      // 중복 시 첫 값 유지
+                        LinkedHashMap::new          // 삽입 순서 보존
                 ));
     }
 
