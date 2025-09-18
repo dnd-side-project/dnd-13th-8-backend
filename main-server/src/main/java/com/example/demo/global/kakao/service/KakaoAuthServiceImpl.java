@@ -20,9 +20,9 @@ public class KakaoAuthServiceImpl implements AuthService {
     private final UsersRepository usersRepository;
 
     @Override
-    public KakaoLoginResponse loginWithKakao(String code, String codeVerifier) {
+    public KakaoLoginResponse loginWithKakao(String code, String codeVerifier, String origin) {
 
-        var token = kakaoAuthService.exchangeAuthorizationCode(code, codeVerifier);
+        var token = kakaoAuthService.exchangeAuthorizationCode(code, codeVerifier, origin);
 
         KakaoProfileResponse profile = kakaoAuthService.getProfile(token.access_token());
 

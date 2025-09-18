@@ -34,9 +34,11 @@ public class LoginController {
                     required = true,
                     content = @Content(schema = @Schema(implementation = KakaoLoginRequest.class))
             )
+            @RequestHeader(value = "Origin",  required = false) String origin,
             @Valid @RequestBody KakaoLoginRequest request
     ) {
-        KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier());
+
+        KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier(), origin);
 
         return ResponseEntity.ok().body(out);
     }
