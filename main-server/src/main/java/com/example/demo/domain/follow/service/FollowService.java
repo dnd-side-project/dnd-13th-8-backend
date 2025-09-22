@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FollowService {
 
     private final UsersRepository usersRepository;
@@ -21,13 +22,15 @@ public class FollowService {
 
     @Transactional
     public void follow(String followerId, String followeeId) {
-        Users follower = usersRepository.findById(followerId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        if (!usersRepository.existsById(followerId)) {
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
+        }
 
-        Users followee = usersRepository.findById(followeeId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        if (!usersRepository.existsById(followeeId)) {
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
+        }
 
-        followRepository.insertIfNotExists(follower.getId(), followee.getId());
+        followRepository.insertIfNotExists(followerId, followeeId);
     }
 
     @Transactional
@@ -43,7 +46,6 @@ public class FollowService {
         followRepository.deleteByFollower_IdAndFollowee_Id(followerId, followeeId);
     }
 
-    @Transactional
     public boolean isUserFollowing(String followerId, String followeeId) {
         return followRepository.existsByFollower_IdAndFollowee_Id(followerId, followeeId);
     }
