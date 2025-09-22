@@ -6,6 +6,7 @@ import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,7 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                 .from(rp)
                 .join(rp.playlist, p)
                 .join(s).on(s.playlist.id.eq(p.id))
-                .where(rp.user.id.in(
-                        com.querydsl.jpa.JPAExpressions
+                .where(rp.user.id.in(JPAExpressions
                                 .select(f.followee.id)
                                 .from(f)
                                 .where(f.follower.id.eq(currentUserId))
