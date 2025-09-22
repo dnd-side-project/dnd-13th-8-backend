@@ -1,6 +1,5 @@
 package com.example.demo.domain.follow.entity;
 
-import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.global.time.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -10,10 +9,10 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "user_follow_playlist",
+@Table(name = "follow",
         uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "playlist_id"}) // user_id와 playlist_id가 unique해야함
-})
+                @UniqueConstraint(columnNames = {"follower_id", "followee_id"})
+        })
 @NoArgsConstructor
 public class Follow extends BaseTimeEntity {
     @Id
@@ -22,15 +21,15 @@ public class Follow extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private Users users;    // 팔로우 하는 사람
+    @JoinColumn(name = "follower_id")
+    private Users follower;    // 팔로우 하는 사람
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "playlist_id")
-    private Playlist playlist;  // 팔로우 당한 대상 (플레이리스트)
+    @JoinColumn(name = "followee_id")
+    private Users followee;  // 팔로우 당한 대상 (플레이리스트)
 
-    public Follow(Users user, Playlist playlist) {
-        this.users = user;
-        this.playlist = playlist;
+    public Follow(Users follower, Users followee) {
+        this.follower = follower;
+        this.followee = followee;
     }
 }
