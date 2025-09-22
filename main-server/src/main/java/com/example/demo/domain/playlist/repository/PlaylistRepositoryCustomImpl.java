@@ -6,6 +6,7 @@ import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,29 +26,19 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
         QPlaylist p = QPlaylist.playlist;
         QSong s = QSong.song;
 
-        // 내가 팔로우한 유저 ID 조회
-        List<String> followedUserIds = queryFactory
-                .select(f.playlist.users.id)
-                .from(f)
-                .where(f.users.id.eq(currentUserId))
-                .distinct()
-                .fetch();
-
-        if (followedUserIds.isEmpty()) {
-            return List.of();
-        }
-
-        // 곡 3개 이상인 대표 플레이리스트 ID 조회
         return queryFactory
                 .select(rp.playlist.id)
                 .from(rp)
                 .join(rp.playlist, p)
                 .join(s).on(s.playlist.id.eq(p.id))
-                .where(rp.user.id.in(followedUserIds))
+                .where(rp.user.id.in(JPAExpressions
+                                .select(f.followee.id)
+                                .from(f)
+                                .where(f.follower.id.eq(currentUserId))
+                ))
                 .groupBy(rp.playlist.id)
-                .having(s.count().goe(3)) // 곡이 3개 이상인 플레이리스트만
+                .having(s.count().goe(3))
                 .fetch();
-
     }
 
     /**

@@ -7,7 +7,6 @@ import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.service.CdService;
-import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
@@ -41,7 +40,6 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final CdService cdService;
     private final PlaylistDeleteService playlistDeleteService;
     private final CdRepository cdRepository;
-    private final FollowRepository userFollowPlaylistRepository; // 팔로우
     private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override
@@ -114,7 +112,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         //  4. 참조 테이블 순차 삭제 (중요!)
         cdRepository.deleteByPlaylistId(playlistId); // CD 테이블
         songRepository.deleteByPlaylistId(playlistId); // 곡
-        userFollowPlaylistRepository.deleteByPlaylistId(playlistId); // 팔로우
         userPlaylistHistoryRepository.deleteByPlaylistId(playlistId); // 재생기록
 
         // 5. 플레이리스트 삭제
