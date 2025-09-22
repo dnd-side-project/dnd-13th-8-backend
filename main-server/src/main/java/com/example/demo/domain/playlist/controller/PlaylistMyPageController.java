@@ -1,6 +1,6 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
+import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
@@ -71,10 +71,10 @@ public class PlaylistMyPageController {
     @ApiResponse(
             responseCode = "200",
             description = "팔로우한 유저들의 플레이리스트 응답",
-            content = @Content(schema = @Schema(implementation = FollowPlaylistsResponse.class))
+            content = @Content(schema = @Schema(implementation = FollowedPlaylistsResponse.class))
     )
     @GetMapping("/me/follows")
-    public ResponseEntity<FollowPlaylistsResponse> getFolloweePlaylists(
+    public ResponseEntity<FollowedPlaylistsResponse> getFolloweePlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
 

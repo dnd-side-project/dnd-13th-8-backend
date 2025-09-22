@@ -1,6 +1,6 @@
 package com.example.demo.domain.playlist.service;
 
-import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
+import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
@@ -16,7 +16,7 @@ public interface PlaylistMyPageService {
 
     void updateRepresentative(String userId, Long playlistId);
 
-    FollowPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort);
+    FollowedPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort);
 
     List<PlaylistDetailResponse> getPlaylistsByCreatorId(String creatorId);
 
