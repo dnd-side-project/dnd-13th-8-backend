@@ -40,7 +40,7 @@ public class FollowController {
             summary = "팔로우",
             description = "현재 로그인한 사용자가 해당 유저를 팔로우합니다. 중복 팔로우는 무시됩니다."
     )
-    public ResponseEntity<Void> followPlaylist(
+    public ResponseEntity<Void> followUser(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String followeeId
@@ -54,7 +54,7 @@ public class FollowController {
             summary = "팔로우 취소",
             description = "현재 로그인한 사용자가 해당 유저를 팔로우 취소합니다. 팔로우 상태가 아니라면 아무 동작도 하지 않습니다."
     )
-    public ResponseEntity<Void> unfollowPlaylist(
+    public ResponseEntity<Void> unfollowUser(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String followeeId
