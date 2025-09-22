@@ -41,7 +41,6 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final CdService cdService;
     private final PlaylistDeleteService playlistDeleteService;
     private final CdRepository cdRepository;
-    private final FollowRepository userFollowPlaylistRepository; // 팔로우
     private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override

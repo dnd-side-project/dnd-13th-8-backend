@@ -4,7 +4,6 @@ package com.example.demo.domain.follow.service;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.follow.repository.FollowRepository;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
