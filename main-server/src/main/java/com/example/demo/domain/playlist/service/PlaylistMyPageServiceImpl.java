@@ -5,8 +5,8 @@ import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.service.CdService;
-import com.example.demo.domain.follow.dto.FollowPlaylistDto;
-import com.example.demo.domain.follow.dto.FollowPlaylistsResponse;
+import com.example.demo.domain.follow.dto.response.FollowedPlaylist;
+import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
 import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.SongDto;
@@ -120,9 +120,9 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     @Override
     @Transactional(readOnly = true)
-    public FollowPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort) {
-        List<FollowPlaylistDto> result = followRepository.findFolloweePlaylistsWithMeta(userId, sort, DEFAULT_LIMIT);
-        return new FollowPlaylistsResponse(result.size(), result);
+    public FollowedPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort) {
+        List<FollowedPlaylist> result = followRepository.findFolloweePlaylistsWithMeta(userId, sort, DEFAULT_LIMIT);
+        return new FollowedPlaylistsResponse(result.size(), result);
     }
 
     @Override

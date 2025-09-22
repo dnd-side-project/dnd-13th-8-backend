@@ -1,9 +1,9 @@
-package com.example.demo.domain.follow.dto;
+package com.example.demo.domain.follow.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "팔로우한 플레이리스트 정보")
-public record FollowPlaylistDto(
+public record FollowedPlaylist(
 
         @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
         String creatorId,

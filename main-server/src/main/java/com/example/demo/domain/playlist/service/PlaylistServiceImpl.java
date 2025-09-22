@@ -114,7 +114,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         //  4. 참조 테이블 순차 삭제 (중요!)
         cdRepository.deleteByPlaylistId(playlistId); // CD 테이블
         songRepository.deleteByPlaylistId(playlistId); // 곡
-        userFollowPlaylistRepository.deleteByPlaylistId(playlistId); // 팔로우
         userPlaylistHistoryRepository.deleteByPlaylistId(playlistId); // 재생기록
 
         // 5. 플레이리스트 삭제
