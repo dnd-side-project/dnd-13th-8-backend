@@ -13,11 +13,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long>, FollowRep
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
-    insert into user_follow (follower_id, followee_id, created_at, updated_at)
+    insert into follow (follower_id, followee_id, created_at, updated_at)
     select :followerId, :followeeId, now(), now()
     where not exists (
         select 1
-        from user_follow
+        from follow
         where follower_id = :followerId
           and followee_id = :followeeId
     )
