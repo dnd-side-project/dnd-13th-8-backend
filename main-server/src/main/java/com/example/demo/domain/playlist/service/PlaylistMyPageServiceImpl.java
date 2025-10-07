@@ -87,9 +87,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     @Override
     @Transactional
     public void updateIsPublic(String userId, Long playlistId) {
-        Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
         Playlist target = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
                 .orElseThrow(() ->new PlaylistException(
                             "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",

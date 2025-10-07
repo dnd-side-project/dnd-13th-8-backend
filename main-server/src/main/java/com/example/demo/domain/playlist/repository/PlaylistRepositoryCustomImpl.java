@@ -11,13 +11,11 @@ import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

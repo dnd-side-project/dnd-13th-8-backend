@@ -30,7 +30,7 @@ public class Playlist extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private PlaylistGenre genre;
 
-    @Column(nullable = true)
+    @Column
     private boolean isPublic = true;
 
     /** 조회수 증가 */

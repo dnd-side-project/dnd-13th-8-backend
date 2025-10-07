@@ -1,11 +1,8 @@
 package com.example.demo.domain.playlist.repository;
 
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
 import com.example.demo.domain.playlist.entity.Playlist;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

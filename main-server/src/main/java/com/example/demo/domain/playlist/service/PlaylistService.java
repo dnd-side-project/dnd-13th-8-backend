@@ -3,7 +3,6 @@ package com.example.demo.domain.playlist.service;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 
 import java.util.List;

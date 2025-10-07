@@ -60,9 +60,8 @@ public class PlaylistSaveService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Playlist playlist = PlaylistMapper.toEntity(request, users);
-        Playlist saved = playlistRepository.save(playlist);
 
-        return saved;
+        return playlistRepository.save(playlist);
     }
 
     @Transactional

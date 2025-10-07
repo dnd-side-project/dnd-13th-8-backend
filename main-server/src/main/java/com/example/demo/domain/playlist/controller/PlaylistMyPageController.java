@@ -5,7 +5,6 @@ import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
-import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.service.UsersService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
