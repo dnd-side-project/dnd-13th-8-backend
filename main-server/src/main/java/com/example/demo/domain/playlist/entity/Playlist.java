@@ -39,11 +39,11 @@ public class Playlist extends BaseTimeEntity {
     }
 
     @Builder
-    public Playlist(Users users, String name, Long visitCount, Boolean isPulic, PlaylistGenre genre) {
+    public Playlist(Users users, String name, Long visitCount, Boolean isPublic, PlaylistGenre genre) {
         this.genre = genre;
         this.name = name;
         this.visitCount = (visitCount != null) ? visitCount : 0L;
-        this.isPublic = isPulic;
+        this.isPublic = isPublic;
         this.users = users;
     }
 

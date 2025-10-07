@@ -10,7 +10,7 @@ public class PlaylistMapper {
         return Playlist.builder()
                 .name(request.name())
                 .genre(request.genre())
-                .isPulic(request.isPublic())
+                .isPublic(request.isPublic())
                 .users(users)
                 .build();
     }
