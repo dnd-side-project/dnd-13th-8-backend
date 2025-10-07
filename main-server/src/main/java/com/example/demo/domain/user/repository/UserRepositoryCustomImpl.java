@@ -61,7 +61,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
                                         JPAExpressions
                                                 .select(pSub.id.max())
                                                 .from(pSub)
-                                                .where(pSub.users.eq(u))
+                                                .where(pSub.users.eq(u).and(pSub.isPublic.isTrue()))
                                 ))
                 )
                 .where(condition)

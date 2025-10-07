@@ -44,7 +44,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .filter(Playlist::isPublic)
-                .orElseThrow(() -> new PlaylistException("대표 플레이리스트를 찾을 수 없습니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+                .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));

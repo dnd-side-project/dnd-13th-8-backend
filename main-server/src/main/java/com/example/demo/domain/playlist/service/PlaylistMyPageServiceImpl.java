@@ -92,8 +92,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                             "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
                             PlaylistErrorCode.PLAYLIST_NOT_FOUND));
         target.updateIsPublic();
-
-        playlistRepository.save(target);
     }
 
 

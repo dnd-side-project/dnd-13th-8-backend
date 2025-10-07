@@ -117,7 +117,7 @@ public class PlaylistMyPageController {
     )
     @ApiResponse(responseCode = "204", description = "공개 설정 완료")
     @PatchMapping("/me/{playlistId}/public")
-    public ResponseEntity<Void> updateRepresentative(
+    public ResponseEntity<Void> updatePlaylistPublicStatus(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @Parameter(description = "플레이리스트 ID", example = "123")
