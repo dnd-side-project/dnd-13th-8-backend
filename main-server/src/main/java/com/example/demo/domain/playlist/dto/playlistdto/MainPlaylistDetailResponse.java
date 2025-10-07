@@ -17,8 +17,8 @@ public record MainPlaylistDetailResponse(
         @Schema(description = "플레이리스트 이름", example = "집중할 때 듣는 음악")
         String playlistName,
 
-        @Schema(description = "대표 플레이리스트 여부", example = "true")
-        boolean isRepresentative,
+        @Schema(description = "공개 여부", example = "true")
+        boolean isPublic,
 
         @Schema(description = "플레이리스트에 포함된 곡 목록")
         List<SongDto> songs,
@@ -44,7 +44,7 @@ public record MainPlaylistDetailResponse(
         return new MainPlaylistDetailResponse(
                 playlist.getId(),
                 playlist.getName(),
-                playlist.isRepresentative(),
+                playlist.isPublic(),
                 songs,
                 playlist.getGenre(),
                 onlyCdResponse,

@@ -1,55 +1,65 @@
 package com.example.demo.domain.playlist.repository;
 
+import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.follow.entity.QFollow;
+import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
+import com.example.demo.domain.playlist.dto.search.SearchResult;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
-import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
+
+import static com.querydsl.core.types.dsl.Expressions.nullExpression;
 
 @RequiredArgsConstructor
 public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-    /**
-     * 내가 팔로우한 유저들의 대표 플레이리스트 ID 목록 조회
-     */
     @Override
-    public List<Long> findFollowedRepresentativePlaylistIds(String currentUserId) {
+    public List<Long> findFollowedPlaylistIds(String currentUserId) {
         QFollow f = QFollow.follow;
-        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
         QPlaylist p = QPlaylist.playlist;
         QSong s = QSong.song;
+        QUsers u = QUsers.users;
 
         return queryFactory
-                .select(rp.playlist.id)
-                .from(rp)
-                .join(rp.playlist, p)
+                .select(p.id)
+                .from(p)
+                .join(p.users, u)
                 .join(s).on(s.playlist.id.eq(p.id))
-                .where(rp.user.id.in(JPAExpressions
-                                .select(f.followee.id)
-                                .from(f)
-                                .where(f.follower.id.eq(currentUserId))
-                ))
-                .groupBy(rp.playlist.id)
+                .where(p.isPublic.isTrue()
+                        .and(u.id.in(JPAExpressions
+                                        .select(f.followee.id)
+                                        .from(f)
+                                        .where(f.follower.id.eq(currentUserId))
+                        ))
+                )
+                .groupBy(p.id)
                 .having(s.count().goe(3))
                 .fetch();
     }
 
-    /**
-     * 내가 팔로우한 유저들의 대표 플레이리스트에 포함된 곡과 youtubeUrl 또는 title이 일치하는 곡이 포함된 다른 유저의 대표 플레이리스트 추천
-     */
     @Override
     public List<Playlist> findPlaylistsBySimilarSongs(List<Long> basePlaylistIds, String excludeUserId,
                                                       List<Long> excludePlaylistIds, int limit) {
-        QRepresentativePlaylist rp = new QRepresentativePlaylist("rp");
         QSong s1 = new QSong("s1");
         QSong s2 = new QSong("s2");
+        QSong sCount = new QSong("sCount");
         QPlaylist p2 = new QPlaylist("p2");
         QUsers u = QUsers.users;
 
@@ -62,44 +72,147 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                                 .or(s1.youtubeTitle.eq(s2.youtubeTitle))
                 )
                 .join(s2.playlist, p2)
-                .join(rp).on(rp.playlist.id.eq(p2.id)) // 대표 플레이리스트만
                 .join(p2.users, u).fetchJoin()
-                .join(QSong.song, QSong.song).on(QSong.song.playlist.id.eq(p2.id)) // 곡 개수 계산용
+                .join(sCount).on(sCount.playlist.id.eq(p2.id))
                 .where(
                         s1.playlist.id.in(basePlaylistIds),
                         p2.id.notIn(excludePlaylistIds),
-                        p2.users.id.ne(excludeUserId)
+                        u.id.ne(excludeUserId),
+                        p2.isPublic.isTrue()
                 )
                 .groupBy(p2.id)
-                .having(QSong.song.count().goe(3)) //  곡이 3개 이상
+                .having(sCount.count().goe(3))
                 .orderBy(p2.createdAt.desc())
                 .limit(limit)
                 .fetch();
     }
 
-    /**
-     * fallback용 최신 대표 플레이리스트 조회 (내가 만든 것 제외 + 이미 추천된 것 제외)
-     */
     @Override
-    public List<Playlist> findLatestRepresentativePlaylists(String excludeUserId, List<Long> excludePlaylistIds,
-                                                            int limit) {
-        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
+    public SearchResult<Playlist> findByGenreWithCursor(
+            PlaylistGenre genre,
+            PlaylistSortOption sort,
+            Long cursorId,
+            int limit
+    ) {
+        QPlaylist p = QPlaylist.playlist;
+
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(p.genre.eq(genre))
+                .and(p.isPublic.isTrue());
+        if (cursorId != null && cursorId > 0) {
+            builder.and(p.id.lt(cursorId)); // 커서는 p.id 기준
+        }
+
+        // 쿼리를 변수로 받아서 orderBy를 개별 호출 (제네릭 유지)
+        JPAQuery<Playlist> q = queryFactory
+                .selectFrom(p)
+                .where(builder);
+
+        if (sort == PlaylistSortOption.POPULAR) {
+            q.orderBy(p.visitCount.desc());
+        } else {
+            q.orderBy(p.createdAt.desc());
+        }
+        q.orderBy(p.id.desc()); // tie-breaker
+
+        List<Playlist> results = q
+                .limit(limit + 1) // 슬라이싱 용
+                .fetch();
+
+        long totalCount = Optional.ofNullable(
+                queryFactory.select(p.id.count())
+                        .from(p)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new SearchResult<>(results, totalCount);
+    }
+
+    @Override
+    public SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(
+            String query,
+            PlaylistSortOption sort,
+            int offset,
+            int limit
+    ) {
+        QPlaylist p = QPlaylist.playlist;
+        QUsers u = QUsers.users;
+
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(p.name.containsIgnoreCase(query))
+                .and(p.isPublic.isTrue());
+
+        // 🔧 쿼리를 변수로 받아서 orderBy를 개별 호출 (제네릭 유지)
+        JPAQuery<PlaylistSearchDto> q = queryFactory
+                .select(Projections.constructor(
+                        PlaylistSearchDto.class,
+                        p.id,
+                        p.name,
+                        u.id,
+                        u.username,
+                        nullExpression(OnlyCdResponse.class)
+                ))
+                .from(p)
+                .join(p.users, u)
+                .where(builder);
+
+        if (sort == PlaylistSortOption.POPULAR) {
+            q.orderBy(p.visitCount.desc());
+        } else {
+            q.orderBy(p.createdAt.desc());
+        }
+        q.orderBy(p.id.desc()); // tie-breaker
+
+        List<PlaylistSearchDto> results = q
+                .offset(offset)
+                .limit(limit)
+                .fetch();
+
+        long totalCount = Optional.ofNullable(
+                queryFactory.select(p.id.count())
+                        .from(p)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new SearchResult<>(results, totalCount);
+    }
+
+    @Override
+    public List<Playlist> findByVisitCount(int limit) {
+        QPlaylist p = QPlaylist.playlist;
+        QUsers u = QUsers.users;
+
+        // 이 메서드는 원래도 varargs 직접 호출이라 문제 없음
+        return queryFactory
+                .selectFrom(p)
+                .join(p.users, u).fetchJoin()
+                .where(p.isPublic.isTrue())
+                .orderBy(p.visitCount.desc(), p.id.desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<Playlist> findLatestPlaylists(String excludeUserId, List<Long> excludePlaylistIds,
+                                              int limit) {
         QPlaylist p = QPlaylist.playlist;
         QUsers u = QUsers.users;
         QSong s = QSong.song;
 
         return queryFactory
                 .select(p)
-                .from(rp)
-                .join(rp.playlist, p)
+                .from(p)
                 .join(p.users, u).fetchJoin()
-                .join(s).on(s.playlist.id.eq(p.id)) // 곡 join
+                .join(s).on(s.playlist.id.eq(p.id))
                 .where(
-                        p.users.id.ne(excludeUserId),
-                        p.id.notIn(excludePlaylistIds)
+                        u.id.ne(excludeUserId),
+                        p.id.notIn(excludePlaylistIds),
+                        p.isPublic.isTrue()
                 )
-                .groupBy(p.id) // count를 쓰기 위한 groupBy
-                .having(s.count().goe(3)) //  곡 3개 이상
+                .groupBy(p.id)
+                .having(s.count().goe(3))
                 .orderBy(p.createdAt.desc())
                 .limit(limit)
                 .fetch();

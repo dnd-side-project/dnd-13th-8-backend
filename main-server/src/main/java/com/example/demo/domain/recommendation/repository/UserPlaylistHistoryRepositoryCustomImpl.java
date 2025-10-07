@@ -1,22 +1,14 @@
 package com.example.demo.domain.recommendation.repository;
 
-import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.follow.entity.QFollow;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
-import com.example.demo.domain.representative.entity.QRepresentativePlaylist;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -29,7 +21,6 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
 
     @Override
     public List<Playlist> findByUserRecentGenre(String userId, int limit) {
-        QRepresentativePlaylist rp = QRepresentativePlaylist.representativePlaylist;
         QUsers u = QUsers.users;
 
         PlaylistGenre topGenre = queryFactory
@@ -44,17 +35,13 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
         if (topGenre == null) return List.of();
 
         return queryFactory
-                .select(rp) //  select owner entity
-                .from(rp)
-                .join(rp.playlist, playlist).fetchJoin()
+                .selectFrom(playlist)
                 .join(playlist.users, u).fetchJoin()
-                .where(playlist.genre.eq(topGenre))
+                .where(playlist.genre.eq(topGenre)
+                        .and(playlist.isPublic.isTrue()))
                 .orderBy(playlist.visitCount.desc())
                 .limit(limit)
-                .fetch()
-                .stream()
-                .map(RepresentativePlaylist::getPlaylist)
-                .toList();
+                .fetch();
     }
 
 

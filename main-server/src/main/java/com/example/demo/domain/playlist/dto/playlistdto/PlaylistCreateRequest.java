@@ -19,11 +19,10 @@ public record PlaylistCreateRequest(
         @NotNull
         PlaylistGenre genre,
 
-        @Schema(description = "대표 플레이리스트 여부", example = "true")
-        boolean isRepresentative,
+        @Schema(description = "공개 여부", example = "true")
+        boolean isPublic,
 
         @Schema(description = "포함할 유튜브 영상 목록")
         @NotEmpty
         List<YouTubeVideoInfoDto> youTubeVideoInfo
-
 ) {}

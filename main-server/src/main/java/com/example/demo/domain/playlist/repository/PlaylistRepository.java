@@ -16,7 +16,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     @Query("""
     SELECT p FROM Playlist p
     WHERE p.users.id = :userId
-      AND p.isRepresentative = false
+      AND p.isPublic = true
     ORDER BY p.visitCount DESC
 """)
     List<Playlist> findByUserIdPopular(@Param("userId") String userId);
@@ -24,7 +24,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
     @Query("""
     SELECT p FROM Playlist p
     WHERE p.users.id = :userId
-      AND p.isRepresentative = false
+      AND p.isPublic = true
     ORDER BY p.id DESC
 """)
     List<Playlist> findByUserIdRecent(@Param("userId") String userId);
@@ -33,12 +33,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
 
     @Query(value = "SELECT COUNT(*) FROM playlist WHERE user_id = :userId", nativeQuery = true)
     long countByUserIdNative(@Param("userId") String userId);
-
-    // 기존 대표 플레이리스트 해제(벌크연산)
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Playlist p SET p.isRepresentative = false " +
-            "WHERE p.users.id = :userId AND p.isRepresentative = true")
-    int clearRepresentativeByUserId(@Param("userId") String userId);
 
 
     @Query(value = "SELECT * FROM playlist " +
