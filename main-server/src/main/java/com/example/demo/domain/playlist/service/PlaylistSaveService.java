@@ -9,8 +9,6 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.dto.SongMapper;
 import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
@@ -34,7 +32,6 @@ public class PlaylistSaveService {
 
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final UsersRepository usersRepository;
 
     @Transactional
@@ -62,17 +59,9 @@ public class PlaylistSaveService {
         Users users = usersRepository.findById(usersId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        boolean isFirst = playlistRepository.countByUserIdNative(usersId) == 0;
-
         Playlist playlist = PlaylistMapper.toEntity(request, users);
-        Playlist saved = playlistRepository.save(playlist);
 
-
-        if (isFirst || request.isRepresentative()) {
-            replaceRepresentativePlaylist(users, saved);
-        }
-
-        return saved;
+        return playlistRepository.save(playlist);
     }
 
     @Transactional
@@ -84,7 +73,7 @@ public class PlaylistSaveService {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
-        playlist.editPlaylist(request.name(),request.genre(), request.isRepresentative());
+        playlist.editPlaylist(request.name(),request.genre(), request.isPublic());
 
         playlistRepository.save(playlist); // playlist부터 수정
 
@@ -142,11 +131,6 @@ public class PlaylistSaveService {
             songRepository.saveAll(toAdd);
         }
 
-        // 대표 여부 처리
-        if (request.isRepresentative()) {
-            replaceRepresentativePlaylist(users, playlist);
-        }
-
         // 응답
         List<SongResponseDto> songDtos = songRepository.findSongsByPlaylistId(playlistId).stream()
                 .map(SongMapper::toDto)
@@ -155,26 +139,4 @@ public class PlaylistSaveService {
         return new PlaylistWithSongsResponse(playlist.getId(), songDtos);
     }
 
-    public void replaceRepresentativePlaylist(Users user, Playlist newRepPlaylist) {
-        String userId = user.getId();
-
-        // 1. 기존 대표 isRepresentative false 처리
-        playlistRepository.clearRepresentativeByUserId(userId);
-
-        // 2. 새 대표 true 설정
-        if (!newRepPlaylist.isRepresentative()) {
-            newRepPlaylist.changeToRepresentative();
-            playlistRepository.save(newRepPlaylist); // 안전하게 저장
-        }
-
-        // 3. RepresentativePlaylist 갱신
-        representativePlaylistRepository.findByUser_Id(userId)
-                .ifPresentOrElse(
-                        rep -> rep.changePlaylist(newRepPlaylist),
-                        () -> {
-                            RepresentativePlaylist rep = new RepresentativePlaylist(user, newRepPlaylist);
-                            representativePlaylistRepository.save(rep);
-                        }
-                );
-    }
 }

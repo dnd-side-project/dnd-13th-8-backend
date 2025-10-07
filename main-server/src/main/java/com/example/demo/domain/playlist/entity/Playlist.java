@@ -30,8 +30,8 @@ public class Playlist extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private PlaylistGenre genre;
 
-    @Column(nullable = false)
-    private boolean isRepresentative = false;
+    @Column
+    private boolean isPublic = true;
 
     /** 조회수 증가 */
     public void increaseVisitCount() {
@@ -39,27 +39,27 @@ public class Playlist extends BaseTimeEntity {
     }
 
     @Builder
-    public Playlist(Users users, String name, Long visitCount, Boolean isRepresentative, PlaylistGenre genre) {
+    public Playlist(Users users, String name, Long visitCount, Boolean isPublic, PlaylistGenre genre) {
         this.genre = genre;
         this.name = name;
         this.visitCount = (visitCount != null) ? visitCount : 0L;
-        this.isRepresentative = isRepresentative;
+        this.isPublic = isPublic;
         this.users = users;
     }
 
-    /**  대표로 변경 */
-    public void changeToRepresentative() {
-        this.isRepresentative = true;
+    /**  공개로 변경 */
+    public void updateIsPublic() {
+        this.isPublic = !this.isPublic;
     }
 
     public void addVisitCount(long delta) {
         this.visitCount += delta;
     }
 
-    public void editPlaylist(String name, PlaylistGenre genre, Boolean isRepresentative) {
+    public void editPlaylist(String name, PlaylistGenre genre, Boolean isPublic) {
         this.name = name;
         this.genre = genre;
-        this.isRepresentative = isRepresentative;
+        this.isPublic = isPublic;
     }
 
 

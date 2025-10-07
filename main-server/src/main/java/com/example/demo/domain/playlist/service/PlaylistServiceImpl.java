@@ -15,7 +15,6 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
@@ -38,16 +37,14 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
     private final CdService cdService;
-    private final PlaylistDeleteService playlistDeleteService;
     private final CdRepository cdRepository;
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     @Override
     @Transactional
     public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-                .filter(Playlist::isRepresentative)
-                .orElseThrow(() -> new PlaylistException("대표 플레이리스트를 찾을 수 없습니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+                .filter(Playlist::isPublic)
+                .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -103,12 +100,6 @@ public class PlaylistServiceImpl implements PlaylistService {
             );
         }
 
-        // 3. 대표 여부 확인
-        boolean isRepresentative = representativePlaylistRepository.isRepresentativePlaylist(userId, playlistId);
-        if (isRepresentative) {
-            representativePlaylistRepository.deleteByPlaylist_Id(playlistId);
-        }
-
         //  4. 참조 테이블 순차 삭제 (중요!)
         cdRepository.deleteByPlaylistId(playlistId); // CD 테이블
         songRepository.deleteByPlaylistId(playlistId); // 곡
@@ -116,10 +107,6 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         // 5. 플레이리스트 삭제
         playlistRepository.delete(toDelete);
-
-        // 6. 대표였던 경우 → 새 대표 설정
-        if (isRepresentative) {
-            playlistDeleteService.assignNewRepresentativeIfNecessary(userId, toDelete.getId());
-        }
     }
+
 }

@@ -15,7 +15,6 @@ import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.playlist.util.ShareCodeGenerator;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import com.example.demo.domain.user.entity.Users;
@@ -36,7 +35,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
     private final UsersRepository usersRepository;
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final FollowRepository followRepository;
     private final PlaylistSaveService playlistSaveService;
 
@@ -48,30 +46,12 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     public List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption) {
         List<Playlist> all = switch (sortOption) {
             case POPULAR -> playlistRepository.findByUserIdPopular(userId);
-            case RECENT -> playlistRepository.findByUserIdRecent(userId);
+            case RECENT  -> playlistRepository.findByUserIdRecent(userId);
         };
 
-        var repOpt = representativePlaylistRepository.findByUser_Id(userId);
-
-        if (repOpt.isEmpty()) {
-            return all.stream()
-                    .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
-                    .toList();
-        }
-
-        Playlist rep = repOpt.get().getPlaylist();
-
-        List<Playlist> rest = all.stream()
-                .filter(p -> !p.getId().equals(rep.getId()))
-                .toList();
-
-        List<PlaylistResponse> result = new ArrayList<>(rest.size() + 1);
-        result.add(PlaylistResponse.from(rep, cdService.getOnlyCdByPlaylistId(rep.getId())));
-        result.addAll(rest.stream()
+        return all.stream()
                 .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
-                .toList());
-
-        return result;
+                .toList();
     }
 
     @Override
@@ -106,15 +86,12 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     @Override
     @Transactional
-    public void updateRepresentative(String userId, Long playlistId) {
-        Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
+    public void updateIsPublic(String userId, Long playlistId) {
         Playlist target = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
                 .orElseThrow(() ->new PlaylistException(
                             "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
                             PlaylistErrorCode.PLAYLIST_NOT_FOUND));
-        playlistSaveService.replaceRepresentativePlaylist(user, target);
+        target.updateIsPublic();
     }
 
 

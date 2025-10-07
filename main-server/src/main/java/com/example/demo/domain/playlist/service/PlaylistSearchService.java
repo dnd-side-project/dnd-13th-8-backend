@@ -3,10 +3,9 @@ package com.example.demo.domain.playlist.service;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PageResponse;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
+import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
-import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
-import com.example.demo.domain.playlist.dto.search.PopularItem;
+
 import java.util.List;
 
 public interface PlaylistSearchService {
@@ -20,7 +19,7 @@ public interface PlaylistSearchService {
 
     List<PopularItem> getPopularTerms(String range, int limit);
 
- PageResponse<CombinedSearchResponse> searchByTitle(
+    PageResponse<CombinedSearchResponse> searchByTitle(
             String query,
             PlaylistSortOption sort,
             int page,
