@@ -1,9 +1,6 @@
 package com.example.demo.domain.playlist.dto.search;
 
-import com.example.demo.domain.playlist.dto.SongDto;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import java.util.List;
 
 @Schema(description = "검색 결과 중 사용자 대표 플레이리스트 항목")
 public record UserSearchDto(
