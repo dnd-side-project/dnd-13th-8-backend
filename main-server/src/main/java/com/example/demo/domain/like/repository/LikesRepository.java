@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface LikesRepository extends JpaRepository<Likes, Long> {
+public interface LikesRepository extends JpaRepository<Likes, Long>, LikesRepositoryCustom {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """

@@ -8,6 +8,7 @@ import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.follow.dto.response.FollowedPlaylist;
 import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
 import com.example.demo.domain.follow.repository.FollowRepository;
+import com.example.demo.domain.like.repository.LikesRepository;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
@@ -36,7 +37,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final SongRepository songRepository;
     private final UsersRepository usersRepository;
     private final FollowRepository followRepository;
-    private final PlaylistSaveService playlistSaveService;
+    private final LikesRepository likesRepository;
 
     private static final int DEFAULT_LIMIT = 20;
     private final CdService cdService;
@@ -50,6 +51,16 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         };
 
         return all.stream()
+                .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PlaylistResponse> getLikedPlaylistsSorted(String userId, PlaylistSortOption sortOption) {
+        List<Playlist> likedPlaylists = likesRepository.findLikedPlaylistsWithMeta(userId, sortOption, DEFAULT_LIMIT);
+
+        return likedPlaylists.stream()
                 .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
                 .toList();
     }

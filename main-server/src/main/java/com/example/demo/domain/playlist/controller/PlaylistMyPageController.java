@@ -51,6 +51,26 @@ public class PlaylistMyPageController {
     }
 
     @Operation(
+            summary = "좋아요한 플레이리스트 목록 조회",
+            description = "정렬 옵션(POPULAR/RECENT)에 맞춰 좋아요한 플레이리스트를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "플레이리스트 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistResponse.class)))
+    )
+    @GetMapping("/me/likes")
+    public ResponseEntity<List<PlaylistResponse>> getLikedPlaylists(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "정렬 옵션 (기본 POPULAR)", example = "POPULAR")
+            @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort
+    ) {
+        List<PlaylistResponse> LikedPlaylistsSorted = playlistMyPageService.getLikedPlaylistsSorted(user.getId(), sort);
+        return ResponseEntity.ok(LikedPlaylistsSorted);
+    }
+
+    @Operation(
             summary = "팔로우한 유저들의 플레이리스트 조회",
             description = "사용자가 팔로우한 유저들의 플레이리스트를 정렬 조건(POPULAR / RECENT)에 따라 조회합니다."
     )
@@ -113,7 +133,7 @@ public class PlaylistMyPageController {
 
     @Operation(
             summary = "플레이리스트 공개 설정/변경",
-            description = "해당 플레이리스트를 공개/비공개로 설정합니다. 기존 대표는 자동 해제됩니다."
+            description = "해당 플레이리스트를 공개/비공개로 설정합니다."
     )
     @ApiResponse(responseCode = "204", description = "공개 설정 완료")
     @PatchMapping("/me/{playlistId}/public")

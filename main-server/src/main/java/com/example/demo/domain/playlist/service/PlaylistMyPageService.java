@@ -10,6 +10,8 @@ public interface PlaylistMyPageService {
 
     List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
+    List<PlaylistResponse> getLikedPlaylistsSorted(String userId, PlaylistSortOption sortOption);
+
     PlaylistDetailResponse getPlaylistDetail(String id, Long playlistId);
 
     void updateIsPublic(String userId, Long playlistId);
