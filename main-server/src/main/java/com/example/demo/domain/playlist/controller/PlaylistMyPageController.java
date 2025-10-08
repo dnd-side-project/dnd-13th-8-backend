@@ -5,7 +5,6 @@ import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
-import com.example.demo.domain.user.service.UsersService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistMyPageController {
 
     private final PlaylistMyPageService playlistMyPageService;
-    private final UsersService usersService;
 
     @Operation(
             summary = "내 플레이리스트 목록 조회",
@@ -48,6 +46,26 @@ public class PlaylistMyPageController {
     ) {
         List<PlaylistResponse> myPlaylistsSorted = playlistMyPageService.getMyPlaylistsSorted(user.getId(), sort);
         return ResponseEntity.ok(myPlaylistsSorted);
+    }
+
+    @Operation(
+            summary = "좋아요한 플레이리스트 목록 조회",
+            description = "정렬 옵션(POPULAR/RECENT)에 맞춰 좋아요한 플레이리스트를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "플레이리스트 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistResponse.class)))
+    )
+    @GetMapping("/me/likes")
+    public ResponseEntity<List<PlaylistResponse>> getLikedPlaylists(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "정렬 옵션 (기본 POPULAR)", example = "POPULAR")
+            @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort
+    ) {
+        List<PlaylistResponse> LikedPlaylistsSorted = playlistMyPageService.getLikedPlaylistsSorted(user.getId(), sort);
+        return ResponseEntity.ok(LikedPlaylistsSorted);
     }
 
     @Operation(
@@ -113,7 +131,7 @@ public class PlaylistMyPageController {
 
     @Operation(
             summary = "플레이리스트 공개 설정/변경",
-            description = "해당 플레이리스트를 공개/비공개로 설정합니다. 기존 대표는 자동 해제됩니다."
+            description = "해당 플레이리스트를 공개/비공개로 설정합니다."
     )
     @ApiResponse(responseCode = "204", description = "공개 설정 완료")
     @PatchMapping("/me/{playlistId}/public")

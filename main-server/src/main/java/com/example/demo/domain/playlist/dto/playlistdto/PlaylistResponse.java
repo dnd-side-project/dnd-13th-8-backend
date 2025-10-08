@@ -15,7 +15,7 @@ public record PlaylistResponse(
         @Schema(description = "플레이리스트 이름", example = "여름 드라이브 플레이리스트")
         String playlistName,
 
-        @Schema(description = "대표 플레이리스트 여부", example = "true")
+        @Schema(description = "플레이리스트 공개 여부", example = "true")
         boolean isPublic,
 
         @Schema(description = "cd 정보")
