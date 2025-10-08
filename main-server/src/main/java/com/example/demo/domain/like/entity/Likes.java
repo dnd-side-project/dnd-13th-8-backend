@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "likes",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"users_id", "playlist_id"})
+                @UniqueConstraint(columnNames = {"user_id", "playlist_id"})
         })
 @NoArgsConstructor
 public class Likes extends BaseTimeEntity {
