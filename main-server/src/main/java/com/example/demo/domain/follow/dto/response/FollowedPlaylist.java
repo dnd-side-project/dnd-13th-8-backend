@@ -8,7 +8,7 @@ public record FollowedPlaylist(
         @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
         String creatorId,
 
-        @Schema(description = "플레이리스트 제작자 에 대표 플레이스트 Id", example = "user-123")
+        @Schema(description = "플레이스트 Id", example = "user-123")
         String creatorPlaylistId,
 
         @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
