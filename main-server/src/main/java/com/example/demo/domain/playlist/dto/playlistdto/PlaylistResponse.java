@@ -16,7 +16,7 @@ public record PlaylistResponse(
         String playlistName,
 
         @Schema(description = "대표 플레이리스트 여부", example = "true")
-        boolean isRepresentative,
+        boolean isPublic,
 
         @Schema(description = "cd 정보")
         OnlyCdResponse onlyCdResponse
@@ -26,7 +26,7 @@ public record PlaylistResponse(
         return PlaylistResponse.builder()
                 .playlistId(playlist.getId())
                 .playlistName(playlist.getName())
-                .isRepresentative(playlist.isRepresentative())
+                .isPublic(playlist.isPublic())
                 .onlyCdResponse(cd)
                 .build();
     }

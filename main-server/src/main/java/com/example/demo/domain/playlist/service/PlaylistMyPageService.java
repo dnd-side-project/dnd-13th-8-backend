@@ -12,9 +12,7 @@ public interface PlaylistMyPageService {
 
     PlaylistDetailResponse getPlaylistDetail(String id, Long playlistId);
 
-    String sharePlaylist(String userId);
-
-    void updateRepresentative(String userId, Long playlistId);
+    void updateIsPublic(String userId, Long playlistId);
 
     FollowedPlaylistsResponse getFolloweePlaylists(String userId, PlaylistSortOption sort);
 

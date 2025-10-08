@@ -7,7 +7,6 @@ import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ public class RecommendationServiceImpl implements RecommendationService {
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final SongRepository songRepository;
     private final CdService cdService;
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
 
     private static final int RECOMMENDATION_LIMIT = 3;
 
@@ -37,9 +35,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
 
         if (genreBased.isEmpty()) {
-            basePlaylists = representativePlaylistRepository.findByVisitCount(6);
+            basePlaylists = playlistRepository.findByVisitCount(6);
         } else {
-            List<Playlist> visitCountTop3 = representativePlaylistRepository.findByVisitCount(3);
+            List<Playlist> visitCountTop3 = playlistRepository.findByVisitCount(3);
             basePlaylists = new ArrayList<>(genreBased);
             basePlaylists.addAll(visitCountTop3);
         }
@@ -55,11 +53,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
     public List<PlaylistCardResponse> recommendFromLikedPlaylists(String myUserId) {
-        List<Long> basePlaylistIds = playlistRepository.findFollowedRepresentativePlaylistIds(myUserId);
+        List<Long> basePlaylistIds = playlistRepository.findFollowedPlaylistIds(myUserId);
         List<Playlist> resultPlaylists;
 
         if (basePlaylistIds.isEmpty()) {
-            resultPlaylists = playlistRepository.findLatestRepresentativePlaylists(myUserId, List.of(), RECOMMENDATION_LIMIT);
+            resultPlaylists = playlistRepository.findLatestPlaylists(myUserId, List.of(), RECOMMENDATION_LIMIT);
         } else {
             List<Playlist> basePlaylists = playlistRepository.findPlaylistsBySimilarSongs(
                     basePlaylistIds, myUserId, basePlaylistIds, RECOMMENDATION_LIMIT);
@@ -69,7 +67,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 List<Long> excludeIds = new ArrayList<>(basePlaylistIds);
                 excludeIds.addAll(basePlaylists.stream().map(Playlist::getId).toList());
 
-                List<Playlist> fallback = playlistRepository.findLatestRepresentativePlaylists(
+                List<Playlist> fallback = playlistRepository.findLatestPlaylists(
                         myUserId, excludeIds, remain);
                 basePlaylists.addAll(fallback);
             }

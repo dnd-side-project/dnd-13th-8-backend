@@ -11,8 +11,7 @@ import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PageResponse;
 import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.representative.entity.RepresentativePlaylist;
-import com.example.demo.domain.representative.repository.RepresentativePlaylistRepository;
+import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.paging.CursorPageConverter;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +32,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
-    private final RepresentativePlaylistRepository representativePlaylistRepository;
     private final StringRedisTemplate redis;
     private final UsersRepository usersRepository;
+    private final PlaylistRepository playlistRepository;
     private final CdService cdService;
 
     private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
@@ -62,15 +61,13 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
 
         try {
-            SearchResult<RepresentativePlaylist> reps = representativePlaylistRepository
+            SearchResult<Playlist> pages = playlistRepository
                     .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1);
 
-
             return CursorPageConverter.toCursorResponse(
-                    reps.getResults(),
+                    pages.getResults(),
                     finalLimit,
-                    rep -> {
-                        Playlist p = rep.getPlaylist();
+                    p -> {
                         OnlyCdResponse cd = cdService.getOnlyCdByPlaylistId(p.getId());
                         return new PlaylistSearchResponse(
                                 p.getId(),
@@ -78,11 +75,10 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                                 p.getUsers().getId(),
                                 p.getUsers().getUsername(),
                                 cd
-
                         );
                     },
                     PlaylistSearchResponse::playlistId, // 커서 추출
-                    reps.getTotalCount()                // 총 개수 추가
+                    pages.getTotalCount()               // 총 개수
             );
         } catch (Exception e) {
             throw new PlaylistSearchException("장르 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
@@ -127,7 +123,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     }
 
     private SearchResult<PlaylistSearchDto> fetchPlaylistsWithCd(String query, PlaylistSortOption sort, int offset, int limit) {
-        SearchResult<PlaylistSearchDto> raw = representativePlaylistRepository
+        SearchResult<PlaylistSearchDto> raw = playlistRepository
                 .searchPlaylistsByTitleWithOffset(query, sort, offset, limit);
 
         List<PlaylistSearchDto> resolved = new ArrayList<>();
