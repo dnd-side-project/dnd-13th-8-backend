@@ -1,6 +1,5 @@
 package com.example.demo.domain.playlist.dto.search;
 
-import com.example.demo.domain.playlist.dto.SongDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
