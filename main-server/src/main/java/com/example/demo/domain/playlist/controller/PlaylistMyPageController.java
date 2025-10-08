@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistMyPageController {
 
     private final PlaylistMyPageService playlistMyPageService;
-    private final UsersService usersService;
 
     @Operation(
             summary = "내 플레이리스트 목록 조회",
