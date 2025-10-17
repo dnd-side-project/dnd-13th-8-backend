@@ -1,7 +1,6 @@
 package com.example.demo.domain.song.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

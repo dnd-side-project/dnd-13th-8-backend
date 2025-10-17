@@ -5,7 +5,6 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.util.DurationFormatUtil;
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -2,7 +2,6 @@ package com.example.demo.domain.playlist.dto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.demo.domain.song.entity.Song;
-import com.example.demo.domain.song.util.DurationFormatUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
