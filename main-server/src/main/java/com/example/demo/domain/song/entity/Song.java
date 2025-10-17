@@ -1,7 +1,6 @@
 package com.example.demo.domain.song.entity;
 
 import com.example.demo.domain.playlist.entity.Playlist;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -35,18 +34,21 @@ public class Song {
 
     private String youtubeThumbnail;
 
+    private Long orderIndex; // 곡 순서
+
     public void setPlaylist(Playlist playlist) {
         this.playlist = playlist;
     }
 
     @Builder
     public Song(Playlist playlist, Long youtubeLength, String youtubeUrl, String youtubeTitle,
-                String youtubeThumbnail) {
+                String youtubeThumbnail, Long orderIndex) {
         this.playlist = playlist;
         this.youtubeLength = youtubeLength;
         this.youtubeUrl = youtubeUrl;
         this.youtubeTitle = youtubeTitle;
         this.youtubeThumbnail = youtubeThumbnail;
+        this.orderIndex = orderIndex;
     }
 }
 

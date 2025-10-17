@@ -1,7 +1,6 @@
 package com.example.demo.domain.recommendation.dto;
 
 import com.example.demo.domain.cd.dto.response.CdResponse;
-import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.song.entity.Song;
@@ -29,11 +28,11 @@ public record PlaylistCardResponse(
         List<SongDto> songs,
 
        @Schema(description = "cd 정보")
-       OnlyCdResponse onlyCdResponse
+        CdResponse cdResponse
 
 
 ) {
-        public static PlaylistCardResponse from(Playlist playlist, List<Song> songs,OnlyCdResponse onlyCdResponse) {
+        public static PlaylistCardResponse from(Playlist playlist, List<Song> songs, CdResponse cdResponse) {
                 Users owner = playlist.getUsers(); // 단방향 ManyToOne은 유지됨
 
                 List<SongDto> songDtos = songs.stream()
@@ -46,7 +45,7 @@ public record PlaylistCardResponse(
                         owner.getId(),
                         owner.getUsername(),
                         songDtos,
-                       onlyCdResponse
+                        cdResponse
 
                 );
         }

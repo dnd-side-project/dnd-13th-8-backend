@@ -91,7 +91,7 @@ public class PlaylistController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistService.saveFinalPlaylistWithSongsAndCd(user.getId(), request, finalPlaylistRequest.saveCdRequestDto().cdItems());
+        PlaylistWithSongsResponse response = playlistService.saveFinalPlaylistWithSongsAndCd(user.getId(), request, finalPlaylistRequest.saveCdRequest().cdItems());
 
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
@@ -120,7 +120,7 @@ public class PlaylistController {
         }
 
         PlaylistWithSongsResponse response = playlistService.editFinalPlaylistWithSongsAndCd(user.getId(), editFinalPlaylistRequest.playlistId(),
-                request, editFinalPlaylistRequest.saveCdRequestDto().cdItems());
+                request, editFinalPlaylistRequest.saveCdRequest().cdItems());
 
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
