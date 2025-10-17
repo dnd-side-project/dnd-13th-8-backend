@@ -26,7 +26,7 @@ public record YouTubeVideoInfoDto(
 
 ) {
         public static YouTubeVideoInfoDto valid(String link, String title, String thumbnailUrl, Long orderIndex, String duration) {
-                return new YouTubeVideoInfoDto(link, title, thumbnailUrl, SongMapper.formatDuration(duration),orderIndex ,true);
+                return new YouTubeVideoInfoDto(link, title, thumbnailUrl, SongMapper.formatDuration(duration),orderIndex,true);
         }
 
         public static YouTubeVideoInfoDto invalid(String link) {

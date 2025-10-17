@@ -76,11 +76,11 @@ public class CdService {
             grouped.computeIfAbsent(playlistId, k -> new ArrayList<>()).add(response);
         }
 
-        List<GetCdResponse> tempCdRespons = grouped.entrySet().stream()
+        List<GetCdResponse> tempCdResponse = grouped.entrySet().stream()
                 .map(entry -> GetCdResponse.from(entry.getKey(), entry.getValue()))
                 .toList();
 
-        return new CdListResponse(tempCdRespons);
+        return new CdListResponse(tempCdResponse);
     }
 
     @Transactional

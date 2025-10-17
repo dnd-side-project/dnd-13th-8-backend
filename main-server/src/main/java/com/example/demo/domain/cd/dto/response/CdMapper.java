@@ -13,7 +13,7 @@ public class CdMapper {
                 .prop(prop)
                 .xCoordinate(req.xCoordinate())
                 .yCoordinate(req.yCoordinate())
-                .zCoordinate((req.zCoordinate()))
+                .zCoordinate(req.zCoordinate())
                 .height(req.height())
                 .width(req.width())
                 .scale(req.scale())
