@@ -5,7 +5,6 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.util.DurationFormatUtil;
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +20,7 @@ public class SongMapper {
                 .youtubeTitle(dto.title())
                 .youtubeThumbnail(dto.thumbnailUrl())
                 .youtubeLength(DurationFormatUtil.parseToSeconds(dto.duration()))
+                .orderIndex(dto.orderIndex())
                 .build();
     }
 
@@ -35,7 +35,8 @@ public class SongMapper {
                 song.getYoutubeUrl(),
                 song.getYoutubeTitle(),
                 song.getYoutubeThumbnail(),
-                song.getYoutubeLength()
+                song.getYoutubeLength(),
+                song.getOrderIndex()
         );
     }
 
@@ -46,7 +47,8 @@ public class SongMapper {
                         song.getYoutubeTitle(),
                         song.getYoutubeUrl(),
                         song.getYoutubeThumbnail(),
-                        song.getYoutubeLength()
+                        song.getYoutubeLength(),
+                        song.getOrderIndex()
                 ))
                 .collect(Collectors.toList());
     }

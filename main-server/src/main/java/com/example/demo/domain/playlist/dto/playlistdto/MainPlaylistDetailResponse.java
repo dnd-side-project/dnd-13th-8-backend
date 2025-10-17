@@ -1,6 +1,6 @@
 package com.example.demo.domain.playlist.dto.playlistdto;
 
-import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
+import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -27,7 +27,7 @@ public record MainPlaylistDetailResponse(
         PlaylistGenre genre,
 
         @Schema(description = "플레이리스트에 포함된 CD 아이템 목록")
-        OnlyCdResponse onlyCdResponse,
+        CdResponse cdResponse,
 
         @Schema(description = "플레이리스트 제작자 ID", example = "user-1234")
         String creatorId,
@@ -39,7 +39,7 @@ public record MainPlaylistDetailResponse(
         String creatorProfileImageUrl
 
 ) {
-    public static MainPlaylistDetailResponse from(Playlist playlist, List<SongDto> songs, OnlyCdResponse onlyCdResponse) {
+    public static MainPlaylistDetailResponse from(Playlist playlist, List<SongDto> songs, CdResponse cdResponse) {
         Users creator = playlist.getUsers();
         return new MainPlaylistDetailResponse(
                 playlist.getId(),
@@ -47,7 +47,7 @@ public record MainPlaylistDetailResponse(
                 playlist.isPublic(),
                 songs,
                 playlist.getGenre(),
-                onlyCdResponse,
+                cdResponse,
                 creator.getId(),
                 creator.getUsername(),
                 creator.getProfileUrl() // 또는 getProfileImageUrl()

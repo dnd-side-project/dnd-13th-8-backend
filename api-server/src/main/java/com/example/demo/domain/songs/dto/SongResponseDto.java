@@ -6,5 +6,6 @@ public record SongResponseDto(
         String youtubeUrl,
         String youtubeTitle,
         String youtubeThumbnail,
-        Long youtubeLength // 초 단위
+        Long youtubeLength, // 초 단위
+        Long orderIndex
 ) {}

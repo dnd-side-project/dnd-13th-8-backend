@@ -1,6 +1,6 @@
 package com.example.demo.domain.playlist.dto.playlistdto;
 
-import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
+import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -19,15 +19,15 @@ public record PlaylistResponse(
         boolean isPublic,
 
         @Schema(description = "cd 정보")
-        OnlyCdResponse onlyCdResponse
+        CdResponse cdResponse
 
 ) {
-    public static PlaylistResponse from(Playlist playlist, OnlyCdResponse cd) {
+    public static PlaylistResponse from(Playlist playlist, CdResponse cd) {
         return PlaylistResponse.builder()
                 .playlistId(playlist.getId())
                 .playlistName(playlist.getName())
                 .isPublic(playlist.isPublic())
-                .onlyCdResponse(cd)
+                .cdResponse(cd)
                 .build();
     }
 

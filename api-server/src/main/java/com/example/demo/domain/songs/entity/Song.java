@@ -32,6 +32,9 @@ public class Song {
 
     @Column("youtube_length")
     private Long youtubeLength; // 초 단위
+
+    @Column("order_index")
+    private Long orderIndex;
 }
 
 

@@ -2,7 +2,6 @@ package com.example.demo.domain.playlist.dto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.demo.domain.song.entity.Song;
-import com.example.demo.domain.song.util.DurationFormatUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -25,7 +24,11 @@ public record SongDto(
         String youtubeThumbnail,
 
         @Schema(description = "유튜브 영상 길이", example = "SS")
-        Long youtubeLength
+        Long youtubeLength,
+
+        @Schema(description = "곡 순서", example = "1")
+        Long orderIndex
+
 
 ) {
     public static SongDto from(Song song) {
@@ -35,6 +38,7 @@ public record SongDto(
                 .youtubeUrl(song.getYoutubeUrl())
                 .youtubeThumbnail(song.getYoutubeThumbnail())
                 .youtubeLength(song.getYoutubeLength())
+                .orderIndex(song.getOrderIndex())
                 .build();
     }
 

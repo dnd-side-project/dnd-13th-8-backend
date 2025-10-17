@@ -15,6 +15,9 @@ public record YouTubeVideoInfoDto(
         String thumbnailUrl,
 
         @Schema(description = "영상 길이 (MM:SS)", example = "03:22")
-        String duration
+        String duration,
+
+        @Schema(description = "곡 순서", example = "1")
+        Long orderIndex
 
 ) {}
