@@ -4,6 +4,7 @@ import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.PropErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.PropException;
+import com.example.demo.domain.cd.dto.response.CdItemResponse;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.dto.response.*;
 import com.example.demo.domain.cd.entity.Cd;
@@ -44,24 +45,24 @@ public class CdService {
     }
 
     @Transactional(readOnly = true)
-    public CdResponse getCdByPlaylistId(Long playlistId) {
-        return CdResponse.builder()
+    public GetCdResponse getCdByPlaylistId(Long playlistId) {
+        return GetCdResponse.builder()
                 .playlistId(playlistId)
                 .cdItems(findAllCdItemOnCd(playlistId))
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public OnlyCdResponse getOnlyCdByPlaylistId(Long playlistId) { // 다른 도메인에서 호출해서 사용하는 메소드
-        return OnlyCdResponse.builder()
+    public CdResponse getOnlyCdByPlaylistId(Long playlistId) { // 다른 도메인에서 호출해서 사용하는 메소드
+        return CdResponse.builder()
                 .cdItems(findAllCdItemOnCd(playlistId))
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public CdListResponseDto getAllCdByPlaylistIdList(List<Long> playlistIdList) {
+    public CdListResponse getAllCdByPlaylistIdList(List<Long> playlistIdList) {
         if (playlistIdList == null || playlistIdList.isEmpty()) {
-            return new CdListResponseDto(List.of());
+            return new CdListResponse(List.of());
         }
 
         List<CdItemView> views = cdRepository.findAllByPlaylistIdWithImageKeysIn(playlistIdList);
@@ -75,11 +76,11 @@ public class CdService {
             grouped.computeIfAbsent(playlistId, k -> new ArrayList<>()).add(response);
         }
 
-        List<CdResponse> cdResponses = grouped.entrySet().stream()
-                .map(entry -> CdResponse.from(entry.getKey(), entry.getValue()))
+        List<GetCdResponse> tempCdRespons = grouped.entrySet().stream()
+                .map(entry -> GetCdResponse.from(entry.getKey(), entry.getValue()))
                 .toList();
 
-        return new CdListResponseDto(cdResponses);
+        return new CdListResponse(tempCdRespons);
     }
 
     @Transactional

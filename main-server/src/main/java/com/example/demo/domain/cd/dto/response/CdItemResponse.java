@@ -9,7 +9,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-@Schema(description = "CD 아이템 정보 (대표 CD 하나)")
+@Schema(description = "CD 아이템 정보")
 public record CdItemResponse(
 
         @Schema(description = "CD 아이템 ID", example = "301")

@@ -1,9 +1,9 @@
 package com.example.demo.domain.cd.controller;
 
-import com.example.demo.domain.cd.dto.request.GetCdListRequestDto;
-import com.example.demo.domain.cd.dto.request.SaveCdRequestDto;
-import com.example.demo.domain.cd.dto.response.CdListResponseDto;
-import com.example.demo.domain.cd.dto.response.CdResponse;
+import com.example.demo.domain.cd.dto.request.GetCdListRequest;
+import com.example.demo.domain.cd.dto.request.SaveCdRequest;
+import com.example.demo.domain.cd.dto.response.CdListResponse;
+import com.example.demo.domain.cd.dto.response.GetCdResponse;
 import com.example.demo.domain.cd.service.CdService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,12 +32,12 @@ public class CdController {
                     @ApiResponse(
                             responseCode = "200",
                             content = @Content(
-                                    schema = @Schema(implementation = CdResponse.class)
+                                    schema = @Schema(implementation = GetCdResponse.class)
                             )
                     )
             }
     )
-    public ResponseEntity<CdResponse> getSingleCd (@PathVariable("playlistId") Long playListId) {
+    public ResponseEntity<GetCdResponse> getSingleCd (@PathVariable("playlistId") Long playListId) {
         return ResponseEntity.ok().body(cdService.getCdByPlaylistId(playListId));
     }
 
@@ -49,13 +49,13 @@ public class CdController {
                     @ApiResponse(
                             responseCode = "200",
                             content = @Content(
-                                    schema = @Schema(implementation = CdListResponseDto.class)
+                                    schema = @Schema(implementation = CdListResponse.class)
                             )
                     )
             }
     )
-    public ResponseEntity<CdListResponseDto> getCdList (@RequestBody GetCdListRequestDto getCdListRequestDto) {
-        List<Long> playListIdList = getCdListRequestDto.playlistIds();
+    public ResponseEntity<CdListResponse> getCdList (@RequestBody GetCdListRequest getCdListRequest) {
+        List<Long> playListIdList = getCdListRequest.playlistIds();
         return ResponseEntity.ok().body(cdService.getAllCdByPlaylistIdList(playListIdList));
     }
 
@@ -67,7 +67,7 @@ public class CdController {
                     description = "playlistId, cdItems",
                     required = true,
                     content = @Content(
-                            schema = @Schema(implementation = SaveCdRequestDto.class)
+                            schema = @Schema(implementation = SaveCdRequest.class)
                     )
             ),
 
@@ -80,8 +80,8 @@ public class CdController {
                     )
             }
     )
-    public ResponseEntity<String> saveCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequestDto saveCdRequestDto) {
-        cdService.saveCdItemList(playlistId, saveCdRequestDto.cdItems());
+    public ResponseEntity<String> saveCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequest saveCdRequest) {
+        cdService.saveCdItemList(playlistId, saveCdRequest.cdItems());
         return ResponseEntity.ok().body("CD가 저장되었습니다");
     }
 
@@ -98,8 +98,8 @@ public class CdController {
                     )
             }
     )
-    public ResponseEntity<String> replaceCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequestDto saveCdRequestDto) {
-        cdService.replaceCdItemList(playlistId,saveCdRequestDto.cdItems());
+    public ResponseEntity<String> replaceCd (@PathVariable("playlistId") Long playlistId, @RequestBody SaveCdRequest saveCdRequest) {
+        cdService.replaceCdItemList(playlistId, saveCdRequest.cdItems());
         return  ResponseEntity.ok().body("CD가 수정되었습니다");
     }
 }

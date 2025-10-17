@@ -3,7 +3,7 @@ package com.example.demo.domain.playlist.service;
 import com.example.common.error.code.CommonErrorCode;
 import com.example.common.error.exception.CdException;
 import com.example.common.error.exception.PlaylistSearchException;
-import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
+import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
@@ -68,7 +68,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                     pages.getResults(),
                     finalLimit,
                     p -> {
-                        OnlyCdResponse cd = cdService.getOnlyCdByPlaylistId(p.getId());
+                        CdResponse cd = cdService.getOnlyCdByPlaylistId(p.getId());
                         return new PlaylistSearchResponse(
                                 p.getId(),
                                 p.getName(),
@@ -129,7 +129,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         List<PlaylistSearchDto> resolved = new ArrayList<>();
         for (PlaylistSearchDto item : raw.getResults()) {
             try {
-                OnlyCdResponse cd = cdService.getOnlyCdByPlaylistId(item.playlistId());
+                CdResponse cd = cdService.getOnlyCdByPlaylistId(item.playlistId());
                 resolved.add(PlaylistSearchDto.from(
                         item.playlistId(),
                         item.playlistName(),

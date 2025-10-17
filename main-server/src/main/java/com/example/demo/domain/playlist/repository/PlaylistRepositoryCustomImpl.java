@@ -1,6 +1,6 @@
 package com.example.demo.domain.playlist.repository;
 
-import com.example.demo.domain.cd.dto.response.OnlyCdResponse;
+import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.follow.entity.QFollow;
 import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
@@ -149,7 +149,7 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                         p.name,
                         u.id,
                         u.username,
-                        nullExpression(OnlyCdResponse.class)
+                        nullExpression(CdResponse.class)
                 ))
                 .from(p)
                 .join(p.users, u)
