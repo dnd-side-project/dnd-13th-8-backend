@@ -25,7 +25,11 @@ public record SongDto(
         String youtubeThumbnail,
 
         @Schema(description = "유튜브 영상 길이", example = "SS")
-        Long youtubeLength
+        Long youtubeLength,
+
+        @Schema(description = "곡 순서", example = "1")
+        Long orderIndex
+
 
 ) {
     public static SongDto from(Song song) {
@@ -35,6 +39,7 @@ public record SongDto(
                 .youtubeUrl(song.getYoutubeUrl())
                 .youtubeThumbnail(song.getYoutubeThumbnail())
                 .youtubeLength(song.getYoutubeLength())
+                .orderIndex(song.getOrderIndex())
                 .build();
     }
 

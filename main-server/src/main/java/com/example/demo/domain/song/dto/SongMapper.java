@@ -21,6 +21,7 @@ public class SongMapper {
                 .youtubeTitle(dto.title())
                 .youtubeThumbnail(dto.thumbnailUrl())
                 .youtubeLength(DurationFormatUtil.parseToSeconds(dto.duration()))
+                .orderIndex(dto.orderIndex())
                 .build();
     }
 
@@ -35,7 +36,8 @@ public class SongMapper {
                 song.getYoutubeUrl(),
                 song.getYoutubeTitle(),
                 song.getYoutubeThumbnail(),
-                song.getYoutubeLength()
+                song.getYoutubeLength(),
+                song.getOrderIndex()
         );
     }
 
@@ -46,7 +48,8 @@ public class SongMapper {
                         song.getYoutubeTitle(),
                         song.getYoutubeUrl(),
                         song.getYoutubeThumbnail(),
-                        song.getYoutubeLength()
+                        song.getYoutubeLength(),
+                        song.getOrderIndex()
                 ))
                 .collect(Collectors.toList());
     }

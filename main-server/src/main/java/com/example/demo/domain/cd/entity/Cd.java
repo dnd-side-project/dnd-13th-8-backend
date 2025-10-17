@@ -31,6 +31,9 @@ public class Cd extends BaseTimeEntity {
     @Column(name = "y_coordinate")
     private Long yCoordinate;
 
+    @Column(name = "z_coordinate")
+    private Long zCoordinate;
+
     @Column(name = "height")
     private Long height;
 
@@ -45,12 +48,13 @@ public class Cd extends BaseTimeEntity {
 
     @Builder
     public Cd(Playlist playlist, Prop prop,
-              Long xCoordinate, Long yCoordinate,
+              Long xCoordinate, Long yCoordinate, Long zCoordinate,
               Long height, Long width, Long scale, Long angle) {
         this.playlist = playlist;
         this.prop = prop;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        this.zCoordinate = zCoordinate;
         this.height = height;
         this.width = width;
         this.scale = scale;

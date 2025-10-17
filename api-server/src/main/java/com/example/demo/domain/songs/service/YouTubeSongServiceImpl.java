@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +36,15 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
                 .flatMapMany(response -> {
                     Map<String, YouTubeVideoResponse.Item> itemMap = fetchVideoItemMap(response.items());
 
-                    List<YouTubeVideoInfoDto> result = links.stream()
-                            .map(link -> {
-                                String videoId = linkToVideoId.get(link);
-                                return mapToDto(link, videoId, itemMap);
-                            })
-                            .toList();
+                    List<YouTubeVideoInfoDto> result =
+                            IntStream.range(0, links.size())
+                                    .mapToObj(i -> {
+                                        String link = links.get(i);
+                                        Long orderIndex = (long) (i + 1); // 요청 순서(1-based)
+                                        String videoId = linkToVideoId.get(link);
+                                        return mapToDto(link, videoId, itemMap, orderIndex);
+                                    })
+                                    .toList();
 
                     return Flux.fromIterable(result);
                 });
@@ -76,7 +80,10 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
     /**
      * 링크와 videoId, itemMap을 바탕으로 Dto 변환
      */
-    private YouTubeVideoInfoDto mapToDto(String link, String videoId, Map<String, YouTubeVideoResponse.Item> itemMap) {
+    private YouTubeVideoInfoDto mapToDto(String link,
+                                         String videoId,
+                                         Map<String, YouTubeVideoResponse.Item> itemMap,
+                                         Long orderIndex) {
         if (videoId == null || !itemMap.containsKey(videoId)) {
             return YouTubeVideoInfoDto.invalid(link);
         }
@@ -87,6 +94,7 @@ public class YouTubeSongServiceImpl implements YouTubeSongService {
                 link,
                 item.snippet().title(),
                 item.snippet().thumbnails().high().url(),
+                orderIndex,
                 item.contentDetails().duration()
         );
     }
