@@ -20,5 +20,9 @@ public record SongResponseDto(
         String youtubeThumbnail,
 
         @Schema(description = "유튜브 영상 길이 (초 단위)", example = "210")
-        Long youtubeLength
+        Long youtubeLength,
+
+        @Schema(description = "곡 순서", example = "1")
+        Long orderIndex
+
 ) {}

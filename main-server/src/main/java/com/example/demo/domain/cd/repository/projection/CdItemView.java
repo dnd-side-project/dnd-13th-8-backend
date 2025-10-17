@@ -11,6 +11,7 @@ public class CdItemView {
 
     private final Long xCoordinate;
     private final Long yCoordinate;
+    private final Long zCoordinate;
     private final Long height;
     private final Long width;
     private final Long scale;
@@ -25,6 +26,7 @@ public class CdItemView {
             Long propId,
             Long xCoordinate,
             Long yCoordinate,
+            Long zCoordinate,
             Long height,
             Long width,
             Long scale,
@@ -37,6 +39,7 @@ public class CdItemView {
         this.propId = propId;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
+        this.zCoordinate = zCoordinate;
         this.height = height;
         this.width = width;
         this.scale = scale;

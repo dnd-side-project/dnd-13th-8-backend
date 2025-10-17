@@ -17,15 +17,20 @@ public record YouTubeVideoInfoDto(
         @Schema(description = "영상 길이 (MM:SS)", example = "03:21")
         String duration,
 
+        @Schema(description = "곡 순서", example = "1")
+        Long orderIndex,
+
         @Schema(description = "유효한 영상 여부", example = "true")
         boolean valid
+
+
 ) {
-        public static YouTubeVideoInfoDto valid(String link, String title, String thumbnailUrl, String duration) {
-                return new YouTubeVideoInfoDto(link, title, thumbnailUrl, SongMapper.formatDuration(duration), true);
+        public static YouTubeVideoInfoDto valid(String link, String title, String thumbnailUrl, Long orderIndex, String duration) {
+                return new YouTubeVideoInfoDto(link, title, thumbnailUrl, SongMapper.formatDuration(duration),orderIndex,true);
         }
 
         public static YouTubeVideoInfoDto invalid(String link) {
-                return new YouTubeVideoInfoDto(link, null, null, null, false);
+                return new YouTubeVideoInfoDto(link, null, null, null, null, false);
         }
 }
 

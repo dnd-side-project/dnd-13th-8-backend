@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface SongRepository extends JpaRepository<Song, Long> {
 
-    @Query("SELECT s FROM Song s WHERE s.playlist.id = :playlistId ORDER BY s.youtubeLength ASC")
+    @Query("SELECT s FROM Song s WHERE s.playlist.id = :playlistId ORDER BY s.orderIndex ASC")
     List<Song> findSongsByPlaylistId(@Param("playlistId") Long playlistId);
 
     @Query("SELECT s FROM Song s WHERE s.playlist.id IN :playlistIds")
