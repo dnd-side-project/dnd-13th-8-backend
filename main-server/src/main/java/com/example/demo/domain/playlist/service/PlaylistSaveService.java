@@ -18,7 +18,6 @@ import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,74 +64,35 @@ public class PlaylistSaveService {
     }
 
     @Transactional
-    public PlaylistWithSongsResponse editPlaylistWithSongs(String usersId, Long playlistId,
-                                                           PlaylistCreateRequest request) {
+    public PlaylistWithSongsResponse editPlaylistWithSongs(
+            String usersId, Long playlistId, PlaylistCreateRequest request) {
+
         Users users = usersRepository.findById(usersId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
-        playlist.editPlaylist(request.name(),request.genre(), request.isPublic());
+        playlist.editPlaylist(request.name(), request.genre(), request.isPublic());
+        playlistRepository.save(playlist);
 
-        playlistRepository.save(playlist); // playlist부터 수정
+        // 1) 기존 곡 전부 삭제
+        songRepository.deleteByPlaylistId(playlistId);
 
-        // 기존 곡
-        List<Song> existingSongs = songRepository.findSongsByPlaylistId(playlistId);
-
-        // 새로 요청된 곡
-        List<String> requestedLinks = request.youTubeVideoInfo().stream()
-                .map(YouTubeVideoInfoDto::link)
-                .map(String::trim)
+        // 2) 요청 순서(YouTubeVideoInfoDto.orderIndex)를 그대로 저장
+        List<Song> toSave = request.youTubeVideoInfo().stream()
+                .sorted(Comparator.comparing(YouTubeVideoInfoDto::orderIndex)) // 안전하게 정렬
+                .map(dto -> SongMapper.toEntity(dto, playlist))
                 .toList();
 
-        Map<String, Long> existingCount = existingSongs.stream()
-                .collect(Collectors.groupingBy(Song::getYoutubeUrl, Collectors.counting()));
-
-        Map<String, Long> requestedCount = requestedLinks.stream()
-                .collect(Collectors.groupingBy(link -> link, Collectors.counting()));
-
-        // 삭제 로직
-        List<Long> deleteIds = new ArrayList<>();
-        for (Song song : existingSongs) {
-            String url = song.getYoutubeUrl();
-            long reqCnt = requestedCount.getOrDefault(url, 0L);
-            long existCnt = existingCount.getOrDefault(url, 0L);
-
-            if (existCnt > reqCnt) {
-                // 삭제 필요 → 하나씩 줄여나감
-                deleteIds.add(song.getId());
-                existingCount.put(url, existCnt - 1); // 카운트 감소
-            }
-        }
-        if (!deleteIds.isEmpty()) {
-            songRepository.deleteAllByIdIn(deleteIds);
+        if (!toSave.isEmpty()) {
+            songRepository.saveAll(toSave);
         }
 
-        // 추가
-        List<Song> toAdd = new ArrayList<>();
-        for (Map.Entry<String, Long> entry : requestedCount.entrySet()) {
-            String url = entry.getKey();
-            long reqCnt = entry.getValue();
-
-            long existCnt = existingSongs.stream()
-                    .filter(s -> s.getYoutubeUrl().equals(url))
-                    .count();
-
-            if (reqCnt > existCnt) {
-                long needToAdd = reqCnt - existCnt;
-                request.youTubeVideoInfo().stream()
-                        .filter(dto -> dto.link().equals(url))
-                        .limit(needToAdd) // 필요한 만큼만 생성
-                        .forEach(dto -> toAdd.add(SongMapper.toEntity(dto, playlist)));
-            }
-        }
-        if (!toAdd.isEmpty()) {
-            songRepository.saveAll(toAdd);
-        }
-
-        // 응답
-        List<SongResponseDto> songDtos = songRepository.findSongsByPlaylistId(playlistId).stream()
+        // 3) 응답
+        List<SongResponseDto> songDtos = songRepository
+                .findSongsByPlaylistId(playlistId)
+                .stream()
                 .map(SongMapper::toDto)
                 .toList();
 
