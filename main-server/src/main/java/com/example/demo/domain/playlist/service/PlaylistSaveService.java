@@ -91,7 +91,7 @@ public class PlaylistSaveService {
 
         // 3) 응답
         List<SongResponseDto> songDtos = songRepository
-                .findByPlaylistId(playlistId)
+                .findSongsByPlaylistId(playlistId)
                 .stream()
                 .map(SongMapper::toDto)
                 .toList();
