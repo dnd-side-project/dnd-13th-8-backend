@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface PlaylistService {
 
+    MainPlaylistDetailResponse playPlaylist(Long playlistId, String userId);
+
     MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId);
 
     PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request, List<CdItemRequest> cdItemRequestList);

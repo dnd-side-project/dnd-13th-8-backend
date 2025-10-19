@@ -11,18 +11,20 @@ import org.springframework.data.repository.query.Param;
 public interface PlaylistRepository extends JpaRepository<Playlist, Long>, PlaylistRepositoryCustom {
 
     @Query("""
-    SELECT p FROM Playlist p
-    WHERE p.users.id = :userId
-      AND p.isPublic = true
-    ORDER BY p.visitCount DESC
+SELECT p
+FROM Playlist p
+JOIN FETCH p.users u
+WHERE u.id = :userId
+ORDER BY p.visitCount DESC
 """)
     List<Playlist> findByUserIdPopular(@Param("userId") String userId);
 
     @Query("""
-    SELECT p FROM Playlist p
-    WHERE p.users.id = :userId
-      AND p.isPublic = true
-    ORDER BY p.id DESC
+SELECT p
+FROM Playlist p
+JOIN FETCH p.users u
+WHERE u.id = :userId
+ORDER BY p.id DESC
 """)
     List<Playlist> findByUserIdRecent(@Param("userId") String userId);
 
