@@ -41,7 +41,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
+    public MainPlaylistDetailResponse playPlaylist(Long playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .filter(Playlist::isPublic)
                 .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
@@ -54,6 +54,23 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
         playlistRepository.incrementVisitCount(playlist.getId());
+
+        var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
+        return MainPlaylistDetailResponse.from(playlist, songDtos, cdResponse);
+    }
+
+    @Override
+    @Transactional
+    public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .filter(Playlist::isPublic)
+                .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
+        List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
         var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
         return MainPlaylistDetailResponse.from(playlist, songDtos, cdResponse);

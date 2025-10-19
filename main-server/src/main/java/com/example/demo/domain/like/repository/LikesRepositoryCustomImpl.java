@@ -36,8 +36,7 @@ public class LikesRepositoryCustomImpl implements LikesRepositoryCustom {
                 .join(l).on(l.playlist.id.eq(p.id))
                 .join(p.users, u).fetchJoin()
                 .where(
-                        l.users.id.eq(userId),
-                        p.isPublic.isTrue()
+                        l.users.id.eq(userId)
                 )
                 .orderBy(order)
                 .limit(limit)
