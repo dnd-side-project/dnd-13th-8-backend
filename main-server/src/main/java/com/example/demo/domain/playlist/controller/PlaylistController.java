@@ -32,8 +32,28 @@ public class PlaylistController {
     private final PlaylistService playlistService;
 
     @Operation(
-            summary = "플레이리스트 상세 조회 + 재생 기록 저장",
-            description = "플레이리스트 상세를 조회하면서 동시에 재생 기록을 저장합니다."
+            summary = "플레이리스트 재생",
+            description = "플레이리스트 상세 정보를 조회하면서 동시에 재생 기록을 저장합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "플레이리스트 상세 정보",
+            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
+    )
+    @PostMapping("/{playlistId}/")
+    public ResponseEntity<MainPlaylistDetailResponse> playPlaylist(
+            @Parameter(description = "플레이리스트 ID", example = "101")
+            @PathVariable Long playlistId,
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        MainPlaylistDetailResponse response = playlistService.playPlaylist(playlistId, user.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "플레이리스트 상세 정보 조회",
+            description = "플레이리스트 상세 정보를 조회합니다"
     )
     @ApiResponse(
             responseCode = "200",
