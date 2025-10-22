@@ -117,4 +117,27 @@ public class ChatRepository {
         Chat deleted = t.deleteItem(r -> r.key(key));
         return deleted != null; // 존재했으면 삭제된 엔티티 반환
     }
+
+    public int countByRoomId(String roomId) {
+        int total = 0;
+        Map<String, AttributeValue> lek = null;
+
+        do {
+            var req = QueryEnhancedRequest.builder()
+                    .queryConditional(QueryConditional.keyEqualTo(
+                            Key.builder().partitionValue(roomId).build()))
+                    .attributesToProject("roomId", "sentAt") // 키만
+                    .limit(1000)                              // 페이지 크기
+                    .exclusiveStartKey(lek)
+                    .build();
+
+            Page<Chat> first = table().query(req).stream().findFirst().orElse(null);
+            if (first == null) break;
+
+            total += first.items().size();
+            lek = first.lastEvaluatedKey();
+        } while (lek != null && !lek.isEmpty());
+
+        return total;
+    }
 }

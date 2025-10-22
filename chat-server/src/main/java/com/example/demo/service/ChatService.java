@@ -104,4 +104,8 @@ public class ChatService {
             throw new IllegalStateException("삭제 실패");
         }
     }
+
+    public int countByRoomId(String roomId) {
+        return chatRepository.countByRoomId(roomId);
+    }
 }
