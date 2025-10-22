@@ -116,7 +116,7 @@ public class PlaylistMyPageController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 상세",
-            content = @Content(schema = @Schema(implementation = PlaylistDetailResponse.class))
+            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
     )
     @ApiResponse(responseCode = "404", description = "플레이리스트를 찾을 수 없음")
     @GetMapping("/me/{playlistId}")
