@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.*;
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
@@ -110,7 +111,7 @@ public class PlaylistMyPageController {
 
     @Operation(
             summary = "내 플레이리스트 상세 조회",
-            description = "플레이리스트 상세 및 곡 목록, 좋아요/조회수 등 메타 정보를 반환합니다."
+            description = "내 플레이리스트 상세 및 곡 목록, 좋아요/조회수 등 메타 정보를 반환합니다."
     )
     @ApiResponse(
             responseCode = "200",
@@ -119,13 +120,13 @@ public class PlaylistMyPageController {
     )
     @ApiResponse(responseCode = "404", description = "플레이리스트를 찾을 수 없음")
     @GetMapping("/me/{playlistId}")
-    public ResponseEntity<PlaylistDetailResponse> getPlaylistDetail(
+    public ResponseEntity<MainPlaylistDetailResponse> getMyPlaylistDetail(
             @Parameter(description = "플레이리스트 ID", example = "123")
             @PathVariable Long playlistId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        PlaylistDetailResponse response = playlistMyPageService.getPlaylistDetail(user.getId(), playlistId);
+        MainPlaylistDetailResponse response = playlistMyPageService.getMyPlaylistDetail(user.getId(), playlistId);
         return ResponseEntity.ok(response);
     }
 

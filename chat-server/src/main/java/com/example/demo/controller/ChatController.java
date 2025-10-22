@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 
+import com.example.demo.dto.ChatCountResponse;
 import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatInbound;
 import com.example.demo.global.redis.ChatRedisCounter;
@@ -35,7 +36,7 @@ public class ChatController {
         chatService.handleInbound(roomId, chatInbound);
     }
 
-    @GetMapping("/chat/rooms/{roomId}/count")
+    @GetMapping("/chat/rooms/{roomId}/count/member")
     @Operation(
             summary = "채팅방 참여자 수 조회",
             description = "해당 채팅방의 현재 참여자 수를 1회 반환합니다. (소켓 X)",
@@ -94,5 +95,17 @@ public class ChatController {
                                               @AuthenticationPrincipal CustomUserDetails user) {
         chatService.deleteMessage(roomId,messageId, user.getId());
         return ResponseEntity.ok().body("삭제 성공");
+    }
+
+    @GetMapping("/chat/rooms/{roomId}/count/chat")
+    @Operation(
+            summary = "채팅방 총 메시지 수",
+            description = "해당 roomId의 총 메시지 개수를 반환합니다."
+    )
+    public ResponseEntity<ChatCountResponse> count(@PathVariable String roomId) {
+        int total = chatService.countByRoomId(roomId);
+        return ResponseEntity.ok(ChatCountResponse.builder()
+                        .totalCount(total)
+                .build());
     }
 }

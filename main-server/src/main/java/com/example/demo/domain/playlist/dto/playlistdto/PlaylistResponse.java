@@ -21,16 +21,20 @@ public record PlaylistResponse(
         @Schema(description = "플레이리스트 공개 여부", example = "true")
         boolean isPublic,
 
+        @Schema(description = "플레이리스트 좋아요 여부", example = "true")
+        boolean isLiked,
+
         @Schema(description = "cd 정보")
         CdResponse cdResponse
 
 ) {
-    public static PlaylistResponse from(Playlist playlist, CdResponse cd) {
+    public static PlaylistResponse from(Playlist playlist, CdResponse cd, boolean isLiked) {
         return PlaylistResponse.builder()
                 .playlistId(playlist.getId())
                 .playlistName(playlist.getName())
                 .creatorNickname(playlist.getUsers().getUsername())
                 .isPublic(playlist.isPublic())
+                .isLiked(isLiked)
                 .cdResponse(cd)
                 .build();
     }
