@@ -1,6 +1,7 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.dto.PlaylistSortOption;
@@ -12,7 +13,7 @@ public interface PlaylistMyPageService {
 
     List<PlaylistResponse> getLikedPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
-    PlaylistDetailResponse getPlaylistDetail(String id, Long playlistId);
+    MainPlaylistDetailResponse getMyPlaylistDetail(String id, Long playlistId);
 
     void updateIsPublic(String userId, Long playlistId);
 

@@ -11,6 +11,7 @@ import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.domain.like.repository.LikesRepository;
 import com.example.demo.domain.playlist.dto.*;
 import com.example.demo.domain.playlist.dto.SongDto;
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -51,7 +52,9 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         };
 
         return all.stream()
-                .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
+                .map(p -> PlaylistResponse.from(p,
+                        cdService.getOnlyCdByPlaylistId(p.getId()),
+                        likesRepository.existsByUsers_IdAndPlaylist_Id(userId, p.getId())))
                 .toList();
     }
 
@@ -61,13 +64,15 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         List<Playlist> likedPlaylists = likesRepository.findLikedPlaylistsWithMeta(userId, sortOption, DEFAULT_LIMIT);
 
         return likedPlaylists.stream()
-                .map(p -> PlaylistResponse.from(p, cdService.getOnlyCdByPlaylistId(p.getId())))
+                .map(p -> PlaylistResponse.from(p,
+                        cdService.getOnlyCdByPlaylistId(p.getId()),
+                        likesRepository.existsByUsers_IdAndPlaylist_Id(userId, p.getId())))
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PlaylistDetailResponse getPlaylistDetail(String userId, Long playlistId) {
+    public MainPlaylistDetailResponse getMyPlaylistDetail(String userId, Long playlistId) {
         Playlist playlist = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
                 .orElseThrow(() -> new PlaylistException("플레이리스트가 존재하지 않거나 권한이 없습니다.",
                         PlaylistErrorCode.PLAYLIST_NOT_FOUND));
@@ -75,7 +80,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         List<Song> songs = songRepository.findSongsByPlaylistId(playlistId);
         List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
-        return PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlistId));
+        return MainPlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlistId));
     }
 
 
