@@ -60,7 +60,14 @@ public class UsersService {
 
     @Transactional
     public void deleteAccount(String userId) {
-        if (!usersRepository.existsById(userId)) return;
-        usersRepository.deleteById(userId);
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        String imageKey = r2Service.extractKey(user.getProfileUrl());
+        if (imageKey != null && !imageKey.isBlank()) {
+            r2Service.delete(imageKey);
+        }
+
+        usersRepository.delete(user);
     }
 }
