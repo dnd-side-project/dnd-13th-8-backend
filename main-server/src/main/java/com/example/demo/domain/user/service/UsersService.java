@@ -57,4 +57,10 @@ public class UsersService {
 
         return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
     }
+
+    @Transactional
+    public void deleteAccount(String userId) {
+        if (!usersRepository.existsById(userId)) return;
+        usersRepository.deleteById(userId);
+    }
 }
