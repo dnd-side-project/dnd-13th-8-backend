@@ -140,39 +140,39 @@ public class ChatRepository {
 
         Map<String, AttributeValue> lek = null;
         do {
-            QueryEnhancedRequest.Builder qb = QueryEnhancedRequest.builder()
-                    .queryConditional(QueryConditional.keyEqualTo(Key.builder().partitionValue(roomId).build()))
-                    .attributesToProject("roomId", "sentAt") // 키만 읽어서 I/O 절감
-                    .limit(1000)                              // 페이지 크기 (튜닝 가능)
-                    .exclusiveStartKey(lek);
+            QueryEnhancedRequest req = QueryEnhancedRequest.builder()
+                    .queryConditional(QueryConditional.keyEqualTo(
+                            Key.builder().partitionValue(roomId).build()))
+                    .attributesToProject("roomId", "sentAt")
+                    .limit(1000)
+                    .exclusiveStartKey(lek)
+                    .build();
 
-            Page<Chat> page = t.query(qb.build()).stream().findFirst().orElse(null);
+            Page<Chat> page = t.query(req).stream().findFirst().orElse(null);
             if (page == null) break;
 
-            // 25개씩 BatchWrite(Delete)
-            List<WriteBatch> batches = new ArrayList<>();
-            List<WriteBatch.Builder<Chat>> builders = new ArrayList<>();
-            WriteBatch.Builder<Chat> curr = WriteBatch.builder(Chat.class).mappedTableResource(t);
+            List<Chat> chats = page.items();
+            for (int i = 0; i < chats.size(); i += 25) {
+                int end = Math.min(i + 25, chats.size());
 
-            int cnt = 0;
-            for (Chat c : page.items()) {
-                curr.addDeleteItem(Key.builder().partitionValue(c.getRoomId()).sortValue(c.getSentAt()).build());
-                cnt++;
-                if (cnt % 25 == 0) {
-                    builders.add(curr);
-                    curr = WriteBatch.builder(Chat.class).mappedTableResource(t);
+                WriteBatch.Builder<Chat> wb = WriteBatch.builder(Chat.class)
+                        .mappedTableResource(t);
+
+                for (int j = i; j < end; j++) {
+                    Chat c = chats.get(j);
+                    wb.addDeleteItem(b -> b.key(
+                            Key.builder()
+                                    .partitionValue(c.getRoomId())
+                                    .sortValue(c.getSentAt())
+                                    .build()
+                    ));
                 }
-            }
-            if (cnt % 25 != 0) builders.add(curr);
 
-            for (WriteBatch.Builder<Chat> b : builders) {
-                batches.add(b.build());
-            }
-            if (!batches.isEmpty()) {
-                BatchWriteItemEnhancedRequest req = BatchWriteItemEnhancedRequest.builder()
-                        .writeBatches(batches)
+                BatchWriteItemEnhancedRequest batchReq = BatchWriteItemEnhancedRequest.builder()
+                        .writeBatches(wb.build())
                         .build();
-                enhancedClient.batchWriteItem(req);
+
+                enhancedClient.batchWriteItem(batchReq);
             }
 
             lek = page.lastEvaluatedKey();
