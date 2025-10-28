@@ -8,16 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.Page;
-import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -139,5 +133,49 @@ public class ChatRepository {
         } while (lek != null && !lek.isEmpty());
 
         return total;
+    }
+
+    public void deleteAllByRoomId(String roomId) {
+        DynamoDbTable<Chat> t = table();
+
+        Map<String, AttributeValue> lek = null;
+        do {
+            QueryEnhancedRequest req = QueryEnhancedRequest.builder()
+                    .queryConditional(QueryConditional.keyEqualTo(
+                            Key.builder().partitionValue(roomId).build()))
+                    .attributesToProject("roomId", "sentAt")
+                    .limit(1000)
+                    .exclusiveStartKey(lek)
+                    .build();
+
+            Page<Chat> page = t.query(req).stream().findFirst().orElse(null);
+            if (page == null) break;
+
+            List<Chat> chats = page.items();
+            for (int i = 0; i < chats.size(); i += 25) {
+                int end = Math.min(i + 25, chats.size());
+
+                WriteBatch.Builder<Chat> wb = WriteBatch.builder(Chat.class)
+                        .mappedTableResource(t);
+
+                for (int j = i; j < end; j++) {
+                    Chat c = chats.get(j);
+                    wb.addDeleteItem(b -> b.key(
+                            Key.builder()
+                                    .partitionValue(c.getRoomId())
+                                    .sortValue(c.getSentAt())
+                                    .build()
+                    ));
+                }
+
+                BatchWriteItemEnhancedRequest batchReq = BatchWriteItemEnhancedRequest.builder()
+                        .writeBatches(wb.build())
+                        .build();
+
+                enhancedClient.batchWriteItem(batchReq);
+            }
+
+            lek = page.lastEvaluatedKey();
+        } while (lek != null && !lek.isEmpty());
     }
 }

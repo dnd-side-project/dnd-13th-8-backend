@@ -50,7 +50,7 @@ public class ChatService {
 
         // 2) Redis Pub/Sub 발행 (모든 인스턴스가 수신)
         try {
-            String channel = topicPrefix + roomId;     // ex) chat.room.room-1
+            String channel = topicPrefix + "room." + roomId;     // ex) chat.room.room-1
             String payload = objectMapper.writeValueAsString(chatOutbound);
             stringRedisTemplate.convertAndSend(channel, payload);
         } catch (Exception e) {
@@ -107,5 +107,10 @@ public class ChatService {
 
     public int countByRoomId(String roomId) {
         return chatRepository.countByRoomId(roomId);
+    }
+
+    public void deleteAllByRoomId(String roomId) {
+        // 멱등성: 존재하지 않아도 예외 없이 통과
+        chatRepository.deleteAllByRoomId(roomId);
     }
 }

@@ -32,13 +32,11 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // Standalone 설정 (클러스터/리플리카 셋업이 아니면 보통 이걸로 충분)
         RedisStandaloneConfiguration standalone = new RedisStandaloneConfiguration(redisHost, redisPort);
         if (redisPassword != null && !redisPassword.isEmpty()) {
             standalone.setPassword(RedisPassword.of(redisPassword));
         }
 
-        // Lettuce 클라이언트 옵션 + SSL 여부
         LettuceClientConfiguration.LettuceClientConfigurationBuilder clientBuilder =
                 LettuceClientConfiguration.builder();
 
@@ -55,7 +53,6 @@ public class RedisConfig {
         return new StringRedisTemplate(cf);
     }
 
-    // 모든 room 채널을 패턴 구독
     @Bean
     public RedisMessageListenerContainer redisMessageListenerContainer(
             RedisConnectionFactory cf,
@@ -68,7 +65,6 @@ public class RedisConfig {
         return container;
     }
 
-    // Redis 수신 메시지를 처리할 리스너 어댑터 (ChatRedisSubscriber.onMessage 호출)
     @Bean
     public MessageListenerAdapter chatMessageListenerAdapter(ChatRedisSubscriber subscriber) {
         // 리플렉션으로 subscriber.onMessage(Message, byte[]) 호출
