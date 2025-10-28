@@ -12,6 +12,7 @@ import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
+import com.example.demo.domain.playlist.event.PlaylistDeleteEvent;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
@@ -23,6 +24,7 @@ import com.example.demo.domain.user.repository.UsersRepository;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final SongRepository songRepository;
     private final CdService cdService;
     private final CdRepository cdRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -108,22 +111,15 @@ public class PlaylistServiceImpl implements PlaylistService {
                         PlaylistErrorCode.PLAYLIST_NOT_FOUND
                 ));
 
-        // 2. 유저가 가진 플리 개수 확인
-        long totalCount = playlistRepository.countByUserIdNative(userId);
-        if (totalCount <= 1) {
-            throw new PlaylistException(
-                    "플레이리스트는 최소 1개 이상 존재해야 합니다.",
-                    PlaylistErrorCode.PLAYLIST_NOT_FOUND
-            );
-        }
-
-        //  4. 참조 테이블 순차 삭제 (중요!)
+        //  2. 참조 테이블 순차 삭제 (중요!)
         cdRepository.deleteByPlaylistId(playlistId); // CD 테이블
         songRepository.deleteByPlaylistId(playlistId); // 곡
         userPlaylistHistoryRepository.deleteByPlaylistId(playlistId); // 재생기록
 
-        // 5. 플레이리스트 삭제
+        // 3. 플레이리스트 삭제
         playlistRepository.delete(toDelete);
+
+        applicationEventPublisher.publishEvent(new PlaylistDeleteEvent(String.valueOf(playlistId)));
     }
 
 }
