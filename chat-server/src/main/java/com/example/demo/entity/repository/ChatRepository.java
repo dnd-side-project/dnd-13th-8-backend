@@ -8,16 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.Page;
-import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -139,5 +133,49 @@ public class ChatRepository {
         } while (lek != null && !lek.isEmpty());
 
         return total;
+    }
+
+    public void deleteAllByRoomId(String roomId) {
+        DynamoDbTable<Chat> t = table();
+
+        Map<String, AttributeValue> lek = null;
+        do {
+            QueryEnhancedRequest.Builder qb = QueryEnhancedRequest.builder()
+                    .queryConditional(QueryConditional.keyEqualTo(Key.builder().partitionValue(roomId).build()))
+                    .attributesToProject("roomId", "sentAt") // 키만 읽어서 I/O 절감
+                    .limit(1000)                              // 페이지 크기 (튜닝 가능)
+                    .exclusiveStartKey(lek);
+
+            Page<Chat> page = t.query(qb.build()).stream().findFirst().orElse(null);
+            if (page == null) break;
+
+            // 25개씩 BatchWrite(Delete)
+            List<WriteBatch> batches = new ArrayList<>();
+            List<WriteBatch.Builder<Chat>> builders = new ArrayList<>();
+            WriteBatch.Builder<Chat> curr = WriteBatch.builder(Chat.class).mappedTableResource(t);
+
+            int cnt = 0;
+            for (Chat c : page.items()) {
+                curr.addDeleteItem(Key.builder().partitionValue(c.getRoomId()).sortValue(c.getSentAt()).build());
+                cnt++;
+                if (cnt % 25 == 0) {
+                    builders.add(curr);
+                    curr = WriteBatch.builder(Chat.class).mappedTableResource(t);
+                }
+            }
+            if (cnt % 25 != 0) builders.add(curr);
+
+            for (WriteBatch.Builder<Chat> b : builders) {
+                batches.add(b.build());
+            }
+            if (!batches.isEmpty()) {
+                BatchWriteItemEnhancedRequest req = BatchWriteItemEnhancedRequest.builder()
+                        .writeBatches(batches)
+                        .build();
+                enhancedClient.batchWriteItem(req);
+            }
+
+            lek = page.lastEvaluatedKey();
+        } while (lek != null && !lek.isEmpty());
     }
 }
