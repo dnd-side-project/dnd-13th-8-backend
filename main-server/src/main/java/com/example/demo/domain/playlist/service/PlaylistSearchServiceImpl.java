@@ -101,14 +101,14 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
         try {
             SearchResult<PlaylistSearchDto> playlistsRaw = fetchPlaylistsWithCd(query, sort, offset, finalSize);
-            SearchResult<UserSearchDto> usersRaw = fetchUsers(query, sort, offset, finalSize);
+            // SearchResult<UserSearchDto> usersRaw = fetchUsers(query, sort, offset, finalSize); 유저 검색 비활성화
 
             List<SearchItem> merged = new ArrayList<>();
             merged.addAll(playlistsRaw.getResults());
-            merged.addAll(usersRaw.getResults());
+            // merged.addAll(usersRaw.getResults());
 
-            boolean hasNext = playlistsRaw.getResults().size() == finalSize || usersRaw.getResults().size() == finalSize;
-            long totalCount = playlistsRaw.getTotalCount() + usersRaw.getTotalCount();
+            boolean hasNext = playlistsRaw.getResults().size() == finalSize; // || usersRaw.getResults().size() == finalSize;
+            long totalCount = playlistsRaw.getTotalCount(); // + usersRaw.getTotalCount();
 
             return new PageResponse<>(
                     new CombinedSearchResponse(merged),
