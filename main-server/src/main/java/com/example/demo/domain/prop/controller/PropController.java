@@ -45,7 +45,6 @@ public class PropController {
         MultipartFile file = uploadPropRequestDto.file();
         String userId = customUserDetails.getId();
         String theme = uploadPropRequestDto.theme();
-        propService.saveProp(userId, theme, file);
         return ResponseEntity.ok().body(propService.saveProp(userId, theme, file));
     }
 
