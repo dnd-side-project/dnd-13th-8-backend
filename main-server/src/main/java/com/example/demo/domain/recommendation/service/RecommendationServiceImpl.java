@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -31,23 +32,30 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
     public List<PlaylistCardResponse> getRecommendations(String userId) {
-        List<Playlist> basePlaylists;
         List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
+        List<Playlist> visitCountTop6 = playlistRepository.findByVisitCount(6);
 
-        if (genreBased.isEmpty()) {
-            basePlaylists = playlistRepository.findByVisitCount(6);
-        } else {
-            List<Playlist> visitCountTop3 = playlistRepository.findByVisitCount(3);
-            basePlaylists = new ArrayList<>(genreBased);
-            basePlaylists.addAll(visitCountTop3);
-        }
+        Set<Long> genreIds = genreBased.stream()
+                .map(Playlist::getId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        List<Playlist> basePlaylists = Stream.concat(
+                genreBased.stream(),
+                visitCountTop6.stream().filter(p -> !genreIds.contains(p.getId()))
+        ).limit(6).toList();
 
         List<Long> playlistIds = basePlaylists.stream().map(Playlist::getId).toList();
+
         Map<Long, List<Song>> songMap = songRepository.findAllByPlaylistIdIn(playlistIds)
-                .stream().collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
+                .stream()
+                .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
 
         return basePlaylists.stream()
-                .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of()), cdService.getOnlyCdByPlaylistId(p.getId())))
+                .map(p -> PlaylistCardResponse.from(
+                        p,
+                        songMap.getOrDefault(p.getId(), List.of()),
+                        cdService.getOnlyCdByPlaylistId(p.getId())
+                ))
                 .toList();
     }
 
