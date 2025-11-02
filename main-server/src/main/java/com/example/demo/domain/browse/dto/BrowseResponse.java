@@ -7,5 +7,5 @@ import java.util.List;
 public record BrowseResponse(
 
         @Schema(description = "플레이리스트 목록")
-        List<BrowsePlaylistDto> playlists
+        List<Long> playlists
 ) {}
