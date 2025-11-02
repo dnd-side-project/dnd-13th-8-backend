@@ -1,7 +1,5 @@
 package com.example.demo.domain.browse.controller;
 
-import com.example.demo.domain.browse.dto.BrowsePlaylistCursor;
-import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
 import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.browse.service.BrowseViewCountService;
@@ -34,43 +32,23 @@ public class BrowsePlaylistController {
     private final BrowsePlaylistService browsePlaylistService;
     private final BrowseViewCountService browseViewCountService;
 
-    @Operation(
-            summary = "셔플된 플레이리스트 목록 조회 (둘러보기)",
-            description = """
-        사용자의 Redis에 캐싱된 셔플된 둘러보기(BrowsePlaylist) 목록을 커서 기반으로 조회합니다.
-        각 유저는 매일 새벽 3시에 셔플된 position 기반의 카드 목록을 가지며, position과 cardId를 함께 사용해 커서 페이징합니다.
-        [Fallback 처리 안내]
-        - 신규 가입자 등 캐시 데이터가 없는 경우: BrowsePlaylist 테이블의 ID 1~5번 중 하나를 무작위로 선택하여 반환합니다.
-        - 이 경우 nextCursor는 null입니다.
-    """
-    )
     @GetMapping
-    public ResponseEntity<CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor>> browsePlaylists(
+    @Operation(
+            summary = "둘러보기 알고리즘",
+            description = "둘러보기 알고리즘을 통해 선별한 플레이리스트 ID 목록을 커서 방식으로 가져옵니다"
+    )
+    public ResponseEntity<CursorPageResponse<Long, Long>> browsePlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
 
-            @Parameter(
-                    description = "커서 position. 해당 position부터 이후 카드가 조회됩니다.",
-                    example = "2"
-            )
-            @RequestParam(required = false) Integer cursorPosition,
+            @Parameter(description = "커서 id(=마지막 playlistId). 이 ID 이후부터 조회", example = "100")
+            @RequestParam(required = false) Long cursorId,
 
-            @Parameter(
-                    description = "커서 cardId. 같은 position 내 카드 중 이 ID 이후의 카드부터 조회됩니다.",
-                    example = "1"
-            )
-            @RequestParam(required = false) Long cursorCardId,
-
-            @Parameter(
-                    description = "한 페이지에서 가져올 카드 수 (기본값: 20)",
-                    example = "20"
-            )
+            @Parameter(description = "한 페이지 개수(기본 20)", example = "10")
             @RequestParam(defaultValue = "20") int size
     ) {
-        CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> shuffledPlaylists = browsePlaylistService.getShuffledPlaylists(
-                user.getId(), cursorPosition, cursorCardId, size
-        );
-        return ResponseEntity.ok(shuffledPlaylists);
+        var resp = browsePlaylistService.getShuffledPlaylistIds(user.getId(), cursorId, size);
+        return ResponseEntity.ok(resp);
     }
 
 
