@@ -1,5 +1,7 @@
 package com.example.demo.domain.browse.controller;
 
+import com.example.demo.domain.browse.dto.BrowsePlaylistCursor;
+import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
 import com.example.demo.domain.browse.dto.PlaylistViewCountDto;
 import com.example.demo.domain.browse.service.BrowsePlaylistService;
 import com.example.demo.domain.browse.service.BrowseViewCountService;
@@ -32,7 +34,7 @@ public class BrowsePlaylistController {
     private final BrowsePlaylistService browsePlaylistService;
     private final BrowseViewCountService browseViewCountService;
 
-    @GetMapping
+    @GetMapping("/v2")
     @Operation(
             summary = "둘러보기 알고리즘",
             description = "둘러보기 알고리즘을 통해 선별한 플레이리스트 ID 목록을 커서 방식으로 가져옵니다"
@@ -48,6 +50,21 @@ public class BrowsePlaylistController {
             @RequestParam(defaultValue = "20") int size
     ) {
         var resp = browsePlaylistService.getShuffledPlaylistIds(user.getId(), cursorId, size);
+        return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "둘러보기 알고리즘 (레거시 버전)",
+            description = "둘러보기 알고리즘을 통해 셔플된 플레이리스트를 커서 방식으로 가져옵니다"
+    )
+    public ResponseEntity<CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor>> browsePlaylistsTemp(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(required = false) Integer cursorPosition,
+            @RequestParam(required = false) Long cursorCardId,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        var resp = browsePlaylistService.getShuffledPlaylists(user.getId(), cursorCardId, size);
         return ResponseEntity.ok(resp);
     }
 

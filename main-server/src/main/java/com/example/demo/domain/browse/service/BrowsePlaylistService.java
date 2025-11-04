@@ -4,10 +4,15 @@ import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.browse.dto.BrowsePlaylistCursor;
+import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
+import com.example.demo.domain.browse.dto.CreatorDto;
 import com.example.demo.domain.browse.repository.BrowsePlaylistRepository;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
+import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.service.PlaylistService;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.user.entity.Users;
@@ -19,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +36,55 @@ public class BrowsePlaylistService {
     private final UsersRepository usersRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final PlaylistRepository playlistRepository;
+    private final PlaylistService playlistService;
+
+    @Transactional(readOnly = true)
+    public CursorPageResponse<BrowsePlaylistDto, BrowsePlaylistCursor> getShuffledPlaylists(
+            String userId,
+            Long cursorId,  // 내부 커서는 playlistId
+            int size
+    ) {
+        var idPage = getShuffledPlaylistIds(userId, cursorId, size);
+        var ids = idPage.content();
+
+        List<BrowsePlaylistDto> content = new ArrayList<>(ids.size());
+        int basePos = 0; // position은 서버에서 무시하므로 임의 증가값이면 충분
+
+        for (int i = 0; i < ids.size(); i++) {
+            Long playlistId = ids.get(i);
+            var detail = playlistService.getPlaylistDetail(playlistId, userId);
+
+            BrowsePlaylistDto dto = new BrowsePlaylistDto(
+                    playlistId,                 // cardId ←= playlistId 로 채움
+                    basePos + i,                // position (프론트 형식용, 서버는 무시)
+                    detail.playlistId(),
+                    detail.playlistName(),
+                    detail.genre().name(),
+                    new CreatorDto(detail.creatorId(), detail.creatorNickname()),
+                    detail.songs(),
+                    true,
+                    null,
+                    (detail.cdResponse() != null) ? detail.cdResponse().cdItems() : List.of(),
+                    null
+            );
+            content.add(dto);
+        }
+
+        BrowsePlaylistCursor nextCursor = null;
+        if (idPage.hasNext() && !content.isEmpty()) {
+            var last = content.get(content.size() - 1);
+            // nextCursor.cardId 에도 마지막 playlistId 를 넣어줌 → 다음 요청에서 cursorId 로 사용됨
+            nextCursor = new BrowsePlaylistCursor(last.position(), last.cardId());
+        }
+
+        return new CursorPageResponse<>(
+                content,
+                nextCursor,
+                content.size(),
+                idPage.hasNext(),
+                0L
+        );
+    }
 
     @Transactional(readOnly = true)
     public CursorPageResponse<Long, Long> getShuffledPlaylistIds(
@@ -37,9 +92,10 @@ public class BrowsePlaylistService {
             Long cursorId,
             int size
     ) {
+        // #### 기존 로직 그대로 유지
         int limit = size > 0 ? size : 20;
         int limitPlusOne = limit + 1;
-        String seedKey = minuteSeedKey(); // "yyyy-MM-dd HH:mm" (Asia/Seoul)
+        String seedKey = minuteSeedKey();
 
         List<Long> rows = (cursorId == null)
                 ? browsePlaylistRepository.findFirstPageIdsShuffledExcludeMine(userId, seedKey, limitPlusOne)
@@ -53,8 +109,8 @@ public class BrowsePlaylistService {
                 : null;
 
         return new CursorPageResponse<>(
-                page,           // content: List<Long>
-                nextCursor,     // nextCursor: 마지막 id
+                page,
+                nextCursor,
                 page.size(),
                 hasNext,
                 -1L
