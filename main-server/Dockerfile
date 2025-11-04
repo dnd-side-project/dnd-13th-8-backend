@@ -1,5 +1,5 @@
-# 1. JDK 21 slim 이미지 사용
-FROM openjdk:21-jdk-slim
+# 1. JDK 21 eclipse 이미지 사용
+FROM eclipse-temurin:21-jdk
 
 # 2. 작업 디렉토리 생성
 WORKDIR /app
