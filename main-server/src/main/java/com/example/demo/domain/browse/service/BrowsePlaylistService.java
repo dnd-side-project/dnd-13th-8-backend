@@ -9,7 +9,6 @@ import com.example.demo.domain.browse.dto.BrowsePlaylistDto;
 import com.example.demo.domain.browse.dto.CreatorDto;
 import com.example.demo.domain.browse.repository.BrowsePlaylistRepository;
 import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.playlist.service.PlaylistService;
