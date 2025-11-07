@@ -43,7 +43,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             new PopularItem("카페 재즈 플레이리스트"),
             new PopularItem("여름청량팝"),
             new PopularItem("감성 힙합"),
-            new PopularItem("최맛 여자아이돌 모음"),
+            new PopularItem("쇠 맛 여자아이돌 모음"),
             new PopularItem("드라이브"),
             new PopularItem("K-POP"),
             new PopularItem("인디밴드음악")
