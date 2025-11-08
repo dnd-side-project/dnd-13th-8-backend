@@ -19,7 +19,7 @@ public class WebFluxCorsConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://deulak-dev.vercel.app",
-                "https://deulak.com",
+                "https://www.deulak.com",
                 "http://192.168.0.9:5173",
                 "http://192.168.0.10:5173"
         ));
