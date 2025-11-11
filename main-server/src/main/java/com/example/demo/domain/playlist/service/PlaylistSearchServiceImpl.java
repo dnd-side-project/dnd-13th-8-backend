@@ -38,13 +38,13 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     private final CdService cdService;
 
     private static final List<PopularItem> DEFAULT_POPULAR_TERMS = List.of(
-            new PopularItem("여름"),
-            new PopularItem("바캉스 플리"),
+            new PopularItem("겨울"),
+            new PopularItem("크리스마스"),
             new PopularItem("카페 재즈 플레이리스트"),
-            new PopularItem("여름청량팝"),
+            new PopularItem("연말결산"),
             new PopularItem("감성 힙합"),
-            new PopularItem("쇠 맛 여자아이돌 모음"),
-            new PopularItem("드라이브"),
+            new PopularItem("가을 플레이리스트"),
+            new PopularItem("이별"),
             new PopularItem("K-POP"),
             new PopularItem("인디밴드음악")
     );
