@@ -65,7 +65,7 @@ public class LoginController {
         Users user = new Users();
         String nickname = nicknameGenerator.generateUniqueNickname();
         user.setUsername(nickname);
-        user.setRole(JwtRoleType.SUPER); // 개발용으로 임시 권한 부여
+        user.setRole(JwtRoleType.ANONYMOUS); //
         user.setProfileUrl("NULL");
         Users savedUser = usersRepository.save(user);
         String anonymousToken = jwtAccessIssuer.issueSuperToken(savedUser.getId());
