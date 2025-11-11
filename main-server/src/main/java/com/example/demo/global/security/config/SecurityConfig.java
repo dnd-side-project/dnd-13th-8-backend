@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // 마이페이지는 user/super 권한만 허용
-                        .requestMatchers("/main/mypage/**").hasAnyAuthority("ROLE_USER", "ROLE_SUPER")
+                        .requestMatchers("/main/mypage/**").hasAnyAuthority("ROLE_USER", "ROLE_SUPER", "ROLE_ANONYMOUS")
 
                         // 로그아웃은 인증만 필요
                         .requestMatchers("/auth/logout").authenticated()
