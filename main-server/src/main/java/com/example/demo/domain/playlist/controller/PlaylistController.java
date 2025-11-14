@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+
 
 @Slf4j
 @RestController
@@ -85,6 +87,9 @@ public class PlaylistController {
             @RequestBody @Valid PlaylistCreateRequest request,
             HttpSession session
     ) {
+        log.info("[/temp] SESSION ID = {}", session.getId());
+        log.info("[/temp] Saving tempPlaylist = {}", request);
+
         session.setAttribute("tempPlaylist", request);
         return ResponseEntity.ok().build();
     }
@@ -106,6 +111,8 @@ public class PlaylistController {
             @RequestBody FinalPlaylistRequest finalPlaylistRequest,
             HttpSession session
     ) {
+        log.info("[/final] SESSION ID = {}", session.getId());
+
         PlaylistCreateRequest request = (PlaylistCreateRequest) session.getAttribute("tempPlaylist");
         if (request == null) {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
