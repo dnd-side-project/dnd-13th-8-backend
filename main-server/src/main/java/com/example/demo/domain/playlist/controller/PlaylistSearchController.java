@@ -107,7 +107,7 @@ public class PlaylistSearchController {
 
 
             @Parameter(description = "최대 검색어 개수", example = "10")
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "20") int limit
     ) {
         List<PopularItem> terms = playlistSearchService.getPopularTerms(range, limit);
         PopularSearchResponse response = new PopularSearchResponse(range, limit, terms);
