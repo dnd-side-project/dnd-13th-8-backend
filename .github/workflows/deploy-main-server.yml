@@ -14,9 +14,9 @@ env:
   AWS_REGION: ap-northeast-2
   CONTAINER_NAME: main-container
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: joyful-eagle-kco6mk
-  ECS_SERVICE: main-server-service-z4k60m2s
-  ECS_TASK_DEFINITION: main-server/main-server-revision1.json
+  ECS_CLUSTER: happy-lion-zahji5
+  ECS_SERVICE: main-server-ec2
+  ECS_TASK_DEFINITION: main-server/main-server-ec2-revision1.json
   IMAGE_TAG: latest
 
 jobs:
