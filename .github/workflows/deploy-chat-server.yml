@@ -14,9 +14,9 @@ env:
   AWS_REGION: ap-northeast-2
   CONTAINER_NAME: chat-container
   ECR_REPOSITORY: dulakreposiotry
-  ECS_CLUSTER: joyful-eagle-kco6mk
-  ECS_SERVICE: chat-server-service-03ciwwyj
-  ECS_TASK_DEFINITION: chat-server/chat-server-revision1.json
+  ECS_CLUSTER: happy-lion-zahji5
+  ECS_SERVICE: chat-server-service-ec2
+  ECS_TASK_DEFINITION: chat-server/chat-server-ec2-revision1.json
   IMAGE_TAG: chat-latest
 
 jobs:
