@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/health",
                                 "/chat/health",
                                 "/api/health",
+                                "/api/playlist/songs",
 
                                 // Swagger 관련 경로
                                 "/main/swagger-ui/**",
