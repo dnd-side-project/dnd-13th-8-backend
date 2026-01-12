@@ -1,6 +1,8 @@
 package com.example.demo.domain.song.util;
 
 
+import java.time.Duration;
+
 public class DurationFormatUtil {
 
     /**
@@ -45,5 +47,12 @@ public class DurationFormatUtil {
         } catch (NumberFormatException e) {
             return 0L;
         }
+    }
+
+    public static String formatDuration(String isoDuration) {
+        Duration duration = Duration.parse(isoDuration);
+        long minutes = duration.toMinutes();
+        long seconds = duration.minusMinutes(minutes).getSeconds();
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }
