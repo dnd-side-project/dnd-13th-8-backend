@@ -6,11 +6,10 @@ import com.example.demo.domain.song.dto.api.YouTubeApiVideoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,15 +132,16 @@ public class YoutubeSongServiceImpl implements YouTubeSongService{
     }
 
     private boolean isRetryable(Exception ex) {
-        if (ex instanceof IOException) return true;
+        if (ex instanceof ResourceAccessException) {
+            return true;
+        }
 
         if (ex instanceof RestClientResponseException rre) {
             var status = rre.getStatusCode();
             return status.value() == 429 || status.is5xxServerError();
         }
 
-        String msg = ex.getMessage();
-        return msg != null && (msg.contains("429") || msg.contains("5"));
+        return false;
     }
 
     private void sleep(long ms) {
