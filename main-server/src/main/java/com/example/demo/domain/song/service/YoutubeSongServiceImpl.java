@@ -34,8 +34,7 @@ public class YoutubeSongServiceImpl implements YouTubeSongService{
         Map<String, String> linkToVideoId = extractValidLinkToVideoId(links);
 
         if (linkToVideoId.isEmpty()) {
-            return IntStream.range(0, links.size())
-                    .mapToObj(i -> YouTubeApiVideoDto.invalid(links.get(i)))
+            return links.stream().map(YouTubeApiVideoDto::invalid)
                     .toList();
         }
 
@@ -135,11 +134,10 @@ public class YoutubeSongServiceImpl implements YouTubeSongService{
 
     private boolean isRetryable(Exception ex) {
         if (ex instanceof IOException) return true;
-        if (ex instanceof SocketTimeoutException) return true;
 
         if (ex instanceof RestClientResponseException rre) {
-            int code = rre.getRawStatusCode();
-            return code == 429 || (code >= 500 && code <= 599);
+            var status = rre.getStatusCode();
+            return status.value() == 429 || status.is5xxServerError();
         }
 
         String msg = ex.getMessage();

@@ -1,6 +1,7 @@
 package com.example.demo.domain.song.http;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -25,13 +26,17 @@ public class YouTubeHttpInterfaceConfig {
 
     @Bean
     public YouTubeApiHttp youTubeApiHttp() {
+        var connectionConfig = ConnectionConfig.custom()
+                .setConnectTimeout(Timeout.ofSeconds(3))
+                .build();
+
         var connManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setDefaultConnectionConfig(connectionConfig)
                 .setMaxConnTotal(200)
                 .setMaxConnPerRoute(100)
                 .build();
 
         var requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.ofSeconds(3))
                 .setResponseTimeout(Timeout.ofSeconds(5))
                 .build();
 
@@ -42,15 +47,11 @@ public class YouTubeHttpInterfaceConfig {
                 .build();
 
         var requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        requestFactory.setConnectTimeout(Duration.ofSeconds(3));
         requestFactory.setReadTimeout(Duration.ofSeconds(5));
 
         RestClient restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
-                .requestInterceptor((req, body, exec) -> {
-                    return exec.execute(req, body);
-                })
                 .build();
 
         HttpServiceProxyFactory factory = HttpServiceProxyFactory
