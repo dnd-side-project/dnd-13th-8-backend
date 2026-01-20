@@ -54,7 +54,6 @@ public class ChatProfileService {
                     TTL
             );
         } catch (Exception ignore) {
-            System.out.println("Profile Cache Failed");
         }
 
         return profile;
