@@ -1,15 +1,12 @@
 package com.example.demo.service;
 
-import com.example.common.error.code.UserErrorCode;
-import com.example.common.error.exception.UserException;
 import com.example.demo.dto.ChatHistoryResponseDto;
-import com.example.demo.dto.ChatInbound;
-import com.example.demo.dto.ChatMapper;
-import com.example.demo.dto.ChatOutbound;
+import com.example.demo.dto.ChatUserProfile;
+import com.example.demo.dto.chat.ChatInbound;
+import com.example.demo.dto.chat.ChatMapper;
+import com.example.demo.dto.chat.ChatOutbound;
 import com.example.demo.entity.Chat;
-import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
-import com.example.demo.entity.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,25 +23,28 @@ public class ChatService {
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepository;
-    private final UsersRepository usersRepository;
+    private final ChatProfileService chatProfileService;
 
     @Value("${chat.redis.topic-prefix:chat.room.}")
     private String topicPrefix;
 
-    public void handleInbound(String roomId, ChatInbound chatInbound) {
+    public void handleInbound(String roomId, ChatInbound chatInbound, String userId,
+                              ChatUserProfile sessionProfile) {
 
-        Users users = usersRepository.findById(chatInbound.getSenderId())
-                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
+        ChatUserProfile profile = sessionProfile;
+        if (profile == null) {
+            profile = chatProfileService.getOrLoad(userId);
+        }
 
         // 1) 브로드캐스트용 아웃바운드 DTO 구성
         ChatOutbound chatOutbound = ChatOutbound.builder()
                 .roomId(roomId)
                 .messageId(UUID.randomUUID().toString())
-                .senderId(chatInbound.getSenderId())
-                .username(chatInbound.getUsername())
+                .senderId(userId)
+                .username(profile.username())
                 .content(chatInbound.getContent())
                 .sentAt(Instant.now().toString())
-                .profileImage(users.getProfileUrl())
+                .profileImage(profile.profileImage())
                 .systemMessage(chatInbound.isSystemMessage())
                 .build();
 

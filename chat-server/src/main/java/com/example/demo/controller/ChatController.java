@@ -3,9 +3,11 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ChatCountResponse;
 import com.example.demo.dto.ChatHistoryResponseDto;
-import com.example.demo.dto.ChatInbound;
+import com.example.demo.dto.ChatUserProfile;
+import com.example.demo.dto.chat.ChatInbound;
 import com.example.demo.global.redis.ChatRedisCounter;
 import com.example.demo.global.security.filter.CustomUserDetails;
+import com.example.demo.global.websocket.StompJwtChannelInterceptor;
 import com.example.demo.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,9 +19,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Map;
 
 
@@ -32,8 +36,18 @@ public class ChatController {
 
     // SEND /chat/app/rooms/{roomId}
     @MessageMapping("/rooms/{roomId}")
-    public void onMessage(@DestinationVariable String roomId, @Valid @Payload ChatInbound chatInbound) {
-        chatService.handleInbound(roomId, chatInbound);
+    public void onMessage(@DestinationVariable String roomId,
+                          @Valid @Payload ChatInbound chatInbound,
+                          Principal principal,
+                          SimpMessageHeaderAccessor headers) {
+
+        String userId = principal.getName();
+
+        var sess = headers.getSessionAttributes();
+        var profile = (sess == null) ? null :
+                (ChatUserProfile) sess.get(StompJwtChannelInterceptor.SESSION_PROFILE_KEY);
+
+        chatService.handleInbound(roomId, chatInbound, userId, profile);
     }
 
     @GetMapping("/chat/rooms/{roomId}/count/member")
