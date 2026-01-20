@@ -59,13 +59,11 @@ public class StompJwtChannelInterceptor implements ChannelInterceptor {
     }
 
     private String resolveBearerToken(StompHeaderAccessor acc) {
-        // STOMP native header: Authorization: Bearer xxx
         List<String> authHeaders = acc.getNativeHeader("Authorization");
         if (authHeaders != null && !authHeaders.isEmpty()) {
             String v = authHeaders.get(0);
             if (v != null && v.startsWith("Bearer ")) return v.substring(7);
         }
-        // 대안: access_token
         List<String> tokenHeaders = acc.getNativeHeader("access_token");
         if (tokenHeaders != null && !tokenHeaders.isEmpty()) {
             return tokenHeaders.get(0);

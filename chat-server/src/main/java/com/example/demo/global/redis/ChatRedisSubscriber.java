@@ -46,7 +46,6 @@ public class ChatRedisSubscriber implements MessageListener {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

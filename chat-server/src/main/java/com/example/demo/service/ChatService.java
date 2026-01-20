@@ -1,16 +1,12 @@
 package com.example.demo.service;
 
-import com.example.common.error.code.UserErrorCode;
-import com.example.common.error.exception.UserException;
 import com.example.demo.dto.ChatHistoryResponseDto;
 import com.example.demo.dto.ChatUserProfile;
 import com.example.demo.dto.chat.ChatInbound;
 import com.example.demo.dto.chat.ChatMapper;
 import com.example.demo.dto.chat.ChatOutbound;
 import com.example.demo.entity.Chat;
-import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
-import com.example.demo.entity.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
