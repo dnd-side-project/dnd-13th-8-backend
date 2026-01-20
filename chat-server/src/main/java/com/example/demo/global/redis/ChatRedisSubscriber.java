@@ -1,6 +1,6 @@
 package com.example.demo.global.redis;
 
-import com.example.demo.dto.ChatOutbound;
+import com.example.demo.dto.chat.ChatOutbound;
 import com.example.demo.dto.PlaylistDeleteEvent;
 import com.example.demo.service.ChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,7 @@ public class ChatRedisSubscriber implements MessageListener {
                 return;
             }
 
-            // 실시간 메시지 브로드캐스트 (예: chat.room.*)
+            // 실시간 메시지 브로드캐스트 (chat.room.*)
             if (channel.startsWith(topicPrefix +"room.")) {
                 ChatOutbound chatOutbound = objectMapper.readValue(body, ChatOutbound.class);
                 String destination = "/chat/topic/rooms/" + chatOutbound.getRoomId();
