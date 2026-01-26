@@ -18,8 +18,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,9 +32,6 @@ public class LoginController {
     private final UsersRepository usersRepository;
     private final JwtAccessIssuer jwtAccessIssuer;
     private final NicknameGenerator nicknameGenerator;
-
-    @Value("${deulak.admin.password}")
-    private String adminPassword;
 
     @PostMapping("/auth/login")
     public ResponseEntity<KakaoLoginResponse> kakaoLogin(
@@ -57,7 +52,7 @@ public class LoginController {
     @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
     @PreAuthorize("hasRole('SUPER')")
     @GetMapping("/auth/admin")
-    public ResponseEntity<String> adminLogin(@AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<String> adminLogin() {
 
         Users adminUser = usersRepository.findById("ADMIN")
                 .orElseThrow(()-> new UserException("관리자 계정이 없습니다", UserErrorCode.USER_NOT_FOUND));
