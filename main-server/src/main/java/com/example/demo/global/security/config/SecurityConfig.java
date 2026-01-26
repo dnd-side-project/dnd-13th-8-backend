@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -43,6 +45,7 @@ public class SecurityConfig {
                                 "/chat/health",
                                 "/api/health",
                                 "/api/playlist/songs",
+                                "/main/playlist/search/popular",
 
                                 // Swagger 관련 경로
                                 "/main/swagger-ui/**",
@@ -57,13 +60,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 마이페이지는 user/super 권한만 허용
                         .requestMatchers("/main/mypage/**").hasAnyAuthority("ROLE_USER", "ROLE_SUPER", "ROLE_ANONYMOUS")
 
-                        // 로그아웃은 인증만 필요
                         .requestMatchers("/auth/logout").authenticated()
 
-                        // 그 외 모든 요청은 인증만 필요
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> {

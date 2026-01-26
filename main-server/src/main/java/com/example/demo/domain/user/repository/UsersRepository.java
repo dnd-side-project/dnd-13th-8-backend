@@ -9,9 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UsersRepository extends JpaRepository<Users, String>, UserRepositoryCustom{
 
-    @Query("SELECT u.id FROM Users u")
-    List<String> findAllUserIds();
-
     Optional<Users> findUsersByShareCode(String shareCode);
 
     boolean existsByUsername(String nickname);
