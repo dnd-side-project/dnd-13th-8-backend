@@ -16,7 +16,7 @@ public class LogoutOnReuseHandler implements ReuseHandler {
     public void onSuspiciousReuse(String userId) {
         logoutService.logout(userId);
 
-        log.warn("❗ Refresh 재사용 탐지 → 해당 세션 로그아웃 처리 완료 (userId={})",
+        log.warn("Refresh 재사용 탐지 → 해당 세션 로그아웃 처리 완료 (userId={})",
                 userId);
     }
 }
