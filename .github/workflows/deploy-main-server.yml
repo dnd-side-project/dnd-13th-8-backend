@@ -25,6 +25,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 🚀 배포 시작
+      - name: 디스코드 알림 - 배포 시작
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          NOW=$(date '+%Y-%m-%d %H:%M:%S')
+
+          payload=$(cat <<EOF
+          {
+            "content": "```\\n[배포 시작]\\n\\n[일시]\\n${NOW}\\n\\n[배포 결과]\\n진행 중\\n\\n[안내]\\n약 10분 정도 서버가 다운됩니다.\\n```"
+          }
+          EOF
+          )
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_URL"
+
       - name: 소스 코드 체크아웃
         uses: actions/checkout@v3
 
@@ -77,3 +96,41 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      - name: 디스코드 알림 - 배포 성공
+        if: success()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          NOW=$(date '+%Y-%m-%d %H:%M:%S')
+
+          payload=$(cat <<EOF
+          {
+            "content": "```\\n[배포 완료]\\n\\n[일시]\\n${NOW}\\n\\n[배포 결과]\\n성공\\n\\n[안내]\\n서버가 정상적으로 배포되었습니다.\\n```"
+          }
+          EOF
+          )
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_URL"
+
+      - name: 디스코드 알림 - 배포 실패
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          NOW=$(date '+%Y-%m-%d %H:%M:%S')
+
+          payload=$(cat <<EOF
+          {
+            "content": "```\\n[배포 실패]\\n\\n[일시]\\n${NOW}\\n\\n[배포 결과]\\n실패\\n\\n[안내]\\n서버 상태를 확인해주세요.\\n```"
+          }
+          EOF
+          )
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_URL"
