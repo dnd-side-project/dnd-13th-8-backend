@@ -1,8 +1,6 @@
 package com.example.demo.entity;
 
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 import lombok.*;
 
 @DynamoDbBean
@@ -18,9 +16,14 @@ public class Chat {
     private String username;
     private String content;
     private String profileImage;
+
+    private Integer messageCount;
+    private String itemType;
+
     private boolean systemMessage;
 
     @DynamoDbPartitionKey
+    @DynamoDbSecondaryPartitionKey(indexNames = "GSI1")
     public String getRoomId() {
         return roomId;
     }
@@ -28,6 +31,11 @@ public class Chat {
     @DynamoDbSortKey
     public String getSentAt() {
         return sentAt;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = "GSI1")
+    public String getMessageId() {
+        return messageId;
     }
 
     @Builder

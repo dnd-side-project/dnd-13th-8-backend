@@ -48,20 +48,20 @@ public class ChatService {
                 .systemMessage(chatInbound.isSystemMessage())
                 .build();
 
-        // 2) Redis Pub/Sub 발행 (모든 인스턴스가 수신)
+        // 2) DynamoDB 저장
+        try {
+            chatRepository.saveAndIncrementCount(ChatMapper.toEntity(chatOutbound));
+        } catch (Exception e) {
+            throw new RuntimeException("DB 저장 실패", e);
+        }
+
+        // 3) Redis Pub/Sub 발행 (모든 인스턴스가 수신)
         try {
             String channel = topicPrefix + "room." + roomId;     // ex) chat.room.room-1
             String payload = objectMapper.writeValueAsString(chatOutbound);
             stringRedisTemplate.convertAndSend(channel, payload);
         } catch (Exception e) {
             throw new RuntimeException("Redis 발행 실패", e);
-        }
-
-        // 3) DynamoDB 저장
-        try {
-            chatRepository.save(ChatMapper.toEntity(chatOutbound));
-        } catch (Exception e) {
-            throw new RuntimeException("DB 저장 실패", e);
         }
     }
 
@@ -99,10 +99,7 @@ public class ChatService {
         }
 
         // 3) PK(roomId) + SK(sentAt)로 삭제
-        boolean ok = chatRepository.deleteByPk(roomId, chat.getSentAt());
-        if (!ok) {
-            throw new IllegalStateException("삭제 실패");
-        }
+        chatRepository.deleteAndDecrementCount(roomId, chat.getSentAt());
     }
 
     public int countByRoomId(String roomId) {
@@ -110,7 +107,6 @@ public class ChatService {
     }
 
     public void deleteAllByRoomId(String roomId) {
-        // 멱등성: 존재하지 않아도 예외 없이 통과
         chatRepository.deleteAllByRoomId(roomId);
     }
 }
