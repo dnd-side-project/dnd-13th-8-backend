@@ -98,7 +98,7 @@ jobs:
         run: |
           set -e
           NOW=$(date '+%Y-%m-%d %H:%M:%S')
-          payload=$(printf '{"content":"```\\n[배포 완료]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n성공\\n\\n[안내]\\n서버가 정상적으로 배포되었습니다.\\n```"}' "$NOW")
+          payload=$(printf '{"content":"```\\n[배포 완료]\\nMain-Server\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n성공\\n\\n[안내]\\n서버가 정상적으로 배포되었습니다.\\n```"}' "$NOW")
           curl -sS -X POST \
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
@@ -112,7 +112,7 @@ jobs:
         run: |
           set -e
           NOW=$(date '+%Y-%m-%d %H:%M:%S')
-          payload=$(printf '{"content":"```\\n[배포 실패]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n실패\\n\\n[안내]\\n서버 상태를 확인해주세요.\\n```"}' "$NOW")
+          payload=$(printf '{"content":"```\\n[배포 실패]\\nMain-Server\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n실패\\n\\n[안내]\\n서버 상태를 확인해주세요.\\n```"}' "$NOW")
           curl -sS -X POST \
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
