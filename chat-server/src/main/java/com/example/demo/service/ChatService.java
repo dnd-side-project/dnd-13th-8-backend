@@ -60,6 +60,7 @@ public class ChatService {
         // 3) DynamoDB 저장
         try {
             chatRepository.save(ChatMapper.toEntity(chatOutbound));
+            chatRepository.incrementRoomCount(roomId, 1);
         } catch (Exception e) {
             throw new RuntimeException("DB 저장 실패", e);
         }
@@ -103,6 +104,7 @@ public class ChatService {
         if (!ok) {
             throw new IllegalStateException("삭제 실패");
         }
+        chatRepository.incrementRoomCount(roomId, -1);
     }
 
     public int countByRoomId(String roomId) {
@@ -110,7 +112,6 @@ public class ChatService {
     }
 
     public void deleteAllByRoomId(String roomId) {
-        // 멱등성: 존재하지 않아도 예외 없이 통과
         chatRepository.deleteAllByRoomId(roomId);
     }
 }
