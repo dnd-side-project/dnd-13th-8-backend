@@ -33,7 +33,7 @@ jobs:
         run: |
           set -e
           NOW=$(date '+%Y-%m-%d %H:%M:%S')
-          payload=$(printf '{"content":"```\\n[배포 시작]\\nMain-Server\\n[일시]\\n%s\\n\\n[배포 결과]\\n진행 중\\n\\n[안내]\\n약 10분 정도 서버가 다운됩니다.\\n```"}' "$NOW")
+          payload=$(printf '{"content":"```\\n[배포 시작]\\nMain-Server\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n진행 중\\n\\n[안내]\\n약 10분 정도 서버가 다운됩니다.\\n```"}' "$NOW")
           curl -sS -X POST \
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
