@@ -82,8 +82,8 @@ public class ChatRepository {
         DynamoDbTable<Chat> t = table();
 
         Expression filter = Expression.builder()
-                .expression("sentAt <> :meta")
-                .putExpressionValue(":meta", AttributeValue.builder().s("META").build())
+                .expression("attribute_not_exists(itemType) OR itemType <> :t")
+                .putExpressionValue(":t", AttributeValue.builder().s("META").build())
                 .build();
 
         QueryEnhancedRequest.Builder qb = QueryEnhancedRequest.builder()

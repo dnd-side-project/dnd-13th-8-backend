@@ -33,9 +33,7 @@ jobs:
         run: |
           set -e
           NOW=$(date '+%Y-%m-%d %H:%M:%S')
-
-          payload=$(printf '{"content":"```\\n[배포 시작]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n진행 중\\n\\n[안내]\\n약 10분 정도 서버가 다운됩니다.\\n```"}' "$NOW")
-
+          payload=$(printf '{"content":"```\\n[배포 시작]\\nMain-Server\\n[일시]\\n%s\\n\\n[배포 결과]\\n진행 중\\n\\n[안내]\\n약 10분 정도 서버가 다운됩니다.\\n```"}' "$NOW")
           curl -sS -X POST \
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
@@ -54,7 +52,6 @@ jobs:
         run: |
           mkdir -p ./main-server/src/main/resources
           echo "${{ secrets.APPLICATION_YML_MAIN }}" > ./main-server/src/main/resources/application.yml
-
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
@@ -77,7 +74,6 @@ jobs:
           cd main-server
           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-
       - name: ECS 태스크 정의 렌더링
         id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -103,9 +99,7 @@ jobs:
         run: |
           set -e
           NOW=$(date '+%Y-%m-%d %H:%M:%S')
-
           payload=$(printf '{"content":"```\\n[배포 완료]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n성공\\n\\n[안내]\\n서버가 정상적으로 배포되었습니다.\\n```"}' "$NOW")
-
           curl -sS -X POST \
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
@@ -120,9 +114,7 @@ jobs:
         run: |
           set -e
           NOW=$(date '+%Y-%m-%d %H:%M:%S')
-
           payload=$(printf '{"content":"```\\n[배포 실패]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n실패\\n\\n[안내]\\n서버 상태를 확인해주세요.\\n```"}' "$NOW")
-
           curl -sS -X POST \
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
