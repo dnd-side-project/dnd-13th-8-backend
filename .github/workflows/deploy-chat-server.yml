@@ -25,6 +25,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 🚀 배포 시작
+      - name: 디스코드 알림 - 배포 시작
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TZ: Asia/Seoul
+        run: |
+          set -e
+          NOW=$(date '+%Y-%m-%d %H:%M:%S')
+          payload=$(printf '{"content":"```\\n[배포 시작]\\nChat-Server\\n[일시]\\n%s\\n\\n[배포 결과]\\n진행 중\\n\\n[안내]\\n약 10분 정도 서버가 다운됩니다.\\n```"}' "$NOW")
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            --data-binary "$payload" \
+            "$DISCORD_WEBHOOK_URL"
       - name: 소스 코드 체크아웃
         uses: actions/checkout@v3
 
@@ -38,7 +51,6 @@ jobs:
         run: |
           mkdir -p ./chat-server/src/main/resources
           echo "${{ secrets.APPLICATION_YML_CHAT }}" > ./chat-server/src/main/resources/application.yml
-
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
@@ -61,7 +73,6 @@ jobs:
           cd chat-server
           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-
       - name: ECS 태스크 정의 렌더링
         id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -77,3 +88,32 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      # 🟢 배포 성공
+      - name: 디스코드 알림 - 배포 성공
+        if: success()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TZ: Asia/Seoul
+        run: |
+          set -e
+          NOW=$(date '+%Y-%m-%d %H:%M:%S')
+          payload=$(printf '{"content":"```\\n[배포 완료]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n성공\\n\\n[안내]\\n서버가 정상적으로 올라왔습니다.\\n```"}' "$NOW")
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            --data-binary "$payload" \
+            "$DISCORD_WEBHOOK_URL"
+      # 🔴 배포 실패
+      - name: 디스코드 알림 - 배포 실패
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TZ: Asia/Seoul
+        run: |
+          set -e
+          NOW=$(date '+%Y-%m-%d %H:%M:%S')
+          payload=$(printf '{"content":"```\\n[배포 실패]\\n\\n[일시]\\n%s\\n\\n[배포 결과]\\n실패\\n\\n[안내]\\n서버 상태를 확인해주세요.\\n```"}' "$NOW")
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            --data-binary "$payload" \
+            "$DISCORD_WEBHOOK_URL"
