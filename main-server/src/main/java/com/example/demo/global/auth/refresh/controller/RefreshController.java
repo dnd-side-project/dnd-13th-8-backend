@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "토큰 재발급 (Refresh) API")
 public class RefreshController {
@@ -37,7 +36,7 @@ public class RefreshController {
                 - 성공 시 새로운 AccessToken + RefreshToken을 쿠키로 내려줍니다.
                 - 실패 시 기존 쿠키 제거 + 401 반환 + 실패 사유 헤더(`X-Refresh-Failure-Reason`) 포함.
                 
-                ⚠️ Swagger에서는 HttpOnly 쿠키 테스트가 불가하므로 Postman 또는 실제 클라이언트에서 호출하세요.
+                Swagger에서는 HttpOnly 쿠키 테스트가 불가하므로 Postman 또는 실제 클라이언트에서 호출하세요.
                 """
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "재발급 성공 (Set-Cookie로 토큰 전송)")

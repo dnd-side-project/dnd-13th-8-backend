@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.*;
 
@@ -18,6 +19,7 @@ import java.util.*;
 public class ChatRepository {
 
     private final DynamoDbEnhancedClient enhancedClient;
+    private final DynamoDbClient dynamoDbClient;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${aws.dynamodb.table}")
@@ -31,14 +33,65 @@ public class ChatRepository {
         table().putItem(chat);
     }
 
+    public void saveAndIncrementCount(Chat chat) {
+
+        DynamoDbTable<Chat> t = table();
+        Map<String, AttributeValue> chatItem = t.tableSchema().itemToMap(chat, true);
+
+        Put putMessage = Put.builder()
+                .tableName(tableName)
+                .item(chatItem)
+                .build();
+
+        Map<String, AttributeValue> metaKey = Map.of(
+                "roomId", AttributeValue.builder().s(chat.getRoomId()).build(),
+                "sentAt", AttributeValue.builder().s("META").build()
+        );
+
+        Map<String, AttributeValue> values = Map.of(
+                ":t", AttributeValue.builder().s("META").build(),
+                ":zero", AttributeValue.builder().n("0").build(),
+                ":d", AttributeValue.builder().n(String.valueOf(1)).build()
+        );
+
+        Update updateMeta = Update.builder()
+                .tableName(tableName)
+                .key(metaKey)
+                .updateExpression(
+                        "SET itemType = :t, messageCount = if_not_exists(messageCount, :zero) + :d"
+                )
+                .expressionAttributeValues(values)
+                .build();
+
+        TransactWriteItem putItem = TransactWriteItem.builder()
+                .put(putMessage)
+                .build();
+
+        TransactWriteItem updateItem = TransactWriteItem.builder()
+                .update(updateMeta)
+                .build();
+
+        TransactWriteItemsRequest tx = TransactWriteItemsRequest.builder()
+                .transactItems(putItem, updateItem)
+                .build();
+
+        dynamoDbClient.transactWriteItems(tx);
+    }
+
     public ChatSlice queryRecentSlice(String roomId, String beforeCursorBase64, int pageSize) {
         DynamoDbTable<Chat> t = table();
+
+        Expression filter = Expression.builder()
+                .expression("sentAt <> :meta")
+                .putExpressionValue(":meta", AttributeValue.builder().s("META").build())
+                .build();
 
         QueryEnhancedRequest.Builder qb = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(
                         Key.builder().partitionValue(roomId).build()
                 ))
-                .scanIndexForward(false) // 최신순 (DESC)
+                .filterExpression(filter)
+                .scanIndexForward(false)
                 .limit(pageSize);
 
         if (beforeCursorBase64 != null && !beforeCursorBase64.isBlank()) {
@@ -82,58 +135,83 @@ public class ChatRepository {
     public Optional<Chat> findOneByMessageId(String roomId, String messageId) {
         DynamoDbTable<Chat> t = table();
 
-        Expression filter = Expression.builder()
-                .expression("messageId = :mid")
-                .putExpressionValue(":mid", AttributeValue.builder().s(messageId).build())
-                .build();
+        DynamoDbIndex<Chat> idx = t.index("GSI1");
 
         QueryEnhancedRequest req = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(
-                        Key.builder().partitionValue(roomId).build()))
-                .filterExpression(filter)
+                        Key.builder()
+                                .partitionValue(roomId)
+                                .sortValue(messageId)
+                                .build()
+                ))
+                .limit(1)
                 .build();
 
-        for (Page<Chat> page : t.query(req)) {
-            for (Chat c : page.items()) {
-                if (messageId.equals(c.getMessageId())) {
-                    return Optional.of(c);
-                }
-            }
-        }
-        return Optional.empty();
+        Page<Chat> first = idx.query(req).stream().findFirst().orElse(null);
+        if (first == null || first.items().isEmpty()) return Optional.empty();
+        return Optional.of(first.items().get(0));
     }
 
-    // PK(roomId) + SK(sentAt)로 삭제
-    public boolean deleteByPk(String roomId, String sentAt) {
-        DynamoDbTable<Chat> t = table();
-        Key key = Key.builder().partitionValue(roomId).sortValue(sentAt).build();
+    public void deleteAndDecrementCount(String roomId, String sentAt) {
 
-        Chat deleted = t.deleteItem(r -> r.key(key));
-        return deleted != null; // 존재했으면 삭제된 엔티티 반환
+        Map<String, AttributeValue> msgKey = Map.of(
+                "roomId", AttributeValue.builder().s(roomId).build(),
+                "sentAt", AttributeValue.builder().s(sentAt).build()
+        );
+
+        Delete deleteMessage = Delete.builder()
+                .tableName(tableName)
+                .key(msgKey)
+                .build();
+
+        Map<String, AttributeValue> metaKey = Map.of(
+                "roomId", AttributeValue.builder().s(roomId).build(),
+                "sentAt", AttributeValue.builder().s("META").build()
+        );
+
+        Map<String, AttributeValue> values = Map.of(
+                ":t", AttributeValue.builder().s("META").build(),
+                ":zero", AttributeValue.builder().n("0").build(),
+                ":d", AttributeValue.builder().n("-1")
+                        .build()
+        );
+
+        Update updateMeta = Update.builder()
+                .tableName(tableName)
+                .key(metaKey)
+                .updateExpression(
+                        "SET itemType = :t, messageCount = if_not_exists(messageCount, :zero) + :d"
+                )
+                .expressionAttributeValues(values)
+                .build();
+
+        TransactWriteItemsRequest tx = TransactWriteItemsRequest.builder()
+                .transactItems(
+                        TransactWriteItem.builder().delete(deleteMessage).build(),
+                        TransactWriteItem.builder().update(updateMeta).build()
+                )
+                .build();
+
+        dynamoDbClient.transactWriteItems(tx);
     }
 
     public int countByRoomId(String roomId) {
-        int total = 0;
-        Map<String, AttributeValue> lek = null;
+        DynamoDbTable<Chat> t = table();
 
-        do {
-            var req = QueryEnhancedRequest.builder()
-                    .queryConditional(QueryConditional.keyEqualTo(
-                            Key.builder().partitionValue(roomId).build()))
-                    .attributesToProject("roomId", "sentAt") // 키만
-                    .limit(1000)                              // 페이지 크기
-                    .exclusiveStartKey(lek)
-                    .build();
+        Key key = Key.builder()
+                .partitionValue(roomId)
+                .sortValue("META")
+                .build();
 
-            Page<Chat> first = table().query(req).stream().findFirst().orElse(null);
-            if (first == null) break;
+        Chat meta = t.getItem(r -> r.key(key));
 
-            total += first.items().size();
-            lek = first.lastEvaluatedKey();
-        } while (lek != null && !lek.isEmpty());
+        if (meta == null || meta.getMessageCount() == null) {
+            return 0;
+        }
 
-        return total;
+        return meta.getMessageCount();
     }
+
 
     public void deleteAllByRoomId(String roomId) {
         DynamoDbTable<Chat> t = table();
