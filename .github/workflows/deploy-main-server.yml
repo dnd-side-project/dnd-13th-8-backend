@@ -38,6 +38,7 @@ jobs:
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
             "$DISCORD_WEBHOOK_URL"
+
       - name: 소스 코드 체크아웃
         uses: actions/checkout@v3
 
@@ -103,6 +104,7 @@ jobs:
             -H "Content-Type: application/json" \
             --data-binary "$payload" \
             "$DISCORD_WEBHOOK_URL"
+
       # 🔴 배포 실패
       - name: 디스코드 알림 - 배포 실패
         if: failure()
