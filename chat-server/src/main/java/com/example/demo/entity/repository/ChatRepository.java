@@ -10,8 +10,7 @@ import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.*;
 
@@ -32,6 +31,51 @@ public class ChatRepository {
 
     public void save(Chat chat) {
         table().putItem(chat);
+    }
+
+    public void saveAndIncrementCount(Chat chat) {
+
+        DynamoDbTable<Chat> t = table();
+        Map<String, AttributeValue> chatItem = t.tableSchema().itemToMap(chat, true);
+
+        Put putMessage = Put.builder()
+                .tableName(tableName)
+                .item(chatItem)
+                .build();
+
+        Map<String, AttributeValue> metaKey = Map.of(
+                "roomId", AttributeValue.builder().s(chat.getRoomId()).build(),
+                "sentAt", AttributeValue.builder().s("META").build()
+        );
+
+        Map<String, AttributeValue> values = Map.of(
+                ":t", AttributeValue.builder().s("META").build(),
+                ":zero", AttributeValue.builder().n("0").build(),
+                ":d", AttributeValue.builder().n(String.valueOf(1)).build()
+        );
+
+        Update updateMeta = Update.builder()
+                .tableName(tableName)
+                .key(metaKey)
+                .updateExpression(
+                        "SET itemType = :t, messageCount = if_not_exists(messageCount, :zero) + :d"
+                )
+                .expressionAttributeValues(values)
+                .build();
+
+        TransactWriteItem putItem = TransactWriteItem.builder()
+                .put(putMessage)
+                .build();
+
+        TransactWriteItem updateItem = TransactWriteItem.builder()
+                .update(updateMeta)
+                .build();
+
+        TransactWriteItemsRequest tx = TransactWriteItemsRequest.builder()
+                .transactItems(putItem, updateItem)
+                .build();
+
+        dynamoDbClient.transactWriteItems(tx);
     }
 
     public ChatSlice queryRecentSlice(String roomId, String beforeCursorBase64, int pageSize) {
@@ -108,18 +152,19 @@ public class ChatRepository {
         return Optional.of(first.items().get(0));
     }
 
-    // PK(roomId) + SK(sentAt)로 삭제
-    public boolean deleteByPk(String roomId, String sentAt) {
-        DynamoDbTable<Chat> t = table();
-        Key key = Key.builder().partitionValue(roomId).sortValue(sentAt).build();
+    public void deleteAndDecrementCount(String roomId, String sentAt) {
 
-        Chat deleted = t.deleteItem(r -> r.key(key));
-        return deleted != null; // 존재했으면 삭제된 엔티티 반환
-    }
+        Map<String, AttributeValue> msgKey = Map.of(
+                "roomId", AttributeValue.builder().s(roomId).build(),
+                "sentAt", AttributeValue.builder().s(sentAt).build()
+        );
 
-    public void incrementRoomCount(String roomId, int delta) {
+        Delete deleteMessage = Delete.builder()
+                .tableName(tableName)
+                .key(msgKey)
+                .build();
 
-        Map<String, AttributeValue> key = Map.of(
+        Map<String, AttributeValue> metaKey = Map.of(
                 "roomId", AttributeValue.builder().s(roomId).build(),
                 "sentAt", AttributeValue.builder().s("META").build()
         );
@@ -127,19 +172,27 @@ public class ChatRepository {
         Map<String, AttributeValue> values = Map.of(
                 ":t", AttributeValue.builder().s("META").build(),
                 ":zero", AttributeValue.builder().n("0").build(),
-                ":d", AttributeValue.builder().n(String.valueOf(delta)).build()
+                ":d", AttributeValue.builder().n("-1")
+                        .build()
         );
 
-        UpdateItemRequest req = UpdateItemRequest.builder()
+        Update updateMeta = Update.builder()
                 .tableName(tableName)
-                .key(key)
+                .key(metaKey)
                 .updateExpression(
                         "SET itemType = :t, messageCount = if_not_exists(messageCount, :zero) + :d"
                 )
                 .expressionAttributeValues(values)
                 .build();
 
-        dynamoDbClient.updateItem(req);
+        TransactWriteItemsRequest tx = TransactWriteItemsRequest.builder()
+                .transactItems(
+                        TransactWriteItem.builder().delete(deleteMessage).build(),
+                        TransactWriteItem.builder().update(updateMeta).build()
+                )
+                .build();
+
+        dynamoDbClient.transactWriteItems(tx);
     }
 
     public int countByRoomId(String roomId) {
