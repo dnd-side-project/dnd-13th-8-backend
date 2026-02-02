@@ -29,7 +29,9 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(reg -> reg
                         .requestMatchers(
-                                "/chat/**"
+                                "/chat/**",
+                                "/actuator/health",
+                                "/actuator/prometheus"
                         ).permitAll()
                 );
 

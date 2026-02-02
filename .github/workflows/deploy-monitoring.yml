@@ -1,0 +1,65 @@
+name: 모니터링 시스템 ECS 배포
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "common/src/main/java/**/monitoring/**"
+      - ".github/workflows/deploy-monitoring.yml"
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: dulakreposiotry
+  PROM_IMAGE_TAG: prometheus-latest
+  GRAF_IMAGE_TAG: grafana-latest
+
+jobs:
+  build_and_push_monitoring:
+    name: Build & Push Monitoring Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # -----------------------
+      # Prometheus
+      # -----------------------
+      - name: Build & Push Prometheus
+        run: |
+          set -e
+          PROM_DIR=$(find common/src/main/java -type d -path "*/*/monitoring/prometheus" | head -n 1)
+          echo "Prometheus dir: $PROM_DIR"
+          test -n "$PROM_DIR"
+
+          cd "$PROM_DIR"
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.PROM_IMAGE_TAG }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.PROM_IMAGE_TAG }}
+
+      # -----------------------
+      # Grafana
+      # -----------------------
+      - name: Build & Push Grafana
+        run: |
+          set -e
+          GRAF_DIR=$(find common/src/main/java -type d -path "*/*/monitoring/grafana" | head -n 1)
+          echo "Grafana dir: $GRAF_DIR"
+          test -n "$GRAF_DIR"
+
+          cd "$GRAF_DIR"
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.GRAF_IMAGE_TAG }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.GRAF_IMAGE_TAG }}
