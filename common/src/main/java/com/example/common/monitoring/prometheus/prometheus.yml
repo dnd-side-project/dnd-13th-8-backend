@@ -6,7 +6,7 @@ scrape_configs:
   - job_name: "main-server"
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["172.17.0.1:8083"]
+      - targets: ["172.31.25.206:8083"]
         labels:
           service: "main"
           application: "main"
@@ -14,7 +14,7 @@ scrape_configs:
   - job_name: "chat-server"
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["172.17.0.1:8082"]
+      - targets: ["172.31.25.206:8082"]
         labels:
           service: "chat"
           application: "chat"
