@@ -8,8 +8,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
-@Schema(description = "플레이리스트 생성 요청 DTO")
-public record PlaylistCreateRequest(
+@Schema(description = "플레이리스트 저장 요청 DTO")
+public record SavePlaylistRequest(
 
         @Schema(description = "플레이리스트 이름", example = "비 오는 날 집중용")
         @NotBlank

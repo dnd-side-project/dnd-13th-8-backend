@@ -4,12 +4,15 @@ import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
-import com.example.demo.domain.cd.dto.request.CdItemRequest;
+import com.example.demo.domain.cd.dto.request.SaveCdRequest;
 import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.service.CdService;
+import com.example.demo.domain.playlist.dto.EditFinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.FinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.SongDto;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistCreateRequest;
+import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
 import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.event.PlaylistDeleteEvent;
@@ -81,22 +84,62 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, PlaylistCreateRequest request,
-                                                                     List<CdItemRequest> cdItemRequestList) {
+    public String saveDraftPlaylist(PlaylistDraft playlistDraft) {
 
-        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
+        return playlistSaveService.createDraft(playlistDraft.savePlaylistRequest(), playlistDraft.saveCdRequest());
+    }
 
-        cdService.saveCdItemList(response.playlistId(), cdItemRequestList);
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse saveFinalPlaylist(String usersId, String draftId) {
+
+        SavePlaylistRequest savePlaylistRequest = playlistSaveService.loadDraft(draftId).savePlaylistRequest();
+        SaveCdRequest saveCdRequest = playlistSaveService.loadDraft(draftId).saveCdRequest();
+
+        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, savePlaylistRequest);
+
+        cdService.saveCdItemList(response.playlistId(), saveCdRequest.cdItems());
+
+        playlistSaveService.deleteDraft(draftId);
 
         return response;
     }
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, Long playlistId, PlaylistCreateRequest request,
-                                                                     List<CdItemRequest> cdItemRequestList) {
-        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId, request);
-        cdService.replaceCdItemList(playlistId, cdItemRequestList);
+    public PlaylistWithSongsResponse editFinalPlaylist(String usersId, Long playlistId, String draftId) {
+
+        SavePlaylistRequest savePlaylistRequest = playlistSaveService.loadDraft(draftId).savePlaylistRequest();
+        SaveCdRequest saveCdRequest = playlistSaveService.loadDraft(draftId).saveCdRequest();
+
+        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId,
+                savePlaylistRequest);
+        cdService.replaceCdItemList(playlistId, saveCdRequest.cdItems());
+
+        playlistSaveService.deleteDraft(draftId);
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
+                                                                     FinalPlaylistRequest finalPlaylistRequest) {
+
+        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
+
+        cdService.saveCdItemList(response.playlistId(), finalPlaylistRequest.saveCdRequest().cdItems());
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
+                                                                     EditFinalPlaylistRequest editFinalPlaylistRequest) {
+        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, editFinalPlaylistRequest.playlistId(),
+                request);
+        cdService.replaceCdItemList(editFinalPlaylistRequest.playlistId(), editFinalPlaylistRequest.saveCdRequest().cdItems());
 
         return response;
     }
