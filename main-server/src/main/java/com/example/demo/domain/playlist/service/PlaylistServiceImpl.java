@@ -93,8 +93,9 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Transactional
     public PlaylistWithSongsResponse saveFinalPlaylist(String usersId, String draftId) {
 
-        SavePlaylistRequest savePlaylistRequest = playlistSaveService.loadDraft(draftId).savePlaylistRequest();
-        SaveCdRequest saveCdRequest = playlistSaveService.loadDraft(draftId).saveCdRequest();
+        PlaylistDraft draft = playlistSaveService.loadDraft(draftId);
+        SavePlaylistRequest savePlaylistRequest = draft.savePlaylistRequest();
+        SaveCdRequest saveCdRequest = draft.saveCdRequest();
 
         PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, savePlaylistRequest);
 
@@ -109,8 +110,9 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Transactional
     public PlaylistWithSongsResponse editFinalPlaylist(String usersId, Long playlistId, String draftId) {
 
-        SavePlaylistRequest savePlaylistRequest = playlistSaveService.loadDraft(draftId).savePlaylistRequest();
-        SaveCdRequest saveCdRequest = playlistSaveService.loadDraft(draftId).saveCdRequest();
+        PlaylistDraft draft = playlistSaveService.loadDraft(draftId);
+        SavePlaylistRequest savePlaylistRequest = draft.savePlaylistRequest();
+        SaveCdRequest saveCdRequest = draft.saveCdRequest();
 
         PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId,
                 savePlaylistRequest);
