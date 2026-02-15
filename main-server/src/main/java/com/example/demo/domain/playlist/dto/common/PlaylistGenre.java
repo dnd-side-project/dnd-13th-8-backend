@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.common;
 
 import lombok.Getter;
 

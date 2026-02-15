@@ -1,6 +1,6 @@
-package com.example.demo.domain.playlist.dto.playlistdto;
+package com.example.demo.domain.playlist.dto.save;
 
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

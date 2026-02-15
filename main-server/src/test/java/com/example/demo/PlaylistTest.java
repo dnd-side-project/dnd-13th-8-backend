@@ -3,9 +3,9 @@ package com.example.demo;
 
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.dto.request.SaveCdRequest;
-import com.example.demo.domain.playlist.dto.PlaylistDraft;
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
 import com.example.demo.domain.playlist.service.PlaylistService;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
 import org.junit.jupiter.api.AfterEach;

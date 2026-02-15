@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.demo.domain.song.entity.Song;

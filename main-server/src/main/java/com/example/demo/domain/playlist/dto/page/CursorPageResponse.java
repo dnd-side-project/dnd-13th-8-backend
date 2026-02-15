@@ -1,15 +1,9 @@
-package com.example.demo.domain.playlist.dto.playlistdto;
+package com.example.demo.domain.playlist.dto.page;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
-/**
- * 커서 기반 페이지네이션 공통 응답 DTO
- *
- * @param <T> 콘텐츠 타입
- * @param <C> 커서 타입 (ex. BrowsePlaylistCursor, CommentCursor 등)
- */
 @Schema(description = "커서 기반 페이지네이션 응답")
 public record CursorPageResponse<T, C>(
 

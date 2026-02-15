@@ -1,7 +1,7 @@
 package com.example.demo.domain.recommendation.dto;
 
 import com.example.demo.domain.cd.dto.response.CdResponse;
-import com.example.demo.domain.playlist.dto.SongDto;
+import com.example.demo.domain.playlist.dto.common.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.user.entity.Users;

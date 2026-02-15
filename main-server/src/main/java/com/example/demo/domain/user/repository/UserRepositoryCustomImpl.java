@@ -1,6 +1,6 @@
 package com.example.demo.domain.user.repository;
 
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.SearchResult;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.user.entity.QUsers;
