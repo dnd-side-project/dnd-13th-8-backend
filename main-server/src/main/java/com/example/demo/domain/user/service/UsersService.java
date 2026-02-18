@@ -4,10 +4,14 @@ import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UpdateProfileResponse;
+import com.example.demo.domain.user.entity.UserMusicKeyword;
 import com.example.demo.domain.user.entity.Users;
+import com.example.demo.domain.user.repository.UserMusicKeywordRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.r2.R2Service;
 import java.io.IOException;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsersService {
 
     private final UsersRepository usersRepository;
+    private final UserMusicKeywordRepository userMusicKeywordRepository;
     private final R2Service r2Service;
 
     public Users findUserByShareCode(String shareCode) {
@@ -53,6 +58,17 @@ public class UsersService {
             );
             String profileUrl = r2Service.getPublicUrl(key);
             user.changeProfileImage(profileUrl);
+        }
+
+        if (req.musicKeywords() != null && !req.musicKeywords().isEmpty()) {
+            userMusicKeywordRepository.deleteByUsersId(userId);
+
+            List<UserMusicKeyword> userMusicKeywordList = req.musicKeywords().stream()
+                    .distinct()
+                    .map(keyword -> new UserMusicKeyword(user, keyword))
+                    .toList();
+
+            userMusicKeywordRepository.saveAll(userMusicKeywordList);
         }
 
         return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());

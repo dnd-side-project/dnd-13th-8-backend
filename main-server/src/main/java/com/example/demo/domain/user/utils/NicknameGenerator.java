@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.service;
+package com.example.demo.domain.user.utils;
 
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;

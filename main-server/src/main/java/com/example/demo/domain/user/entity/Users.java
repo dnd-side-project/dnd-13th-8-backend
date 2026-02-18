@@ -39,20 +39,14 @@ public class Users extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private JwtRoleType role;
 
-    public void assignShareCode(String shareCode) {
-        if (this.shareCode != null) {
-            throw new IllegalStateException("이미 shareCode가 존재합니다.");
-        }
-        this.shareCode = shareCode;
-    }
-
     @Builder
-    public Users(String kakaoId, String username, boolean enabled, JwtRoleType role, String profileUrl) {
+    public Users(String kakaoId, String username, boolean enabled, JwtRoleType role, String profileUrl, String shareCode) {
         this.kakaoId = kakaoId;
         this.username = username;
         this.enabled = enabled;
         this.role = role;
         this.profileUrl = profileUrl;
+        this.shareCode = shareCode;
     }
 
     // 닉네임 변경 메서드

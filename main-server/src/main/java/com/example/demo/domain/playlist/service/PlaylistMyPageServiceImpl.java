@@ -1,9 +1,7 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.PlaylistErrorCode;
-import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
-import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.follow.dto.response.FollowedPlaylist;
 import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
@@ -16,10 +14,8 @@ import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.playlist.util.ShareCodeGenerator;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
-import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,23 +77,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
         return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlistId));
-    }
-
-
-    @Transactional
-    public String sharePlaylist(String userId) {
-        Users users = usersRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        if (users.getShareCode() != null && !users.getShareCode().isBlank()) {
-            return "/shared/" + users.getShareCode();
-        }
-
-        String shareCode = ShareCodeGenerator.generate(userId);
-        users.assignShareCode(shareCode);
-        usersRepository.save(users);
-
-        return "/shared/" + shareCode;
     }
 
     @Override
