@@ -27,7 +27,9 @@ public class Users extends BaseTimeEntity {
     @Column(name = "share_code", unique = true)
     private String shareCode;
 
-//
+    @Column(name = "bio")
+    private String bio;
+
 //    @Column(name = "nickname")
 //    private String nickname;
 
@@ -55,6 +57,10 @@ public class Users extends BaseTimeEntity {
             throw new IllegalArgumentException("닉네임은 비어있을 수 없습니다.");
         }
         this.username = newNickname;
+    }
+
+    public void changeBio(String newBio) {
+        this.bio = bio;
     }
 
     // 프로필 이미지 변경 메서드

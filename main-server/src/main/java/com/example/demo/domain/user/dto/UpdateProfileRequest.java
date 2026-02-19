@@ -14,6 +14,9 @@ public record UpdateProfileRequest(
         @Schema(description = "새 프로필 이미지 파일")
         MultipartFile profileImage,
 
+        @Schema(description = "새 소개", example = "안녕하세요~")
+        String bio,
+
         @Schema(description = "음악 취향 키워드")
         List<MusicKeyword> musicKeywords
 ) {}

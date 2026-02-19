@@ -44,23 +44,24 @@ public class UsersService {
         // 프로필 이미지 업데이트
         if (req.profileImage() != null && !req.profileImage().isEmpty()) {
 
-            //가존 이미지가 R2에 저장되어있다면 R2에서 삭제
-            String oldImageKey = r2Service.extractKey(user.getProfileUrl());
-            if (oldImageKey != null && !oldImageKey.isBlank()) {
-                r2Service.delete(oldImageKey);
-            }
-
             String key = r2Service.newKey(req.profileImage().getOriginalFilename());
             r2Service.upload(
                     req.profileImage().getBytes(),
                     req.profileImage().getContentType(),
                     key
             );
+
+            //가존 이미지가 R2에 저장되어있다면 R2에서 삭제
+            String oldImageKey = r2Service.extractKey(user.getProfileUrl());
+            if (oldImageKey != null && !oldImageKey.isBlank()) {
+                r2Service.delete(oldImageKey);
+            }
+
             String profileUrl = r2Service.getPublicUrl(key);
             user.changeProfileImage(profileUrl);
         }
 
-        if (req.musicKeywords() != null && !req.musicKeywords().isEmpty()) {
+        if (req.musicKeywords() != null) {
             userMusicKeywordRepository.deleteByUsersId(userId);
 
             List<UserMusicKeyword> userMusicKeywordList = req.musicKeywords().stream()
@@ -69,6 +70,9 @@ public class UsersService {
                     .toList();
 
             userMusicKeywordRepository.saveAll(userMusicKeywordList);
+        }
+        if (req.bio() != null) {
+            user.changeBio(req.bio());
         }
 
         return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
