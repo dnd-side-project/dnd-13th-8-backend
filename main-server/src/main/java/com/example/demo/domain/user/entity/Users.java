@@ -60,7 +60,7 @@ public class Users extends BaseTimeEntity {
     }
 
     public void changeBio(String newBio) {
-        this.bio = bio;
+        this.bio = newBio;
     }
 
     // 프로필 이미지 변경 메서드
