@@ -5,10 +5,10 @@ import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.dto.request.SaveCdRequest;
-import com.example.demo.domain.playlist.dto.PlaylistDraft;
-import com.example.demo.domain.playlist.dto.PlaylistMapper;
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
+import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
+import com.example.demo.domain.playlist.dto.save.PlaylistMapper;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.song.dto.SongMapper;
@@ -84,7 +84,7 @@ public class PlaylistSaveService {
     }
 
     @Transactional
-    public PlaylistWithSongsResponse savePlaylistWithSongs(String usersId, SavePlaylistRequest request) {
+    public SavePlaylistResponse savePlaylistWithSongs(String usersId, SavePlaylistRequest request) {
 
         Playlist savedPlaylist = savePlaylist(usersId, request);
 
@@ -99,7 +99,7 @@ public class PlaylistSaveService {
                 .map(SongMapper::toDto)
                 .toList();
 
-        return new PlaylistWithSongsResponse(savedPlaylist.getId(), songDtos);
+        return new SavePlaylistResponse(savedPlaylist.getId(), songDtos);
     }
 
     @Transactional
@@ -114,7 +114,7 @@ public class PlaylistSaveService {
     }
 
     @Transactional
-    public PlaylistWithSongsResponse editPlaylistWithSongs(
+    public SavePlaylistResponse editPlaylistWithSongs(
             String usersId, Long playlistId, SavePlaylistRequest request) {
 
         Users users = usersRepository.findById(usersId)
@@ -146,7 +146,7 @@ public class PlaylistSaveService {
                 .map(SongMapper::toDto)
                 .toList();
 
-        return new PlaylistWithSongsResponse(playlist.getId(), songDtos);
+        return new SavePlaylistResponse(playlist.getId(), songDtos);
     }
 
 }

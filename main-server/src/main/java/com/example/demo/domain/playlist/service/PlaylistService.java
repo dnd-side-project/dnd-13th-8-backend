@@ -1,29 +1,29 @@
 package com.example.demo.domain.playlist.service;
 
-import com.example.demo.domain.playlist.dto.EditFinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.FinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.PlaylistDraft;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
+import com.example.demo.domain.playlist.dto.save.EditFinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.FinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 
 public interface PlaylistService {
 
-    MainPlaylistDetailResponse playPlaylist(Long playlistId, String userId);
+    PlaylistDetailWithCreatorResponse playPlaylist(Long playlistId, String userId);
 
-    MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId);
+    PlaylistDetailWithCreatorResponse getPlaylistDetail(Long playlistId, String userId);
 
-    PlaylistWithSongsResponse saveFinalPlaylist(String usersId, String draftId);
+    SavePlaylistResponse saveFinalPlaylist(String usersId, String draftId);
 
-    PlaylistWithSongsResponse editFinalPlaylist(String usersId, Long playlistId ,String draftId);
+    SavePlaylistResponse editFinalPlaylist(String usersId, Long playlistId , String draftId);
 
     String saveDraftPlaylist(PlaylistDraft playlistDraft);
 
-    PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
-                                                              FinalPlaylistRequest finalPlaylistRequest);
+    SavePlaylistResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
+                                                         FinalPlaylistRequest finalPlaylistRequest);
 
-    PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
-                                                              EditFinalPlaylistRequest editFinalPlaylistRequest);
+    SavePlaylistResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
+                                                         EditFinalPlaylistRequest editFinalPlaylistRequest);
 
     void deletePlaylist(String userId, Long playlistId);
 

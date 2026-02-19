@@ -1,10 +1,10 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.playlistdto.CursorPageResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.PageResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.page.CursorPageResponse;
+import com.example.demo.domain.playlist.dto.page.PageResponse;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
 import com.example.demo.domain.playlist.dto.search.PopularItem;
 import com.example.demo.domain.playlist.dto.search.PopularSearchResponse;

@@ -2,7 +2,7 @@ package com.example.demo.domain.follow.repository;
 
 import com.example.demo.domain.follow.dto.response.FollowedPlaylist;
 import com.example.demo.domain.follow.entity.QFollow;
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.types.OrderSpecifier;

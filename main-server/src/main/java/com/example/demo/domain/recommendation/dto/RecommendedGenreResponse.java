@@ -1,6 +1,6 @@
 package com.example.demo.domain.recommendation.dto;
 
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "추천 장르 응답 DTO")

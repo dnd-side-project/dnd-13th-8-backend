@@ -1,6 +1,6 @@
 package com.example.demo.domain.recommendation.repository;
 
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;

@@ -1,7 +1,6 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.save;
 
 import com.example.demo.domain.cd.dto.request.SaveCdRequest;
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
 import jakarta.validation.Valid;
 
 public record PlaylistDraft(@Valid SavePlaylistRequest savePlaylistRequest,

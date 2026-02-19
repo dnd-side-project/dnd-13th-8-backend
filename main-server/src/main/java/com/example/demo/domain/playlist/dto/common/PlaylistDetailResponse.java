@@ -1,8 +1,6 @@
-package com.example.demo.domain.playlist.dto.playlistdto;
+package com.example.demo.domain.playlist.dto.common;
 
 import com.example.demo.domain.cd.dto.response.CdResponse;
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;

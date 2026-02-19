@@ -1,15 +1,13 @@
-package com.example.demo.domain.playlist.dto.playlistdto;
+package com.example.demo.domain.playlist.dto.common;
 
 import com.example.demo.domain.cd.dto.response.CdResponse;
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.SongDto;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.user.entity.Users;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 @Schema(description = "메인 페이지 - 플레이리스트 상세 응답 DTO")
-public record MainPlaylistDetailResponse(
+public record PlaylistDetailWithCreatorResponse(
 
         @Schema(description = "플레이리스트 ID", example = "101")
         Long playlistId,
@@ -39,9 +37,9 @@ public record MainPlaylistDetailResponse(
         String creatorProfileImageUrl
 
 ) {
-    public static MainPlaylistDetailResponse from(Playlist playlist, List<SongDto> songs, CdResponse cdResponse) {
+    public static PlaylistDetailWithCreatorResponse from(Playlist playlist, List<SongDto> songs, CdResponse cdResponse) {
         Users creator = playlist.getUsers();
-        return new MainPlaylistDetailResponse(
+        return new PlaylistDetailWithCreatorResponse(
                 playlist.getId(),
                 playlist.getName(),
                 playlist.isPublic(),

@@ -1,19 +1,19 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import java.util.List;
 
 public interface PlaylistMyPageService {
 
-    List<PlaylistResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption);
+    List<PlaylistCoverResponse> getMyPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
-    List<PlaylistResponse> getLikedPlaylistsSorted(String userId, PlaylistSortOption sortOption);
+    List<PlaylistCoverResponse> getLikedPlaylistsSorted(String userId, PlaylistSortOption sortOption);
 
-    MainPlaylistDetailResponse getMyPlaylistDetail(String id, Long playlistId);
+    PlaylistDetailWithCreatorResponse getMyPlaylistDetail(String id, Long playlistId);
 
     void updateIsPublic(String userId, Long playlistId);
 

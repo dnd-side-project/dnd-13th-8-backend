@@ -1,10 +1,9 @@
 package com.example.demo.domain.recommendation.repository;
 
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 public interface UserPlaylistHistoryRepositoryCustom {
 

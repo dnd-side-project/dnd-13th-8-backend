@@ -2,8 +2,8 @@ package com.example.demo.domain.playlist.repository;
 
 import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.follow.entity.QFollow;
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.SearchResult;
 import com.example.demo.domain.playlist.entity.Playlist;

@@ -1,6 +1,5 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.save;
 
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.user.entity.Users;
 
