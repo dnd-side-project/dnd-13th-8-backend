@@ -1,11 +1,11 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.playlist.dto.EditFinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.FinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.PlaylistDraft;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
+import com.example.demo.domain.playlist.dto.save.EditFinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.FinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 import com.example.demo.domain.playlist.service.PlaylistService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,16 +39,16 @@ public class PlaylistController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 상세 정보",
-            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
+            content = @Content(schema = @Schema(implementation = PlaylistDetailWithCreatorResponse.class))
     )
     @PostMapping("/{playlistId}/")
-    public ResponseEntity<MainPlaylistDetailResponse> playPlaylist(
+    public ResponseEntity<PlaylistDetailWithCreatorResponse> playPlaylist(
             @Parameter(description = "플레이리스트 ID", example = "101")
             @PathVariable Long playlistId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        MainPlaylistDetailResponse response = playlistService.playPlaylist(playlistId, user.getId());
+        PlaylistDetailWithCreatorResponse response = playlistService.playPlaylist(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
 
@@ -59,16 +59,16 @@ public class PlaylistController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 상세 정보",
-            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
+            content = @Content(schema = @Schema(implementation = PlaylistDetailWithCreatorResponse.class))
     )
     @GetMapping("/{playlistId}")
-    public ResponseEntity<MainPlaylistDetailResponse> getPlaylistDetail(
+    public ResponseEntity<PlaylistDetailWithCreatorResponse> getPlaylistDetail(
             @Parameter(description = "플레이리스트 ID", example = "101")
             @PathVariable Long playlistId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        MainPlaylistDetailResponse response = playlistService.getPlaylistDetail(playlistId, user.getId());
+        PlaylistDetailWithCreatorResponse response = playlistService.getPlaylistDetail(playlistId, user.getId());
         return ResponseEntity.ok(response);
     }
 
@@ -117,16 +117,16 @@ public class PlaylistController {
     @ApiResponse(
             responseCode = "200",
             description = "생성된 플레이리스트 상세",
-            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+            content = @Content(schema = @Schema(implementation = SavePlaylistResponse.class))
     )
     @ApiResponse(responseCode = "409", description = "임시 저장본 없음")
     @PostMapping("/v2/final/{draftId}")
-    public ResponseEntity<PlaylistWithSongsResponse> saveDraftPlaylist(
+    public ResponseEntity<SavePlaylistResponse> saveDraftPlaylist(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable String draftId
     ) {
-        PlaylistWithSongsResponse response = playlistService.saveFinalPlaylist(user.getId(), draftId);
+        SavePlaylistResponse response = playlistService.saveFinalPlaylist(user.getId(), draftId);
         return ResponseEntity.ok(response);
     }
 
@@ -137,16 +137,16 @@ public class PlaylistController {
     @ApiResponse(
             responseCode = "200",
             description = "생성된 플레이리스트 상세",
-            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+            content = @Content(schema = @Schema(implementation = SavePlaylistResponse.class))
     )
     @ApiResponse(responseCode = "409", description = "임시 저장본 없음")
     @PatchMapping("/v2/final/playlist/{playlistId}/draft/{draftId}")
-    public ResponseEntity<PlaylistWithSongsResponse> editFinalPlaylist(
+    public ResponseEntity<SavePlaylistResponse> editFinalPlaylist(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long playlistId, @PathVariable String draftId
     ) {
-        PlaylistWithSongsResponse response = playlistService.editFinalPlaylist(user.getId(),
+        SavePlaylistResponse response = playlistService.editFinalPlaylist(user.getId(),
                 playlistId, draftId);
 
         return ResponseEntity.ok(response);
@@ -159,11 +159,11 @@ public class PlaylistController {
     @ApiResponse(
             responseCode = "200",
             description = "생성된 플레이리스트 상세",
-            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+            content = @Content(schema = @Schema(implementation = SavePlaylistResponse.class))
     )
     @ApiResponse(responseCode = "409", description = "세션에 임시 저장본 없음")
     @PostMapping("/final")
-    public ResponseEntity<PlaylistWithSongsResponse> savePlaylist(
+    public ResponseEntity<SavePlaylistResponse> savePlaylist(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @RequestBody FinalPlaylistRequest finalPlaylistRequest,
@@ -176,7 +176,7 @@ public class PlaylistController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistService.saveFinalPlaylistWithSongsAndCd(user.getId(), request, finalPlaylistRequest);
+        SavePlaylistResponse response = playlistService.saveFinalPlaylistWithSongsAndCd(user.getId(), request, finalPlaylistRequest);
 
         session.removeAttribute("tempPlaylist");
         return ResponseEntity.ok(response);
@@ -189,11 +189,11 @@ public class PlaylistController {
     @ApiResponse(
             responseCode = "200",
             description = "생성된 플레이리스트 상세",
-            content = @Content(schema = @Schema(implementation = PlaylistWithSongsResponse.class))
+            content = @Content(schema = @Schema(implementation = SavePlaylistResponse.class))
     )
     @ApiResponse(responseCode = "409", description = "세션에 임시 저장본 없음")
     @PatchMapping("/final")
-    public ResponseEntity<PlaylistWithSongsResponse> editPlaylist(
+    public ResponseEntity<SavePlaylistResponse> editPlaylist(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @RequestBody EditFinalPlaylistRequest editFinalPlaylistRequest,
@@ -204,7 +204,7 @@ public class PlaylistController {
             throw new IllegalStateException("세션에 임시 저장된 플레이리스트가 없습니다.");
         }
 
-        PlaylistWithSongsResponse response = playlistService.editFinalPlaylistWithSongsAndCd(user.getId(),
+        SavePlaylistResponse response = playlistService.editFinalPlaylistWithSongsAndCd(user.getId(),
                 request, editFinalPlaylistRequest);
 
         session.removeAttribute("tempPlaylist");

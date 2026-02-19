@@ -1,6 +1,6 @@
 package com.example.demo.domain.recommendation.dto;
 
-import com.example.demo.domain.playlist.dto.GenreDto;
+import com.example.demo.domain.playlist.dto.common.GenreDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 

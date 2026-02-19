@@ -1,8 +1,8 @@
 package com.example.demo.domain.browse.dto;
 
 import com.example.demo.domain.cd.dto.response.CdItemResponse;
-import com.example.demo.domain.playlist.dto.SongDto;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.common.SongDto;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public record BrowsePlaylistDto(
         @Schema(description = "전체 곡 재생 시간", example = "09:32")
         String totalTime
 ) {
-    public static BrowsePlaylistDto from(MainPlaylistDetailResponse detail) {
+    public static BrowsePlaylistDto from(PlaylistDetailWithCreatorResponse detail) {
         return new BrowsePlaylistDto(
                 detail.playlistId(),
                 0,

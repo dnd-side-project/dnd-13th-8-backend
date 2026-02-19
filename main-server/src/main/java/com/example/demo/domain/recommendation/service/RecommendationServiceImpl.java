@@ -1,7 +1,7 @@
 package com.example.demo.domain.recommendation.service;
 
 import com.example.demo.domain.cd.service.CdService;
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;

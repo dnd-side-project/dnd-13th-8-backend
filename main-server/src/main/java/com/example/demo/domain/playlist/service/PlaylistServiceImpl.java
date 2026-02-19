@@ -7,13 +7,13 @@ import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.dto.request.SaveCdRequest;
 import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.service.CdService;
-import com.example.demo.domain.playlist.dto.EditFinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.FinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.PlaylistDraft;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.SongDto;
-import com.example.demo.domain.playlist.dto.playlistdto.SavePlaylistRequest;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistWithSongsResponse;
+import com.example.demo.domain.playlist.dto.save.EditFinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.FinalPlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
+import com.example.demo.domain.playlist.dto.common.SongDto;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
+import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.event.PlaylistDeleteEvent;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
@@ -47,7 +47,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public MainPlaylistDetailResponse playPlaylist(Long playlistId, String userId) {
+    public PlaylistDetailWithCreatorResponse playPlaylist(Long playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .filter(Playlist::isPublic)
                 .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
@@ -62,12 +62,12 @@ public class PlaylistServiceImpl implements PlaylistService {
         playlistRepository.incrementVisitCount(playlist.getId());
 
         var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
-        return MainPlaylistDetailResponse.from(playlist, songDtos, cdResponse);
+        return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
     }
 
     @Override
     @Transactional
-    public MainPlaylistDetailResponse getPlaylistDetail(Long playlistId, String userId) {
+    public PlaylistDetailWithCreatorResponse getPlaylistDetail(Long playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .filter(Playlist::isPublic)
                 .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
@@ -79,7 +79,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
         var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
-        return MainPlaylistDetailResponse.from(playlist, songDtos, cdResponse);
+        return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
     }
 
     @Override
@@ -91,13 +91,13 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse saveFinalPlaylist(String usersId, String draftId) {
+    public SavePlaylistResponse saveFinalPlaylist(String usersId, String draftId) {
 
         PlaylistDraft draft = playlistSaveService.loadDraft(draftId);
         SavePlaylistRequest savePlaylistRequest = draft.savePlaylistRequest();
         SaveCdRequest saveCdRequest = draft.saveCdRequest();
 
-        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, savePlaylistRequest);
+        SavePlaylistResponse response = playlistSaveService.savePlaylistWithSongs(usersId, savePlaylistRequest);
 
         cdService.saveCdItemList(response.playlistId(), saveCdRequest.cdItems());
 
@@ -108,13 +108,13 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse editFinalPlaylist(String usersId, Long playlistId, String draftId) {
+    public SavePlaylistResponse editFinalPlaylist(String usersId, Long playlistId, String draftId) {
 
         PlaylistDraft draft = playlistSaveService.loadDraft(draftId);
         SavePlaylistRequest savePlaylistRequest = draft.savePlaylistRequest();
         SaveCdRequest saveCdRequest = draft.saveCdRequest();
 
-        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId,
+        SavePlaylistResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId,
                 savePlaylistRequest);
         cdService.replaceCdItemList(playlistId, saveCdRequest.cdItems());
 
@@ -125,10 +125,10 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
-                                                                     FinalPlaylistRequest finalPlaylistRequest) {
+    public SavePlaylistResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
+                                                                FinalPlaylistRequest finalPlaylistRequest) {
 
-        PlaylistWithSongsResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
+        SavePlaylistResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
 
         cdService.saveCdItemList(response.playlistId(), finalPlaylistRequest.saveCdRequest().cdItems());
 
@@ -137,9 +137,9 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public PlaylistWithSongsResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
-                                                                     EditFinalPlaylistRequest editFinalPlaylistRequest) {
-        PlaylistWithSongsResponse response = playlistSaveService.editPlaylistWithSongs(usersId, editFinalPlaylistRequest.playlistId(),
+    public SavePlaylistResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
+                                                                EditFinalPlaylistRequest editFinalPlaylistRequest) {
+        SavePlaylistResponse response = playlistSaveService.editPlaylistWithSongs(usersId, editFinalPlaylistRequest.playlistId(),
                 request);
         cdService.replaceCdItemList(editFinalPlaylistRequest.playlistId(), editFinalPlaylistRequest.saveCdRequest().cdItems());
 

@@ -3,7 +3,7 @@ package com.example.demo.global.kakao.dto;
 import com.example.common.error.code.KakaoErrorCode;
 import com.example.common.error.exception.KakoException;
 import com.example.demo.domain.user.entity.Users;
-import com.example.demo.domain.user.service.NicknameGenerator;
+import com.example.demo.domain.user.utils.NicknameGenerator;
 import com.example.demo.global.jwt.JwtRoleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +51,7 @@ public class KakaoProfileMapper {
     }
 
 
-    public Users newUserFromProfile(KakaoProfileResponse p) {
+    public Users newUserFromProfile(KakaoProfileResponse p, String shareCode) {
         String kakaoId = kakaoIdFrom(p);
         String nickname = nicknameFrom(p);
         String profileImageUrl = profileImageFrom(p);
@@ -62,6 +62,7 @@ public class KakaoProfileMapper {
                 .role(JwtRoleType.USER)
                 .profileUrl(profileImageUrl)
                 .enabled(true)
+                .shareCode(shareCode)
                 .build();
     }
 }

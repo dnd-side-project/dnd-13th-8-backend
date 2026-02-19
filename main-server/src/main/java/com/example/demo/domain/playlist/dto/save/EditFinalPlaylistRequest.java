@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.dto;
+package com.example.demo.domain.playlist.dto.save;
 
 import com.example.demo.domain.cd.dto.request.SaveCdRequest;
 import io.swagger.v3.oas.annotations.media.Schema;

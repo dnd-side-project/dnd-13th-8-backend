@@ -1,14 +1,13 @@
-package com.example.demo.domain.playlist.dto.playlistdto;
+package com.example.demo.domain.playlist.dto.common;
 
 import com.example.demo.domain.cd.dto.response.CdResponse;
-import com.example.demo.domain.playlist.dto.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Builder
 @Schema(description = "플레이리스트 응답 DTO")
-public record PlaylistResponse(
+public record PlaylistCoverResponse(
 
         @Schema(description = "플레이리스트 ID", example = "101")
         Long playlistId,
@@ -32,8 +31,8 @@ public record PlaylistResponse(
         CdResponse cdResponse
 
 ) {
-    public static PlaylistResponse from(Playlist playlist, CdResponse cd, boolean isLiked) {
-        return PlaylistResponse.builder()
+    public static PlaylistCoverResponse from(Playlist playlist, CdResponse cd, boolean isLiked) {
+        return PlaylistCoverResponse.builder()
                 .playlistId(playlist.getId())
                 .playlistName(playlist.getName())
                 .genre(playlist.getGenre())

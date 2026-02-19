@@ -1,10 +1,9 @@
 package com.example.demo.domain.playlist.controller;
 
-import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
-import com.example.demo.domain.playlist.dto.*;
-import com.example.demo.domain.playlist.dto.playlistdto.MainPlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistDetailResponse;
-import com.example.demo.domain.playlist.dto.playlistdto.PlaylistResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistDetailResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
+import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.service.PlaylistMyPageService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/main/playlist/mypage")
 @RequiredArgsConstructor
-@Tag(name = "Playlist - MyPage", description = "마이페이지 플레이리스트 관리 API")
+@Tag(name = "Playlist - MyPage", description = "마이페이지 플레이리스트 API")
 @SecurityRequirement(name = "bearerAuth")
 public class PlaylistMyPageController {
 
@@ -36,16 +35,16 @@ public class PlaylistMyPageController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCoverResponse.class)))
     )
     @GetMapping("/me")
-    public ResponseEntity<List<PlaylistResponse>> getMyPlaylists(
+    public ResponseEntity<List<PlaylistCoverResponse>> getMyPlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @Parameter(description = "정렬 옵션 (기본 POPULAR)", example = "POPULAR")
             @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort
     ) {
-        List<PlaylistResponse> myPlaylistsSorted = playlistMyPageService.getMyPlaylistsSorted(user.getId(), sort);
+        List<PlaylistCoverResponse> myPlaylistsSorted = playlistMyPageService.getMyPlaylistsSorted(user.getId(), sort);
         return ResponseEntity.ok(myPlaylistsSorted);
     }
 
@@ -56,38 +55,38 @@ public class PlaylistMyPageController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCoverResponse.class)))
     )
     @GetMapping("/me/likes")
-    public ResponseEntity<List<PlaylistResponse>> getLikedPlaylists(
+    public ResponseEntity<List<PlaylistCoverResponse>> getLikedPlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user,
             @Parameter(description = "정렬 옵션 (기본 POPULAR)", example = "POPULAR")
             @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort
     ) {
-        List<PlaylistResponse> LikedPlaylistsSorted = playlistMyPageService.getLikedPlaylistsSorted(user.getId(), sort);
+        List<PlaylistCoverResponse> LikedPlaylistsSorted = playlistMyPageService.getLikedPlaylistsSorted(user.getId(), sort);
         return ResponseEntity.ok(LikedPlaylistsSorted);
     }
 
-    @Operation(
-            summary = "팔로우한 유저들의 플레이리스트 조회",
-            description = "사용자가 팔로우한 유저들의 플레이리스트를 정렬 조건(POPULAR / RECENT)에 따라 조회합니다."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "팔로우한 유저들의 플레이리스트 응답",
-            content = @Content(schema = @Schema(implementation = FollowedPlaylistsResponse.class))
-    )
-    @GetMapping("/me/follows")
-    public ResponseEntity<FollowedPlaylistsResponse> getFolloweePlaylists(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails user,
-
-            @Parameter(description = "정렬 옵션 (RECENT or POPULAR)", example = "RECENT")
-            @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
-    ) {
-        return ResponseEntity.ok(playlistMyPageService.getFolloweePlaylists(user.getId(), sort));
-    }
+//    @Operation(
+//            summary = "팔로우한 유저들의 플레이리스트 조회",
+//            description = "사용자가 팔로우한 유저들의 플레이리스트를 정렬 조건(POPULAR / RECENT)에 따라 조회합니다."
+//    )
+//    @ApiResponse(
+//            responseCode = "200",
+//            description = "팔로우한 유저들의 플레이리스트 응답",
+//            content = @Content(schema = @Schema(implementation = FollowedPlaylistsResponse.class))
+//    )
+//    @GetMapping("/me/follows")
+//    public ResponseEntity<FollowedPlaylistsResponse> getFolloweePlaylists(
+//            @Parameter(hidden = true)
+//            @AuthenticationPrincipal CustomUserDetails user,
+//
+//            @Parameter(description = "정렬 옵션 (RECENT or POPULAR)", example = "RECENT")
+//            @RequestParam(defaultValue = "RECENT") PlaylistSortOption sort
+//    ) {
+//        return ResponseEntity.ok(playlistMyPageService.getFolloweePlaylists(user.getId(), sort));
+//    }
 
 
     @Operation(
@@ -116,17 +115,17 @@ public class PlaylistMyPageController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 상세",
-            content = @Content(schema = @Schema(implementation = MainPlaylistDetailResponse.class))
+            content = @Content(schema = @Schema(implementation = PlaylistDetailWithCreatorResponse.class))
     )
     @ApiResponse(responseCode = "404", description = "플레이리스트를 찾을 수 없음")
     @GetMapping("/me/{playlistId}")
-    public ResponseEntity<MainPlaylistDetailResponse> getMyPlaylistDetail(
+    public ResponseEntity<PlaylistDetailWithCreatorResponse> getMyPlaylistDetail(
             @Parameter(description = "플레이리스트 ID", example = "123")
             @PathVariable Long playlistId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        MainPlaylistDetailResponse response = playlistMyPageService.getMyPlaylistDetail(user.getId(), playlistId);
+        PlaylistDetailWithCreatorResponse response = playlistMyPageService.getMyPlaylistDetail(user.getId(), playlistId);
         return ResponseEntity.ok(response);
     }
 
