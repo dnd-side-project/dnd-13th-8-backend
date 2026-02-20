@@ -1,6 +1,5 @@
 package com.example.demo.global.paging;
 
-import com.example.demo.domain.playlist.dto.page.CursorPageResponse;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface FollowRepository extends JpaRepository<Follow, Long>, FollowRepositoryCustom {
 
     boolean existsByFollower_IdAndFollowee_Id(String followerId, String followeeId);
@@ -27,4 +29,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long>, FollowRep
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     void deleteByFollower_IdAndFollowee_Id(String followerId, String followeeId);
+
+    @Query("select count(f) from Follow f where f.followee.id = :userId")
+    long countFollowerByUsers_Id(@Param("userId") String userId);
+
+    @Query("select count(f) from Follow f where f.follower.id = :userId")
+    long countFolloweeByUsers_Id(@Param("userId") String userId);
 }
