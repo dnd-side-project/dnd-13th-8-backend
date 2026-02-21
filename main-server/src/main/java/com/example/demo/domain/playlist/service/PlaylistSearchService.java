@@ -1,8 +1,8 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
-import com.example.demo.domain.playlist.dto.page.CursorPageResponse;
-import com.example.demo.domain.playlist.dto.page.PageResponse;
+import com.example.demo.global.paging.CursorPageResponse;
+import com.example.demo.global.paging.PageResponse;
 import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 

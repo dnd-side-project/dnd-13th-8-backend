@@ -1,7 +1,10 @@
 package com.example.demo.domain.follow.controller;
 
+import com.example.demo.domain.follow.dto.response.FollowCountResponse;
+import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.dto.response.IsUserFollowingResponse;
 import com.example.demo.domain.follow.service.FollowService;
+import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,6 +21,53 @@ import org.springframework.web.bind.annotation.*;
 public class FollowController {
 
     private final FollowService followService;
+
+    @GetMapping("/follower/{userId}")
+    @Operation(
+            summary = "해당 유저의 팔로워 목록",
+            description = "해당 유저의 팔로워 목록을 가져옵니다. 각 항목에 현재 로그인한 사용자가 해당 유저를 팔로우 중인지를 포함합니다."
+    )
+    public ResponseEntity<CursorPageResponse<FollowListItem, Long>> getFollowerList(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable String userId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false, defaultValue = "20") int limit
+    ) {
+        CursorPageResponse<FollowListItem, Long> response =
+                followService.getFollowerList(userId, me.getId(), cursor, limit);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/following/{userId}")
+    @Operation(
+            summary = "해당 유저의 팔로잉 목록",
+            description = "해당 유저가 팔로우하는 사람 목록을 조회하며, 각 항목에 현재 로그인한 사용자가 해당 유저를 팔로우 중인지를 포함합니다."
+    )
+    public ResponseEntity<CursorPageResponse<FollowListItem, Long>> getFolloweeList(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable String userId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false, defaultValue = "20") int limit
+    ) {
+        CursorPageResponse<FollowListItem, Long> response =
+                followService.getFolloweeList(userId, me.getId(), cursor, limit);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/count/{userId}")
+    @Operation(
+            summary = "팔로워/팔로잉 숫자",
+            description = "해당 유저의 팔로우/팔로잉 숫자를 반환합니다."
+    )
+    public ResponseEntity<FollowCountResponse> getFollowCount(
+            @PathVariable String userId
+    ) {
+        return ResponseEntity.ok(followService.getFollowCount(userId));
+    }
 
     @GetMapping("/{followeeId}")
     @Operation(
