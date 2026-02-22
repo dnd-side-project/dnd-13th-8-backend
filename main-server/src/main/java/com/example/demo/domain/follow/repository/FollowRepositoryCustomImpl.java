@@ -1,5 +1,6 @@
 package com.example.demo.domain.follow.repository;
 
+import com.example.demo.domain.follow.dto.request.FollowSortOption;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.dto.response.FollowedPlaylist;
 import com.example.demo.domain.follow.entity.QFollow;
@@ -8,14 +9,26 @@ import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    private OrderSpecifier<Long> orderByFollowId(QFollow f, FollowSortOption sort) {
+        return (sort == FollowSortOption.OLDEST) ? f.id.asc() : f.id.desc();
+    }
+
+    private BooleanExpression cursorCondition(QFollow f, Long cursor, FollowSortOption sort) {
+        if (cursor == null) return null;
+        return (sort == FollowSortOption.OLDEST) ? f.id.gt(cursor) : f.id.lt(cursor);
+    }
 
     @Override
     public List<FollowedPlaylist> findFolloweePlaylistsWithMeta(String followerId,
@@ -50,11 +63,66 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                 .fetch();
     }
 
-    // 해당 유저를 팔로우하는 사람 목록
     @Override
-    public List<FollowListItem> findFollowerListByUserId(String userId, Long cursor, int limit) {
+    public Optional<FollowListItem> findMeInFolloweeList(String userId, String meId) {
         QFollow f = QFollow.follow;
         QUsers u = QUsers.users;
+
+        FollowListItem item = queryFactory
+                .select(Projections.constructor(
+                        FollowListItem.class,
+                        f.id,
+                        u.id.stringValue(),
+                        u.username,
+                        u.shareCode,
+                        u.profileUrl
+                ))
+                .from(f)
+                .join(f.followee, u)
+                .where(
+                        f.follower.id.eq(userId),
+                        u.id.eq(meId)
+                )
+                .fetchFirst();
+
+        return Optional.ofNullable(item);
+    }
+
+    @Override
+    public Optional<FollowListItem> findMeInFollowerList(String userId, String meId) {
+        QFollow f = QFollow.follow;
+        QUsers u = QUsers.users;
+
+        FollowListItem item = queryFactory
+                .select(Projections.constructor(
+                        FollowListItem.class,
+                        f.id,
+                        u.id.stringValue(),
+                        u.username,
+                        u.shareCode,
+                        u.profileUrl
+                ))
+                .from(f)
+                .join(f.follower, u)
+                .where(
+                        f.followee.id.eq(userId),
+                        u.id.eq(meId)
+                )
+                .fetchFirst();
+
+        return Optional.ofNullable(item);
+    }
+
+    // 해당 유저를 팔로우하는 사람 목록
+    @Override
+    public List<FollowListItem> findFollowerListByUserId(
+            String userId, Long cursor, int limit, FollowSortOption sort, String excludeUserId
+    ) {
+        QFollow f = QFollow.follow;
+        QUsers u = QUsers.users;
+
+        BooleanExpression excludeCond =
+                (excludeUserId == null || excludeUserId.isBlank()) ? null : u.id.ne(excludeUserId);
 
         return queryFactory
                 .select(Projections.constructor(
@@ -69,17 +137,23 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                 .join(f.follower, u)
                 .where(
                         f.followee.id.eq(userId),
-                        cursor != null ? f.id.lt(cursor) : null
+                        excludeCond,
+                        cursorCondition(f, cursor, sort)
                 )
-                .orderBy(f.id.desc())
-                .limit(limit+1)
+                .orderBy(orderByFollowId(f, sort))
+                .limit(limit + 1)
                 .fetch();
     }
 
     @Override
-    public List<FollowListItem> findFolloweeListByUserId(String userId, Long cursor, int limit) {
+    public List<FollowListItem> findFolloweeListByUserId(
+            String userId, Long cursor, int limit, FollowSortOption sort, String excludeUserId
+    ) {
         QFollow f = QFollow.follow;
         QUsers u = QUsers.users;
+
+        BooleanExpression excludeCond =
+                (excludeUserId == null || excludeUserId.isBlank()) ? null : u.id.ne(excludeUserId);
 
         return queryFactory
                 .select(Projections.constructor(
@@ -94,9 +168,10 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                 .join(f.followee, u)
                 .where(
                         f.follower.id.eq(userId),
-                        cursor != null ? f.id.lt(cursor) : null
+                        excludeCond,
+                        cursorCondition(f, cursor, sort)
                 )
-                .orderBy(f.id.desc())
+                .orderBy(orderByFollowId(f, sort))
                 .limit(limit + 1)
                 .fetch();
     }

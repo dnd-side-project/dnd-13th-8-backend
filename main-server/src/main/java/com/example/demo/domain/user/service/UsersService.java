@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,46 +37,57 @@ public class UsersService {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        // 닉네임 업데이트
-        if (req.nickname() != null && !req.nickname().isBlank()) {
-            user.changeNickname(req.nickname());
-        }
-
-        // 프로필 이미지 업데이트
-        if (req.profileImage() != null && !req.profileImage().isEmpty()) {
-
-            String key = r2Service.newKey(req.profileImage().getOriginalFilename());
-            r2Service.upload(
-                    req.profileImage().getBytes(),
-                    req.profileImage().getContentType(),
-                    key
-            );
-
-            //가존 이미지가 R2에 저장되어있다면 R2에서 삭제
-            String oldImageKey = r2Service.extractKey(user.getProfileUrl());
-            if (oldImageKey != null && !oldImageKey.isBlank()) {
-                r2Service.delete(oldImageKey);
+        try {
+            // 닉네임 업데이트
+            if (req.nickname() != null && !req.nickname().isBlank()) {
+                user.changeNickname(req.nickname());
             }
 
-            String profileUrl = r2Service.getPublicUrl(key);
-            user.changeProfileImage(profileUrl);
+            // 프로필 이미지 업데이트
+            if (req.profileImage() != null && !req.profileImage().isEmpty()) {
+
+                String key = r2Service.newKey(req.profileImage().getOriginalFilename());
+                r2Service.upload(
+                        req.profileImage().getBytes(),
+                        req.profileImage().getContentType(),
+                        key
+                );
+
+                //가존 이미지가 R2에 저장되어있다면 R2에서 삭제
+                String oldImageKey = r2Service.extractKey(user.getProfileUrl());
+                if (oldImageKey != null && !oldImageKey.isBlank()) {
+                    r2Service.delete(oldImageKey);
+                }
+
+                String profileUrl = r2Service.getPublicUrl(key);
+                user.changeProfileImage(profileUrl);
+            }
+
+            if (req.musicKeywords() != null) {
+                userMusicKeywordRepository.deleteByUsersId(userId);
+
+                List<UserMusicKeyword> userMusicKeywordList = req.musicKeywords().stream()
+                        .distinct()
+                        .map(keyword -> new UserMusicKeyword(user, keyword))
+                        .toList();
+
+                userMusicKeywordRepository.saveAll(userMusicKeywordList);
+            }
+
+            if (req.profileId() != null) {
+                user.changeShareCode(req.profileId());
+            }
+
+            if (req.bio() != null) {
+                user.changeBio(req.bio());
+            }
+
+            return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
+        }
+        catch (DataIntegrityViolationException e) {
+            throw new UserException(UserErrorCode.DUPLICATED_SHARECODE);
         }
 
-        if (req.musicKeywords() != null) {
-            userMusicKeywordRepository.deleteByUsersId(userId);
-
-            List<UserMusicKeyword> userMusicKeywordList = req.musicKeywords().stream()
-                    .distinct()
-                    .map(keyword -> new UserMusicKeyword(user, keyword))
-                    .toList();
-
-            userMusicKeywordRepository.saveAll(userMusicKeywordList);
-        }
-        if (req.bio() != null) {
-            user.changeBio(req.bio());
-        }
-
-        return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
     }
 
     @Transactional

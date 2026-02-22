@@ -3,6 +3,7 @@ package com.example.demo.domain.follow.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.follow.dto.request.FollowSortOption;
 import com.example.demo.domain.follow.dto.response.FollowCountResponse;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.repository.FollowRepository;
@@ -13,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -62,53 +60,43 @@ public class FollowService {
             String userId,
             String meId,
             Long cursor,
-            int limit
+            int limit,
+            FollowSortOption sort
     ) {
-
         Long effectiveCursor = (cursor == null || cursor <= 0) ? null : cursor;
+        boolean firstPage = (effectiveCursor == null);
 
-        List<FollowListItem> followListItemList =
-                followRepository.findFollowerListByUserId(userId, effectiveCursor, limit);
+        FollowListItem meItem = firstPage
+                ? followRepository.findMeInFollowerList(userId, meId).orElse(null)
+                : null;
 
-        boolean hasNext = followListItemList.size() > limit;
+        int fetchLimit = (firstPage && meItem != null) ? (limit - 1) : limit;
 
-        List<FollowListItem> page = hasNext ? followListItemList.subList(0, limit) : followListItemList;
+        List<FollowListItem> rows = (fetchLimit <= 0)
+                ? List.of()
+                : followRepository.findFollowerListByUserId(userId, effectiveCursor, fetchLimit, sort, meId);
 
-        Long nextCursor = hasNext ? page.get(page.size() - 1).getFollowId() : null;
+        boolean hasNext = rows.size() > fetchLimit;
+        List<FollowListItem> page = hasNext ? rows.subList(0, fetchLimit) : rows;
 
-        List<String> followerIds = page.stream()
-                .map(FollowListItem::getUserId)
-                .toList();
+        Long nextCursor = hasNext && !page.isEmpty()
+                ? page.get(page.size() - 1).getFollowId()
+                : null;
 
-        List<String> myFollowingIds = followRepository.findFolloweeIdsIn(meId, followerIds);
+        List<String> ids = page.stream().map(FollowListItem::getUserId).toList();
+        Set<String> myFollowingIdSet = ids.isEmpty()
+                ? Set.of()
+                : new HashSet<>(followRepository.findFolloweeIdsIn(meId, ids));
 
-        Set<String> myFollowingIdSet = new HashSet<>(myFollowingIds);
+        page.forEach(item -> item.changeFollowedByMe(myFollowingIdSet.contains(item.getUserId())));
 
-        page.forEach(item ->
-                item.changeFollowedByMe(myFollowingIdSet.contains(item.getUserId()))
-        );
-
-        page.sort(
-                Comparator
-                        .comparing(
-                                (FollowListItem item) -> item.getUserId().equals(meId),
-                                Comparator.reverseOrder() // true 먼저(=나 먼저)
-                        )
-                        .thenComparing(
-                                FollowListItem::isFollowedByMe,
-                                Comparator.reverseOrder() // true 먼저
-                        )
-        );
+        List<FollowListItem> content = new ArrayList<>(limit);
+        if (meItem != null) content.add(meItem);
+        content.addAll(page);
 
         long totalCount = followRepository.countFollowerByUsers_Id(userId);
 
-        return new CursorPageResponse<>(
-                page,
-                nextCursor,
-                page.size(),
-                hasNext,
-                totalCount
-        );
+        return new CursorPageResponse<>(content, nextCursor, content.size(), hasNext, totalCount);
     }
 
     @Transactional(readOnly = true)
@@ -116,50 +104,46 @@ public class FollowService {
             String userId,
             String meId,
             Long cursor,
-            int limit
+            int limit,
+            FollowSortOption sort
     ) {
-
         Long effectiveCursor = (cursor == null || cursor <= 0) ? null : cursor;
+        boolean firstPage = (effectiveCursor == null);
 
-        List<FollowListItem> followListItemList =
-                followRepository.findFolloweeListByUserId(userId, effectiveCursor, limit);
+        FollowListItem meItem = firstPage
+                ? followRepository.findMeInFolloweeList(userId, meId).orElse(null)
+                : null;
 
-        boolean hasNext = followListItemList.size() > limit;
+        int fetchLimit = (firstPage && meItem != null) ? (limit - 1) : limit;
 
-        List<FollowListItem> page = hasNext ? followListItemList.subList(0, limit) : followListItemList;
+        List<FollowListItem> rows = (fetchLimit <= 0)
+                ? List.of()
+                : followRepository.findFolloweeListByUserId(userId, effectiveCursor, fetchLimit, sort, meId);
 
-        Long nextCursor = hasNext ? page.get(page.size() - 1).getFollowId() : null;
+        boolean hasNext = rows.size() > fetchLimit;
+        List<FollowListItem> page = hasNext ? rows.subList(0, fetchLimit) : rows;
 
-        List<String> followerIds = page.stream()
-                .map(FollowListItem::getUserId)
-                .toList();
+        Long nextCursor = hasNext && !page.isEmpty()
+                ? page.get(page.size() - 1).getFollowId()
+                : null;
 
-        List<String> myFollowingIds = followRepository.findFolloweeIdsIn(meId, followerIds);
+        List<String> ids = page.stream().map(FollowListItem::getUserId).toList();
+        Set<String> myFollowingIdSet = ids.isEmpty()
+                ? Set.of()
+                : new HashSet<>(followRepository.findFolloweeIdsIn(meId, ids));
 
-        Set<String> myFollowingIdSet = new HashSet<>(myFollowingIds);
+        page.forEach(item -> item.changeFollowedByMe(myFollowingIdSet.contains(item.getUserId())));
 
-        page.forEach(item ->
-                item.changeFollowedByMe(myFollowingIdSet.contains(item.getUserId()))
-        );
-
-        page.sort(
-                Comparator
-                        .comparing(
-                                (FollowListItem item) -> item.getUserId().equals(meId),
-                                Comparator.reverseOrder()
-                        )
-                        .thenComparing(
-                                FollowListItem::isFollowedByMe,
-                                Comparator.reverseOrder()
-                        )
-        );
+        List<FollowListItem> content = new ArrayList<>(limit);
+        if (meItem != null) content.add(meItem);
+        content.addAll(page);
 
         long totalCount = followRepository.countFolloweeByUsers_Id(userId);
 
         return new CursorPageResponse<>(
-                page,
+                content,
                 nextCursor,
-                page.size(),
+                content.size(),
                 hasNext,
                 totalCount
         );
