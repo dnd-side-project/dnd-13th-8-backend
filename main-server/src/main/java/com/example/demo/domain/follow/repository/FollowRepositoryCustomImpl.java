@@ -1,5 +1,6 @@
 package com.example.demo.domain.follow.repository;
 
+import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.dto.response.FollowedPlaylist;
 import com.example.demo.domain.follow.entity.QFollow;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
@@ -46,6 +47,74 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                 )
                 .orderBy(order)
                 .limit(limit)
+                .fetch();
+    }
+
+    // 해당 유저를 팔로우하는 사람 목록
+    @Override
+    public List<FollowListItem> findFollowerListByUserId(String userId, Long cursor, int limit) {
+        QFollow f = QFollow.follow;
+        QUsers u = QUsers.users;
+
+        return queryFactory
+                .select(Projections.constructor(
+                        FollowListItem.class,
+                        f.id,
+                        u.id.stringValue(),
+                        u.username,
+                        u.shareCode,
+                        u.profileUrl
+                ))
+                .from(f)
+                .join(f.follower, u)
+                .where(
+                        f.followee.id.eq(userId),
+                        cursor != null ? f.id.lt(cursor) : null
+                )
+                .orderBy(f.id.desc())
+                .limit(limit+1)
+                .fetch();
+    }
+
+    @Override
+    public List<FollowListItem> findFolloweeListByUserId(String userId, Long cursor, int limit) {
+        QFollow f = QFollow.follow;
+        QUsers u = QUsers.users;
+
+        return queryFactory
+                .select(Projections.constructor(
+                        FollowListItem.class,
+                        f.id,
+                        u.id.stringValue(),
+                        u.username,
+                        u.shareCode,
+                        u.profileUrl
+                ))
+                .from(f)
+                .join(f.followee, u)
+                .where(
+                        f.follower.id.eq(userId),
+                        cursor != null ? f.id.lt(cursor) : null
+                )
+                .orderBy(f.id.desc())
+                .limit(limit + 1)
+                .fetch();
+    }
+
+    // 목록 중에 내가 팔로우 중인 아이디만 가져옴
+    @Override
+    public List<String> findFolloweeIdsIn(String userId, List<String> followeeIds) {
+        if (followeeIds == null || followeeIds.isEmpty()) return List.of();
+
+        QFollow f = QFollow.follow;
+
+        return queryFactory
+                .select(f.followee.id)
+                .from(f)
+                .where(
+                        f.follower.id.eq(userId),
+                        f.followee.id.in(followeeIds)
+                )
                 .fetch();
     }
 }

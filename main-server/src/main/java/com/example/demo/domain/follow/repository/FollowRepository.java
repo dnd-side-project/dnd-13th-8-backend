@@ -27,4 +27,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long>, FollowRep
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     void deleteByFollower_IdAndFollowee_Id(String followerId, String followeeId);
+
+    @Query("select count(f) from Follow f where f.followee.id = :userId")
+    long countFollowerByUsers_Id(@Param("userId") String userId);
+
+    @Query("select count(f) from Follow f where f.follower.id = :userId")
+    long countFolloweeByUsers_Id(@Param("userId") String userId);
 }
