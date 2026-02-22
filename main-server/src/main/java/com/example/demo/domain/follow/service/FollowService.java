@@ -6,7 +6,6 @@ import com.example.common.error.exception.UserException;
 import com.example.demo.domain.follow.dto.response.FollowCountResponse;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.repository.FollowRepository;
-import com.example.demo.global.paging.CursorPageConverter;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 @Slf4j
 @Service
