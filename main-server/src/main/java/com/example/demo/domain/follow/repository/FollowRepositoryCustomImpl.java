@@ -121,10 +121,8 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
         QFollow f = QFollow.follow;
         QUsers u = QUsers.users;
 
-        BooleanExpression cursorCond = (cursor == null) ? null
-                : (sort == FollowSortOption.OLDEST ? f.id.gt(cursor) : f.id.lt(cursor));
-
-        OrderSpecifier<Long> order = (sort == FollowSortOption.OLDEST) ? f.id.asc() : f.id.desc();
+        BooleanExpression excludeCond =
+                (excludeUserId == null || excludeUserId.isBlank()) ? null : u.id.ne(excludeUserId);
 
         return queryFactory
                 .select(Projections.constructor(
@@ -139,10 +137,10 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                 .join(f.follower, u)
                 .where(
                         f.followee.id.eq(userId),
-                        excludeUserId != null ? u.id.ne(excludeUserId) : null,
-                        cursorCond
+                        excludeCond,
+                        cursorCondition(f, cursor, sort)
                 )
-                .orderBy(order)
+                .orderBy(orderByFollowId(f, sort))
                 .limit(limit + 1)
                 .fetch();
     }
@@ -154,10 +152,8 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
         QFollow f = QFollow.follow;
         QUsers u = QUsers.users;
 
-        BooleanExpression cursorCond = (cursor == null) ? null
-                : (sort == FollowSortOption.OLDEST ? f.id.gt(cursor) : f.id.lt(cursor));
-
-        OrderSpecifier<Long> order = (sort == FollowSortOption.OLDEST) ? f.id.asc() : f.id.desc();
+        BooleanExpression excludeCond =
+                (excludeUserId == null || excludeUserId.isBlank()) ? null : u.id.ne(excludeUserId);
 
         return queryFactory
                 .select(Projections.constructor(
@@ -172,10 +168,10 @@ public class FollowRepositoryCustomImpl implements FollowRepositoryCustom {
                 .join(f.followee, u)
                 .where(
                         f.follower.id.eq(userId),
-                        excludeUserId != null ? u.id.ne(excludeUserId) : null,
-                        cursorCond
+                        excludeCond,
+                        cursorCondition(f, cursor, sort)
                 )
-                .orderBy(order)
+                .orderBy(orderByFollowId(f, sort))
                 .limit(limit + 1)
                 .fetch();
     }
