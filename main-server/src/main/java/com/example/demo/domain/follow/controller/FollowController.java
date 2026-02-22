@@ -1,5 +1,6 @@
 package com.example.demo.domain.follow.controller;
 
+import com.example.demo.domain.follow.dto.request.FollowSortOption;
 import com.example.demo.domain.follow.dto.response.FollowCountResponse;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.dto.response.FollowListResponse;
@@ -44,10 +45,11 @@ public class FollowController {
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String userId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(required = false, defaultValue = "20") int limit
+            @RequestParam(required = false, defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "LATEST") FollowSortOption sort
     ) {
         CursorPageResponse<FollowListItem, Long> response =
-                followService.getFollowerList(userId, me.getId(), cursor, limit);
+                followService.getFollowerList(userId, me.getId(), cursor, limit, sort);
 
         return ResponseEntity.ok(response);
     }
@@ -70,10 +72,11 @@ public class FollowController {
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String userId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(required = false, defaultValue = "20") int limit
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "LATEST") FollowSortOption sort
     ) {
         CursorPageResponse<FollowListItem, Long> response =
-                followService.getFollowingList(userId, me.getId(), cursor, limit);
+                followService.getFollowingList(userId, me.getId(), cursor, limit, sort);
 
         return ResponseEntity.ok(response);
     }
