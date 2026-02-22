@@ -28,8 +28,8 @@ public class UsersController {
     private final UsersService usersService;
 
     @Operation(
-            summary = "프로필 변경",
-            description = "프로필 이름과 사진을 변경합니다"
+            summary = "프로필 수정",
+            description = "프로필 정보를 수정합니다"
     )
     @ApiResponse(content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
     @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

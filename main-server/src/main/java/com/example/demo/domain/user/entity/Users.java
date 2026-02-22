@@ -63,6 +63,10 @@ public class Users extends BaseTimeEntity {
         this.bio = newBio;
     }
 
+    public void changeShareCode(String shareCode) {
+        this.shareCode = shareCode;
+    }
+
     // 프로필 이미지 변경 메서드
     public void changeProfileImage(String newProfileImageUrl) {
         this.profileUrl = newProfileImageUrl;
