@@ -11,6 +11,7 @@ import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -27,6 +28,26 @@ import static com.querydsl.core.types.dsl.Expressions.nullExpression;
 public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    private OrderSpecifier<?>[] orderBy(QPlaylist p, PlaylistSortOption sort) {
+        return switch (sort) {
+            case RECENT -> new OrderSpecifier<?>[]{ p.id.desc() };
+            case POPULAR -> new OrderSpecifier<?>[]{ p.visitCount.desc(), p.id.desc() };
+        };
+    }
+
+    @Override
+    public List<Playlist> findByUserIdSorted(String userId, PlaylistSortOption sort) {
+        QPlaylist p = QPlaylist.playlist;
+        QUsers u = QUsers.users;
+
+        return queryFactory
+                .selectFrom(p)
+                .join(p.users, u).fetchJoin()
+                .where(u.id.eq(userId))
+                .orderBy(orderBy(p, sort))
+                .fetch();
+    }
 
     @Override
     public List<Long> findFollowedPlaylistIds(String currentUserId) {

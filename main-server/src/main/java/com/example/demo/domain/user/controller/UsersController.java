@@ -1,7 +1,9 @@
 package com.example.demo.domain.user.controller;
 
-import com.example.demo.domain.user.dto.UpdateProfileRequest;
-import com.example.demo.domain.user.dto.UpdateProfileResponse;
+import com.example.demo.domain.user.dto.request.UpdateProfileRequest;
+import com.example.demo.domain.user.dto.response.GetFeedProfileResponse;
+import com.example.demo.domain.user.dto.response.IsFeedOwnerResponse;
+import com.example.demo.domain.user.dto.response.UpdateProfileResponse;
 import com.example.demo.domain.user.service.UsersService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +35,7 @@ public class UsersController {
     )
     @ApiResponse(content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
     @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UpdateProfileResponse> updateProfileLegacy(
+    public ResponseEntity<UpdateProfileResponse> updateProfile(
             @AuthenticationPrincipal CustomUserDetails me,
             @ModelAttribute UpdateProfileRequest request // MultipartFile + String 같이 받기 위해 @ModelAttribute
     ) throws IOException {
@@ -52,5 +54,30 @@ public class UsersController {
     ) {
         usersService.deleteAccount(me.getId());
         return ResponseEntity.ok("서비스에서 탈퇴하였습니다");
+    }
+
+    @Operation(
+            summary = "피드 프로필 조회",
+            description = "피드 프로필 정보를 조회합니다"
+    )
+    @ApiResponse(content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
+    @GetMapping(value = "/profile/{shareCode}")
+    public ResponseEntity<GetFeedProfileResponse> getFeedProfile(
+            @PathVariable String shareCode) {
+        GetFeedProfileResponse response = usersService.getFeedProfileByShareCode(shareCode);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "피드 본인 확인",
+            description = "본인 피드인지 인증합니다"
+    )
+    @ApiResponse(content = @Content(schema = @Schema(implementation = IsFeedOwnerResponse.class)))
+    @GetMapping(value = "/profile/{shareCode}/owner")
+    public ResponseEntity<IsFeedOwnerResponse> isUserFeedOwner(
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable String shareCode) {
+        IsFeedOwnerResponse response = usersService.isUserFeedOwner(me.getId(),shareCode);
+        return ResponseEntity.ok(response);
     }
 }

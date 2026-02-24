@@ -1,10 +1,7 @@
 package com.example.demo.domain.playlist.service;
 
-import com.example.demo.domain.playlist.dto.save.EditFinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.save.FinalPlaylistRequest;
 import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
-import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 
 public interface PlaylistService {
@@ -19,12 +16,7 @@ public interface PlaylistService {
 
     String saveDraftPlaylist(PlaylistDraft playlistDraft);
 
-    SavePlaylistResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
-                                                         FinalPlaylistRequest finalPlaylistRequest);
-
-    SavePlaylistResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
-                                                         EditFinalPlaylistRequest editFinalPlaylistRequest);
-
     void deletePlaylist(String userId, Long playlistId);
 
+    void updateIsPublic(String userId, Long playlistId);
 }
