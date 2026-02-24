@@ -32,7 +32,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
-    private final UsersRepository usersRepository;
     private final FollowRepository followRepository;
     private final LikesRepository likesRepository;
     private final CdService cdService;

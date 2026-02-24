@@ -7,8 +7,6 @@ import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.dto.request.SaveCdRequest;
 import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.service.CdService;
-import com.example.demo.domain.playlist.dto.save.EditFinalPlaylistRequest;
-import com.example.demo.domain.playlist.dto.save.FinalPlaylistRequest;
 import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
 import com.example.demo.domain.playlist.dto.common.SongDto;
