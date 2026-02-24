@@ -2,8 +2,13 @@ package com.example.demo.domain.user.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
-import com.example.demo.domain.user.dto.UpdateProfileRequest;
-import com.example.demo.domain.user.dto.UpdateProfileResponse;
+import com.example.demo.domain.follow.dto.response.FollowCount;
+import com.example.demo.domain.follow.service.FollowService;
+import com.example.demo.domain.user.dto.request.UpdateProfileRequest;
+import com.example.demo.domain.user.dto.response.GetFeedProfileResponse;
+import com.example.demo.domain.user.dto.response.IsFeedOwnerResponse;
+import com.example.demo.domain.user.dto.response.UpdateProfileResponse;
+import com.example.demo.domain.user.entity.MusicKeyword;
 import com.example.demo.domain.user.entity.UserMusicKeyword;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UserMusicKeywordRepository;
@@ -23,12 +28,28 @@ public class UsersService {
 
     private final UsersRepository usersRepository;
     private final UserMusicKeywordRepository userMusicKeywordRepository;
+    private final FollowService followService;
     private final R2Service r2Service;
 
-    public Users findUserByShareCode(String shareCode) {
-        return usersRepository.findUsersByShareCode(shareCode)
+    public GetFeedProfileResponse getFeedProfileByShareCode(String shareCode) {
+
+        Users user = usersRepository.findUsersByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        List<MusicKeyword> keywords = userMusicKeywordRepository.findAllKeywordsByUsers_Id(user.getId());
+
+        FollowCount followCount = followService.getFollowCount(user.getId());
+
+        return GetFeedProfileResponse.from(user, keywords, followCount);
     }
+
+    public IsFeedOwnerResponse isUserFeedOwner(String userId, String shareCode) {
+        Users user = usersRepository.findUsersByShareCode(shareCode)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        return new IsFeedOwnerResponse(user.getId().equals(userId));
+    }
+
 
     @Transactional
     public UpdateProfileResponse updateProfile(String userId, UpdateProfileRequest req)
@@ -64,7 +85,7 @@ public class UsersService {
             }
 
             if (req.musicKeywords() != null) {
-                userMusicKeywordRepository.deleteByUsersId(userId);
+                userMusicKeywordRepository.deleteByUsers_Id(userId);
 
                 List<UserMusicKeyword> userMusicKeywordList = req.musicKeywords().stream()
                         .distinct()

@@ -4,7 +4,7 @@ package com.example.demo.domain.follow.service;
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.follow.dto.request.FollowSortOption;
-import com.example.demo.domain.follow.dto.response.FollowCountResponse;
+import com.example.demo.domain.follow.dto.response.FollowCount;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.repository.FollowRepository;
 import com.example.demo.global.paging.CursorPageResponse;
@@ -150,11 +150,11 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-    public FollowCountResponse getFollowCount (String userId) {
+    public FollowCount getFollowCount (String userId) {
         long followerCount = followRepository.countFollowerByUsers_Id(userId);
         long followingCount = followRepository.countFolloweeByUsers_Id(userId);
 
-        return new FollowCountResponse(followerCount, followingCount);
+        return new FollowCount(followerCount, followingCount);
     }
 
 }

@@ -1,7 +1,6 @@
 package com.example.demo.domain.follow.controller;
 
 import com.example.demo.domain.follow.dto.request.FollowSortOption;
-import com.example.demo.domain.follow.dto.response.FollowCountResponse;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.dto.response.FollowListResponse;
 import com.example.demo.domain.follow.dto.response.IsUserFollowingResponse;
@@ -79,17 +78,6 @@ public class FollowController {
                 followService.getFollowingList(userId, me.getId(), cursor, limit, sort);
 
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/count/{userId}")
-    @Operation(
-            summary = "팔로워/팔로잉 숫자",
-            description = "해당 유저의 팔로우/팔로잉 숫자를 반환합니다."
-    )
-    public ResponseEntity<FollowCountResponse> getFollowCount(
-            @PathVariable String userId
-    ) {
-        return ResponseEntity.ok(followService.getFollowCount(userId));
     }
 
     @GetMapping("/{followeeId}")
