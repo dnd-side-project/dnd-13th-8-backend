@@ -19,12 +19,7 @@ public interface PlaylistService {
 
     String saveDraftPlaylist(PlaylistDraft playlistDraft);
 
-    SavePlaylistResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
-                                                         FinalPlaylistRequest finalPlaylistRequest);
-
-    SavePlaylistResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest savePlaylistRequest,
-                                                         EditFinalPlaylistRequest editFinalPlaylistRequest);
-
     void deletePlaylist(String userId, Long playlistId);
 
+    void updateIsPublic(String userId, Long playlistId);
 }

@@ -66,19 +66,29 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PlaylistDetailWithCreatorResponse getPlaylistDetail(Long playlistId, String userId) {
-        Playlist playlist = playlistRepository.findById(playlistId)
-                .filter(Playlist::isPublic)
-                .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new PlaylistException(
+                        "플레이리스트가 존재하지 않습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
+
+        if (!playlist.isPublic() && !playlist.getUsers().getId().equals(userId)) {
+            throw new PlaylistException(
+                    "비공개 플레이리스트입니다.",
+                    PlaylistErrorCode.PLAYLIST_NOT_FOUND
+            );
+        }
 
         List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
-        List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
+        List<SongDto> songDtos = songs.stream()
+                .map(SongDto::from)
+                .toList();
 
         var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
+
         return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
     }
 
@@ -125,29 +135,6 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public SavePlaylistResponse saveFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
-                                                                FinalPlaylistRequest finalPlaylistRequest) {
-
-        SavePlaylistResponse response = playlistSaveService.savePlaylistWithSongs(usersId, request);
-
-        cdService.saveCdItemList(response.playlistId(), finalPlaylistRequest.saveCdRequest().cdItems());
-
-        return response;
-    }
-
-    @Override
-    @Transactional
-    public SavePlaylistResponse editFinalPlaylistWithSongsAndCd(String usersId, SavePlaylistRequest request,
-                                                                EditFinalPlaylistRequest editFinalPlaylistRequest) {
-        SavePlaylistResponse response = playlistSaveService.editPlaylistWithSongs(usersId, editFinalPlaylistRequest.playlistId(),
-                request);
-        cdService.replaceCdItemList(editFinalPlaylistRequest.playlistId(), editFinalPlaylistRequest.saveCdRequest().cdItems());
-
-        return response;
-    }
-
-    @Override
-    @Transactional
     public void deletePlaylist(String userId, Long playlistId) {
         // 1. 삭제 대상 검증
         Playlist toDelete = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
@@ -167,4 +154,13 @@ public class PlaylistServiceImpl implements PlaylistService {
         applicationEventPublisher.publishEvent(new PlaylistDeleteEvent(String.valueOf(playlistId)));
     }
 
+    @Override
+    @Transactional
+    public void updateIsPublic(String userId, Long playlistId) {
+        Playlist target = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() ->new PlaylistException(
+                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+        target.updateIsPublic();
+    }
 }

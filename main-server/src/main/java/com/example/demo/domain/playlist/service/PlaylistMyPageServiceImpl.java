@@ -35,9 +35,10 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
     private final UsersRepository usersRepository;
     private final FollowRepository followRepository;
     private final LikesRepository likesRepository;
+    private final CdService cdService;
 
     private static final int DEFAULT_LIMIT = 20;
-    private final CdService cdService;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -88,7 +89,6 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
                             PlaylistErrorCode.PLAYLIST_NOT_FOUND));
         target.updateIsPublic();
     }
-
 
     @Override
     @Transactional(readOnly = true)

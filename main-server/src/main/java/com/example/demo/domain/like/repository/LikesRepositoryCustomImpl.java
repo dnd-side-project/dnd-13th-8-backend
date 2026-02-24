@@ -19,6 +19,22 @@ public class LikesRepositoryCustomImpl implements LikesRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public List<Long> findLikedPlaylistIdsIn(String userId, List<Long> playlistIds) {
+        if (playlistIds == null || playlistIds.isEmpty()) return List.of();
+
+        QLikes l = QLikes.likes;
+
+        return queryFactory
+                .select(l.playlist.id)
+                .from(l)
+                .where(
+                        l.users.id.eq(userId),
+                        l.playlist.id.in(playlistIds)
+                )
+                .fetch();
+    }
+
+    @Override
     public List<Playlist> findLikedPlaylistsWithMeta(String userId,
                                                      PlaylistSortOption sort,
                                                      int limit) {

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/main/playlist/mypage")
 @RequiredArgsConstructor
-@Tag(name = "Playlist - MyPage", description = "마이페이지 플레이리스트 API")
+@Tag(name = "Playlist - MyPage", description = "마이페이지 플레이리스트 API (전체 레거시 예정)")
 @SecurityRequirement(name = "bearerAuth")
 public class PlaylistMyPageController {
 

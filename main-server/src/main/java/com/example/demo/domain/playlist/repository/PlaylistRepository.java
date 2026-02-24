@@ -11,43 +11,32 @@ import org.springframework.data.repository.query.Param;
 public interface PlaylistRepository extends JpaRepository<Playlist, Long>, PlaylistRepositoryCustom {
 
     @Query("""
-SELECT p
-FROM Playlist p
-JOIN FETCH p.users u
-WHERE u.id = :userId
-ORDER BY p.visitCount DESC
-""")
+    SELECT p
+    FROM Playlist p
+    JOIN FETCH p.users u
+    WHERE u.id = :userId
+    ORDER BY p.visitCount DESC
+    """)
     List<Playlist> findByUserIdPopular(@Param("userId") String userId);
 
     @Query("""
-SELECT p
-FROM Playlist p
-JOIN FETCH p.users u
-WHERE u.id = :userId
-ORDER BY p.id DESC
-""")
+    SELECT p
+    FROM Playlist p
+    JOIN FETCH p.users u
+    WHERE u.id = :userId
+    ORDER BY p.id DESC
+    """)
     List<Playlist> findByUserIdRecent(@Param("userId") String userId);
 
     Optional<Playlist> findByIdAndUsers_Id(Long playlistId, String userId);
 
-    @Query(value = "SELECT COUNT(*) FROM playlist WHERE user_id = :userId", nativeQuery = true)
-    long countByUserIdNative(@Param("userId") String userId);
-
+    long countByUsers_Id(String userId);
 
     @Query(value = "SELECT * FROM playlist " +
             "WHERE user_id = :userId AND id <> :excludePlaylistId " +
             "ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
     Optional<Playlist> findMostRecentExcluding(@Param("userId") String userId,
                                                @Param("excludePlaylistId") Long excludePlaylistId);
-
-    @Query("""
-        SELECT p
-        FROM Playlist p
-        WHERE p.users.id = :userId
-          AND p.id <> :excludeId
-        ORDER BY p.createdAt DESC
-    """)
-    Optional<Playlist> findNextRecent(String userId, Long excludeId);
 
     @Modifying
     @Query("update Playlist p set p.visitCount = p.visitCount + 1 where p.id = :id")

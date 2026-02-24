@@ -33,7 +33,7 @@ public class UsersService {
 
     public GetFeedProfileResponse getFeedProfileByShareCode(String shareCode) {
 
-        Users user = usersRepository.findUsersByShareCode(shareCode)
+        Users user = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         List<MusicKeyword> keywords = userMusicKeywordRepository.findAllKeywordsByUsers_Id(user.getId());
@@ -44,7 +44,7 @@ public class UsersService {
     }
 
     public IsFeedOwnerResponse isUserFeedOwner(String userId, String shareCode) {
-        Users user = usersRepository.findUsersByShareCode(shareCode)
+        Users user = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         return new IsFeedOwnerResponse(user.getId().equals(userId));
