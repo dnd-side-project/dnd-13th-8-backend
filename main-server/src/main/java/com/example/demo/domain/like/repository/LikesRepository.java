@@ -26,4 +26,6 @@ public interface LikesRepository extends JpaRepository<Likes, Long>, LikesReposi
     void deleteByUsers_IdAndPlaylist_Id(String userId, Long playlistId);
 
     boolean existsByUsers_IdAndPlaylist_Id(String usersId, Long playlistId);
+
+    long countByUsers_Id(String userId);
 }

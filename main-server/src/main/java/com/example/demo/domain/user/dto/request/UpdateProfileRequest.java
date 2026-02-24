@@ -1,4 +1,4 @@
-package com.example.demo.domain.user.dto;
+package com.example.demo.domain.user.dto.request;
 
 import com.example.demo.domain.user.entity.MusicKeyword;
 import io.swagger.v3.oas.annotations.media.Schema;
