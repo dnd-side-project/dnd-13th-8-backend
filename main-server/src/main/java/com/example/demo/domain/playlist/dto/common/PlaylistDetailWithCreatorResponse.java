@@ -27,8 +27,11 @@ public record PlaylistDetailWithCreatorResponse(
         @Schema(description = "플레이리스트에 포함된 CD 아이템 목록")
         CdResponse cdResponse,
 
-        @Schema(description = "플레이리스트 제작자 ID", example = "user-1234")
+        @Schema(description = "플레이리스트 제작자 userId", example = "user-1234")
         String creatorId,
+
+        @Schema(description = "플레이리스트 제작자 프로필 아이디", example = "jigu_jelly")
+        String creatorShareCode,
 
         @Schema(description = "플레이리스트 제작자 닉네임", example = "기타치는-은하-1234")
         String creatorNickname,
@@ -47,6 +50,7 @@ public record PlaylistDetailWithCreatorResponse(
                 playlist.getGenre(),
                 cdResponse,
                 creator.getId(),
+                creator.getShareCode(),
                 creator.getUsername(),
                 creator.getProfileUrl() // 또는 getProfileImageUrl()
         );
