@@ -7,6 +7,7 @@ import com.example.demo.domain.follow.dto.request.FollowSortOption;
 import com.example.demo.domain.follow.dto.response.FollowCount;
 import com.example.demo.domain.follow.dto.response.FollowListItem;
 import com.example.demo.domain.follow.repository.FollowRepository;
+import com.example.demo.domain.user.entity.Users;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,55 +27,61 @@ public class FollowService {
     private final FollowRepository followRepository;
 
     @Transactional
-    public void follow(String followerId, String followeeId) {
+    public void follow(String followerId, String shareCode) {
+
         if (!usersRepository.existsById(followerId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        if (!usersRepository.existsById(followeeId)) {
-            throw new UserException(UserErrorCode.USER_NOT_FOUND);
-        }
+        Users followee = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        followRepository.insertIfNotExists(followerId, followeeId);
+        followRepository.insertIfNotExists(followerId, followee.getId());
     }
 
     @Transactional
-    public void unfollow(String followerId, String followeeId) {
+    public void unfollow(String followerId, String shareCode) {
         if (!usersRepository.existsById(followerId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        if (!usersRepository.existsById(followeeId)) {
-            throw new UserException(UserErrorCode.USER_NOT_FOUND);
-        }
+        Users followee = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        followRepository.deleteByFollower_IdAndFollowee_Id(followerId, followeeId);
+        followRepository.deleteByFollower_IdAndFollowee_Id(followerId, followee.getId());
     }
 
-    public boolean isUserFollowing(String followerId, String followeeId) {
-        return followRepository.existsByFollower_IdAndFollowee_Id(followerId, followeeId);
+    public boolean isUserFollowing(String followerId, String shareCode) {
+
+        Users followee = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        return followRepository.existsByFollower_IdAndFollowee_Id(followerId, followee.getId());
     }
 
     @Transactional(readOnly = true)
     public CursorPageResponse<FollowListItem, Long> getFollowerList(
-            String userId,
+            String shareCode,
             String meId,
             Long cursor,
             int limit,
             FollowSortOption sort
     ) {
+        Users user = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
+
         Long effectiveCursor = (cursor == null || cursor <= 0) ? null : cursor;
         boolean firstPage = (effectiveCursor == null);
 
         FollowListItem meItem = firstPage
-                ? followRepository.findMeInFollowerList(userId, meId).orElse(null)
+                ? followRepository.findMeInFollowerList(user.getId(), meId).orElse(null)
                 : null;
 
         int fetchLimit = (firstPage && meItem != null) ? (limit - 1) : limit;
 
         List<FollowListItem> rows = (fetchLimit <= 0)
                 ? List.of()
-                : followRepository.findFollowerListByUserId(userId, effectiveCursor, fetchLimit, sort, meId);
+                : followRepository.findFollowerListByUserId(user.getId(), effectiveCursor, fetchLimit, sort, meId);
 
         boolean hasNext = rows.size() > fetchLimit;
         List<FollowListItem> page = hasNext ? rows.subList(0, fetchLimit) : rows;
@@ -94,31 +101,35 @@ public class FollowService {
         if (meItem != null) content.add(meItem);
         content.addAll(page);
 
-        long totalCount = followRepository.countFollowerByUsers_Id(userId);
+        long totalCount = followRepository.countFollowerByUsers_Id(user.getId());
 
         return new CursorPageResponse<>(content, nextCursor, content.size(), hasNext, totalCount);
     }
 
     @Transactional(readOnly = true)
     public CursorPageResponse<FollowListItem, Long> getFollowingList(
-            String userId,
+            String shareCode,
             String meId,
             Long cursor,
             int limit,
             FollowSortOption sort
     ) {
+
+        Users user = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
+
         Long effectiveCursor = (cursor == null || cursor <= 0) ? null : cursor;
         boolean firstPage = (effectiveCursor == null);
 
         FollowListItem meItem = firstPage
-                ? followRepository.findMeInFolloweeList(userId, meId).orElse(null)
+                ? followRepository.findMeInFolloweeList(user.getId(), meId).orElse(null)
                 : null;
 
         int fetchLimit = (firstPage && meItem != null) ? (limit - 1) : limit;
 
         List<FollowListItem> rows = (fetchLimit <= 0)
                 ? List.of()
-                : followRepository.findFolloweeListByUserId(userId, effectiveCursor, fetchLimit, sort, meId);
+                : followRepository.findFolloweeListByUserId(user.getId(), effectiveCursor, fetchLimit, sort, meId);
 
         boolean hasNext = rows.size() > fetchLimit;
         List<FollowListItem> page = hasNext ? rows.subList(0, fetchLimit) : rows;
@@ -138,7 +149,7 @@ public class FollowService {
         if (meItem != null) content.add(meItem);
         content.addAll(page);
 
-        long totalCount = followRepository.countFolloweeByUsers_Id(userId);
+        long totalCount = followRepository.countFolloweeByUsers_Id(user.getId());
 
         return new CursorPageResponse<>(
                 content,
