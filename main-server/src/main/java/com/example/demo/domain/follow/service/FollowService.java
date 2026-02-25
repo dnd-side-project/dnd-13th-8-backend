@@ -27,33 +27,36 @@ public class FollowService {
     private final FollowRepository followRepository;
 
     @Transactional
-    public void follow(String followerId, String followeeId) {
+    public void follow(String followerId, String shareCode) {
+
         if (!usersRepository.existsById(followerId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        if (!usersRepository.existsById(followeeId)) {
-            throw new UserException(UserErrorCode.USER_NOT_FOUND);
-        }
+        Users followee = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        followRepository.insertIfNotExists(followerId, followeeId);
+        followRepository.insertIfNotExists(followerId, followee.getId());
     }
 
     @Transactional
-    public void unfollow(String followerId, String followeeId) {
+    public void unfollow(String followerId, String shareCode) {
         if (!usersRepository.existsById(followerId)) {
             throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        if (!usersRepository.existsById(followeeId)) {
-            throw new UserException(UserErrorCode.USER_NOT_FOUND);
-        }
+        Users followee = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        followRepository.deleteByFollower_IdAndFollowee_Id(followerId, followeeId);
+        followRepository.deleteByFollower_IdAndFollowee_Id(followerId, followee.getId());
     }
 
-    public boolean isUserFollowing(String followerId, String followeeId) {
-        return followRepository.existsByFollower_IdAndFollowee_Id(followerId, followeeId);
+    public boolean isUserFollowing(String followerId, String shareCode) {
+
+        Users followee = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(()-> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        return followRepository.existsByFollower_IdAndFollowee_Id(followerId, followee.getId());
     }
 
     @Transactional(readOnly = true)

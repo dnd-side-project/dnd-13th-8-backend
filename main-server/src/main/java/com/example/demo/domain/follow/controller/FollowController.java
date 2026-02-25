@@ -80,7 +80,7 @@ public class FollowController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{followeeId}")
+    @GetMapping("/{shareCode}")
     @Operation(
             summary = "팔로우 여부 확인 True/False",
             description = "현재 로그인한 사용자가 해당 유저를 팔로우 중인지 확인합니다."
@@ -88,15 +88,15 @@ public class FollowController {
     public ResponseEntity<IsUserFollowingResponse> checkFollow(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
-            @PathVariable String followeeId
+            @PathVariable String shareCode
     ) {
         return ResponseEntity.ok().body(IsUserFollowingResponse.builder()
-                .isFollowing(followService.isUserFollowing(me.getId(), followeeId))
+                .isFollowing(followService.isUserFollowing(me.getId(), shareCode))
                 .build());
     }
 
 
-    @PostMapping("/{followeeId}")
+    @PostMapping("/{shareCode}")
     @Operation(
             summary = "팔로우",
             description = "현재 로그인한 사용자가 해당 유저를 팔로우합니다. 중복 팔로우는 무시됩니다."
@@ -104,13 +104,13 @@ public class FollowController {
     public ResponseEntity<Void> followUser(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
-            @PathVariable String followeeId
+            @PathVariable String shareCode
     ) {
-        followService.follow(me.getId(), followeeId);
+        followService.follow(me.getId(), shareCode);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{followeeId}")
+    @DeleteMapping("/{shareCode}")
     @Operation(
             summary = "팔로우 취소",
             description = "현재 로그인한 사용자가 해당 유저를 팔로우 취소합니다. 팔로우 상태가 아니라면 아무 동작도 하지 않습니다."
@@ -118,9 +118,9 @@ public class FollowController {
     public ResponseEntity<Void> unfollowUser(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
-            @PathVariable String followeeId
+            @PathVariable String shareCode
     ) {
-        followService.unfollow(me.getId(), followeeId);
+        followService.unfollow(me.getId(), shareCode);
         return ResponseEntity.ok().build();
     }
 }
