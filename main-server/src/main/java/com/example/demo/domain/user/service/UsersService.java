@@ -31,6 +31,7 @@ public class UsersService {
     private final FollowService followService;
     private final R2Service r2Service;
 
+    @Transactional(readOnly = true)
     public GetFeedProfileResponse getFeedProfileByShareCode(String shareCode) {
 
         Users user = usersRepository.findByShareCode(shareCode)
@@ -43,6 +44,7 @@ public class UsersService {
         return GetFeedProfileResponse.from(user, keywords, followCount);
     }
 
+    @Transactional(readOnly = true)
     public IsFeedOwnerResponse isUserFeedOwner(String userId, String shareCode) {
         Users user = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
