@@ -97,7 +97,7 @@ public class UsersService {
                 userMusicKeywordRepository.saveAll(userMusicKeywordList);
             }
 
-            if (req.nickname() != null && req.shareCode() != null) {
+            if (req.shareCode() != null && !req.shareCode().isBlank()) {
                 user.changeShareCode(req.shareCode());
             }
 
