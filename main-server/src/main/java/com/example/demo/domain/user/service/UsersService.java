@@ -95,15 +95,15 @@ public class UsersService {
                 userMusicKeywordRepository.saveAll(userMusicKeywordList);
             }
 
-            if (req.profileId() != null) {
-                user.changeShareCode(req.profileId());
+            if (req.shareCode() != null) {
+                user.changeShareCode(req.shareCode());
             }
 
             if (req.bio() != null) {
                 user.changeBio(req.bio());
             }
 
-            return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
+            return UpdateProfileResponse.from(user);
         }
         catch (DataIntegrityViolationException e) {
             throw new UserException(UserErrorCode.DUPLICATED_SHARECODE);
