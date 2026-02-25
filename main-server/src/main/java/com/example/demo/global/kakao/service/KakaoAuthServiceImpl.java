@@ -38,7 +38,7 @@ public class KakaoAuthServiceImpl implements AuthService {
 
         String access = jwtAccessIssuer.issueUserToken(users.getId());
 
-        return new KakaoLoginResponse(users.getId(), users.getUsername(), users.getProfileUrl(), access);
+        return KakaoLoginResponse.from(users, access);
     }
 
     private Users createUserWithShareCodeRetry(KakaoProfileResponse profile, String kakaoId) {

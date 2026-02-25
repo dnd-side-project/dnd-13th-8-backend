@@ -15,7 +15,7 @@ public record UpdateProfileRequest(
         MultipartFile profileImage,
 
         @Schema(description = "새 프로필 아이디", example = "jigu_jelly")
-        String profileId,
+        String shareCode,
 
         @Schema(description = "새 소개", example = "안녕하세요~")
         String bio,

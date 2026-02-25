@@ -31,6 +31,7 @@ public class UsersService {
     private final FollowService followService;
     private final R2Service r2Service;
 
+    @Transactional(readOnly = true)
     public GetFeedProfileResponse getFeedProfileByShareCode(String shareCode) {
 
         Users user = usersRepository.findByShareCode(shareCode)
@@ -43,6 +44,7 @@ public class UsersService {
         return GetFeedProfileResponse.from(user, keywords, followCount);
     }
 
+    @Transactional(readOnly = true)
     public IsFeedOwnerResponse isUserFeedOwner(String userId, String shareCode) {
         Users user = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -95,15 +97,15 @@ public class UsersService {
                 userMusicKeywordRepository.saveAll(userMusicKeywordList);
             }
 
-            if (req.profileId() != null) {
-                user.changeShareCode(req.profileId());
+            if (req.shareCode() != null && !req.shareCode().isBlank()) {
+                user.changeShareCode(req.shareCode());
             }
 
             if (req.bio() != null) {
                 user.changeBio(req.bio());
             }
 
-            return new UpdateProfileResponse(user.getId(), user.getUsername(), user.getProfileUrl());
+            return UpdateProfileResponse.from(user);
         }
         catch (DataIntegrityViolationException e) {
             throw new UserException(UserErrorCode.DUPLICATED_SHARECODE);
