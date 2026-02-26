@@ -60,7 +60,7 @@ public class UsersController {
             summary = "피드 프로필 조회",
             description = "피드 프로필 정보를 조회합니다"
     )
-    @ApiResponse(content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
+    @ApiResponse(content = @Content(schema = @Schema(implementation = GetFeedProfileResponse.class)))
     @GetMapping(value = "/profile/{shareCode}")
     public ResponseEntity<GetFeedProfileResponse> getFeedProfile(
             @PathVariable String shareCode) {
