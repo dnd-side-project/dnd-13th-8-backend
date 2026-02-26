@@ -16,7 +16,7 @@ public record KakaoLoginResponse(
         String shareCode,
 
         @Schema(description = "사용자 프로필 이미지 URL", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
-        String userProfileImageUrl,
+        String profileUrl,
 
         @Schema(description = "JWT Access Token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
         String jwtAccessToken
