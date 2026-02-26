@@ -21,5 +21,5 @@ public record UpdateProfileRequest(
         String bio,
 
         @Schema(description = "음악 취향 키워드")
-        List<MusicKeyword> musicKeywords
+        List<MusicKeyword> keywords
 ) {}
