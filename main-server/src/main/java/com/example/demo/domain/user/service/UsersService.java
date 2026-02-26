@@ -86,10 +86,10 @@ public class UsersService {
                 user.changeProfileImage(profileUrl);
             }
 
-            if (req.musicKeywords() != null) {
+            if (req.keywords() != null) {
                 userMusicKeywordRepository.deleteByUsers_Id(userId);
 
-                List<UserMusicKeyword> userMusicKeywordList = req.musicKeywords().stream()
+                List<UserMusicKeyword> userMusicKeywordList = req.keywords().stream()
                         .distinct()
                         .map(keyword -> new UserMusicKeyword(user, keyword))
                         .toList();
