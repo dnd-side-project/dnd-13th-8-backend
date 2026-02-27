@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "검색 결과 중 플레이리스트 항목")
 public record PlaylistSearchDto(
 
+        @Schema(description = "검색 결과 타입", example = "PLAYLIST")
+        SearchType type,
+
         @Schema(description = "플레이리스트 ID", example = "1001")
         Long playlistId,
 
@@ -15,7 +18,7 @@ public record PlaylistSearchDto(
         @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
         String creatorId,
 
-        @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
+        @Schema(description = "플레이리스트 제작자 닉네임", example = "홍길동")
         String creatorNickname,
 
         @Schema(description = "cd 정보")
@@ -23,24 +26,13 @@ public record PlaylistSearchDto(
 
 ) implements SearchItem {
 
-    @Override
-    @Schema(description = "검색 결과 타입", example = "PLAYLIST")
-    public String getType() {
-        return "PLAYLIST";
-    }
-
-    public static PlaylistSearchDto from(
-            Long playlistId,
-            String playlistName,
-            String creatorId,
-            String creatorNickname,
-            CdResponse cdResponse
-    ) {
+    public PlaylistSearchDto withCdResponse(CdResponse cdResponse) {
         return new PlaylistSearchDto(
-                playlistId,
-                playlistName,
-                creatorId,
-                creatorNickname,
+                this.type,
+                this.playlistId,
+                this.playlistName,
+                this.creatorId,
+                this.creatorNickname,
                 cdResponse
         );
     }
