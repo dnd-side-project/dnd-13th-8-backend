@@ -2,15 +2,14 @@ package com.example.demo.domain.user.repository;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.SearchResult;
+import com.example.demo.domain.playlist.dto.search.SearchType;
 import com.example.demo.domain.playlist.dto.search.UserSearchDto;
 import com.example.demo.domain.user.entity.QUsers;
-import com.example.demo.domain.playlist.entity.QPlaylist;
+import com.example.demo.global.jwt.JwtRoleType;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.ArrayList;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -31,41 +30,23 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             int limit
     ) {
         QUsers u = QUsers.users;
-        QPlaylist p = new QPlaylist("p");
-        QPlaylist pSub = new QPlaylist("pSub");
 
         BooleanBuilder condition = new BooleanBuilder()
-                .and(u.username.containsIgnoreCase(query));
-
-        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
-        if (sort == PlaylistSortOption.POPULAR) {
-            orderSpecifiers.add(p.visitCount.desc());
-        } else {
-            orderSpecifiers.add(p.createdAt.desc());
-        }
-        orderSpecifiers.add(p.id.desc());
+                .and(u.username.containsIgnoreCase(query))
+                .and(u.role.in(JwtRoleType.SUPER, JwtRoleType.USER));
 
         List<UserSearchDto> results = queryFactory
                 .select(Projections.constructor(
                         UserSearchDto.class,
+                        Expressions.constant(SearchType.USER),
                         u.id,
+                        u.shareCode,
                         u.username,
-                        u.profileUrl,
-                        p.id,
-                        p.name
+                        u.profileUrl
                 ))
                 .from(u)
-                .leftJoin(p).on(
-                        p.users.eq(u)
-                                .and(p.id.eq(
-                                        JPAExpressions
-                                                .select(pSub.id.max())
-                                                .from(pSub)
-                                                .where(pSub.users.eq(u).and(pSub.isPublic.isTrue()))
-                                ))
-                )
                 .where(condition)
-                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
+                .orderBy(u.id.desc())
                 .offset(offset)
                 .limit(limit)
                 .fetch();

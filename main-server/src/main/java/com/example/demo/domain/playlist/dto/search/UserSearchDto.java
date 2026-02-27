@@ -2,29 +2,24 @@ package com.example.demo.domain.playlist.dto.search;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "검색 결과 중 사용자 대표 플레이리스트 항목")
+@Schema(description = "검색 결과 중 사용자 항목")
 public record UserSearchDto(
 
-        @Schema(description = "플레이리스트 제작자 ID", example = "user-123")
-        String creatorId,
+        @Schema(description = "검색 결과 타입", example = "USER")
+        SearchType type,
 
-        @Schema(description = "플레이리스트 제작자 닉네임", example = "playlist_maker")
-        String creatorNickname,
+        @Schema(description = "유저 아이디", example = "user-1234")
+        String userId,
 
-        @Schema(description = "사용자 프로필 이미지 URL", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
-        String userProfileImageUrl,
+        @Schema(description = "프로필 아이디", example = "jigu_jelly")
+        String shareCode,
 
-        @Schema(description = "대표 플레이리스트 ID", example = "2001")
-        Long playlistId,
+        @Schema(description = "닉네임", example = "기타치는-은하-1234")
+        String nickname,
 
-        @Schema(description = "대표 플레이리스트 이름", example = "내가 좋아하는 감성곡")
-        String playlistName
+        @Schema(description = "프로필 이미지", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
+        String profileUrl
 
 ) implements SearchItem {
 
-    @Override
-    @Schema(description = "검색 결과 타입", example = "USER")
-    public String getType() {
-        return "USER";
-    }
 }

@@ -6,6 +6,7 @@ import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.SearchResult;
+import com.example.demo.domain.playlist.dto.search.SearchType;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.song.entity.QSong;
@@ -13,6 +14,7 @@ import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -34,19 +36,6 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
             case RECENT -> new OrderSpecifier<?>[]{ p.id.desc() };
             case POPULAR -> new OrderSpecifier<?>[]{ p.visitCount.desc(), p.id.desc() };
         };
-    }
-
-    @Override
-    public List<Playlist> findByUserIdSorted(String userId, PlaylistSortOption sort) {
-        QPlaylist p = QPlaylist.playlist;
-        QUsers u = QUsers.users;
-
-        return queryFactory
-                .selectFrom(p)
-                .join(p.users, u).fetchJoin()
-                .where(u.id.eq(userId))
-                .orderBy(orderBy(p, sort))
-                .fetch();
     }
 
     @Override
@@ -149,6 +138,23 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
     }
 
     @Override
+    public long countPlaylistByTitle(String query) {
+        QPlaylist p = QPlaylist.playlist;
+
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(p.name.containsIgnoreCase(query))
+                .and(p.isPublic.isTrue());
+
+        return Optional.ofNullable(
+                queryFactory
+                        .select(p.id.count())
+                        .from(p)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
+    }
+
+    @Override
     public SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(
             String query,
             PlaylistSortOption sort,
@@ -162,10 +168,10 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                 .and(p.name.containsIgnoreCase(query))
                 .and(p.isPublic.isTrue());
 
-        // 🔧 쿼리를 변수로 받아서 orderBy를 개별 호출 (제네릭 유지)
-        JPAQuery<PlaylistSearchDto> q = queryFactory
+        List<PlaylistSearchDto> results = queryFactory
                 .select(Projections.constructor(
                         PlaylistSearchDto.class,
+                        Expressions.constant(SearchType.PLAYLIST),
                         p.id,
                         p.name,
                         u.id,
@@ -174,22 +180,15 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                 ))
                 .from(p)
                 .join(p.users, u)
-                .where(builder);
-
-        if (sort == PlaylistSortOption.POPULAR) {
-            q.orderBy(p.visitCount.desc());
-        } else {
-            q.orderBy(p.createdAt.desc());
-        }
-        q.orderBy(p.id.desc()); // tie-breaker
-
-        List<PlaylistSearchDto> results = q
+                .where(builder)
+                .orderBy(orderBy(p, sort))
                 .offset(offset)
                 .limit(limit)
                 .fetch();
 
         long totalCount = Optional.ofNullable(
-                queryFactory.select(p.id.count())
+                queryFactory
+                        .select(p.id.count())
                         .from(p)
                         .where(builder)
                         .fetchOne()

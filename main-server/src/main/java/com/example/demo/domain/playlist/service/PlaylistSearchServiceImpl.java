@@ -101,19 +101,32 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         try {
             recordSearchTerm(query);
         } catch (Exception e) {
-            log.warn(" 검색어 기록 중 오류 발생: {}", e.getMessage());
+            log.warn("검색어 기록 중 오류 발생: {}", e.getMessage());
         }
 
         try {
-            SearchResult<PlaylistSearchDto> playlistsRaw = fetchPlaylistsWithCd(query, sort, offset, finalSize);
-            // SearchResult<UserSearchDto> usersRaw = fetchUsers(query, sort, offset, finalSize); 유저 검색 비활성화
+            SearchResult<UserSearchDto> usersPage = fetchUsers(query, sort, offset, finalSize);
+            long usersTotal = usersPage.getTotalCount();
 
-            List<SearchItem> merged = new ArrayList<>();
-            merged.addAll(playlistsRaw.getResults());
-            // merged.addAll(usersRaw.getResults());
+            List<SearchItem> merged = new ArrayList<>(finalSize);
+            merged.addAll(usersPage.getResults());
 
-            boolean hasNext = playlistsRaw.getResults().size() == finalSize; // || usersRaw.getResults().size() == finalSize;
-            long totalCount = playlistsRaw.getTotalCount(); // + usersRaw.getTotalCount();
+            int remaining = finalSize - usersPage.getResults().size();
+
+            long playlistsTotal;
+            if (remaining > 0) {
+                int playlistOffset = (int) Math.max(0L, offset - usersTotal);
+                SearchResult<PlaylistSearchDto> playlistsPage =
+                        fetchPlaylistsWithCd(query, sort, playlistOffset, remaining);
+
+                merged.addAll(playlistsPage.getResults());
+                playlistsTotal = playlistsPage.getTotalCount();
+            } else {
+                playlistsTotal = playlistRepository.countPlaylistByTitle(query);
+            }
+
+            long totalCount = usersTotal + playlistsTotal;
+            boolean hasNext = (offset + finalSize) < totalCount;
 
             return new PageResponse<>(
                     new CombinedSearchResponse(merged),
@@ -123,6 +136,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                     totalCount
             );
         } catch (Exception e) {
+            log.error("제목 기반 검색 중 오류 발생", e);
             throw new PlaylistSearchException("제목 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
         }
     }
@@ -135,13 +149,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
         for (PlaylistSearchDto item : raw.getResults()) {
             try {
                 CdResponse cd = cdService.getOnlyCdByPlaylistId(item.playlistId());
-                resolved.add(PlaylistSearchDto.from(
-                        item.playlistId(),
-                        item.playlistName(),
-                        item.creatorId(),
-                        item.creatorNickname(),
-                        cd
-                ));
+                resolved.add(item.withCdResponse(cd));
             } catch (Exception e) {
                 log.warn(" CD 정보 조회 실패: playlistId={} / {}", item.playlistId(), e.getMessage());
                 throw new CdException("CD 정보 조회 실패", CommonErrorCode.BAD_REQUEST);

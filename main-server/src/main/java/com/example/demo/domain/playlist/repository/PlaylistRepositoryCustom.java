@@ -14,5 +14,5 @@ public interface PlaylistRepositoryCustom {
     SearchResult<Playlist> findByGenreWithCursor(PlaylistGenre genre, PlaylistSortOption sort, Long cursorId, int limit);
     SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(String query, PlaylistSortOption sort, int offset, int limit);
     List<Playlist> findByVisitCount(int limit);
-    List<Playlist> findByUserIdSorted(String userId, PlaylistSortOption sort);
+    long countPlaylistByTitle(String query);
 }
