@@ -151,8 +151,7 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                 .and(p.name.containsIgnoreCase(query))
                 .and(p.isPublic.isTrue());
 
-        // 🔧 쿼리를 변수로 받아서 orderBy를 개별 호출 (제네릭 유지)
-        JPAQuery<PlaylistSearchDto> q = queryFactory
+        List<PlaylistSearchDto> results = queryFactory
                 .select(Projections.constructor(
                         PlaylistSearchDto.class,
                         Expressions.constant(SearchType.PLAYLIST),
@@ -164,22 +163,15 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
                 ))
                 .from(p)
                 .join(p.users, u)
-                .where(builder);
-
-        if (sort == PlaylistSortOption.POPULAR) {
-            q.orderBy(p.visitCount.desc());
-        } else {
-            q.orderBy(p.createdAt.desc());
-        }
-        q.orderBy(p.id.desc()); // tie-breaker
-
-        List<PlaylistSearchDto> results = q
+                .where(builder)
+                .orderBy(orderBy(p, sort))
                 .offset(offset)
                 .limit(limit)
                 .fetch();
 
         long totalCount = Optional.ofNullable(
-                queryFactory.select(p.id.count())
+                queryFactory
+                        .select(p.id.count())
                         .from(p)
                         .where(builder)
                         .fetchOne()
