@@ -1,13 +1,10 @@
 package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
+import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.global.paging.PageResponse;
-import com.example.demo.domain.playlist.dto.search.PlaylistSearchResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
-import com.example.demo.domain.playlist.dto.search.CombinedSearchResponse;
-import com.example.demo.domain.playlist.dto.search.PopularItem;
-import com.example.demo.domain.playlist.dto.search.PopularSearchResponse;
 import com.example.demo.domain.playlist.service.PlaylistSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,7 +62,7 @@ public class PlaylistSearchController {
     @ApiResponse(
             responseCode = "200",
             description = "검색된 플레이리스트 및 유저 목록 (오프셋 기반 응답)",
-            content = @Content(schema = @Schema(implementation = PageResponse.class))
+            content = @Content(schema = @Schema(implementation = SearchResponse.class))
     )
     @GetMapping("/title")
     public ResponseEntity<PageResponse<CombinedSearchResponse>> searchByTitle(
