@@ -112,21 +112,20 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             merged.addAll(usersPage.getResults());
 
             int remaining = finalSize - usersPage.getResults().size();
-            long playlistsTotal;
 
-            SearchResult<PlaylistSearchDto> playlistsPage;
+            long playlistsTotal;
             if (remaining > 0) {
                 int playlistOffset = (int) Math.max(0L, offset - usersTotal);
-                playlistsPage = fetchPlaylistsWithCd(query, sort, playlistOffset, remaining);
+                SearchResult<PlaylistSearchDto> playlistsPage =
+                        fetchPlaylistsWithCd(query, sort, playlistOffset, remaining);
+
                 merged.addAll(playlistsPage.getResults());
                 playlistsTotal = playlistsPage.getTotalCount();
             } else {
-                playlistsTotal = 0;
+                playlistsTotal = playlistRepository.countPlaylistByTitle(query);
             }
 
-
             long totalCount = usersTotal + playlistsTotal;
-
             boolean hasNext = (offset + finalSize) < totalCount;
 
             return new PageResponse<>(

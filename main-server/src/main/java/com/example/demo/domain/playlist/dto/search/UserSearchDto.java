@@ -17,7 +17,7 @@ public record UserSearchDto(
         @Schema(description = "닉네임", example = "기타치는-은하-1234")
         String nickname,
 
-        @Schema(description = "로필 이미지", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
+        @Schema(description = "프로필 이미지", example = "https://cdn.example.com/profile/user-uuid-1234.jpg")
         String profileUrl
 
 ) implements SearchItem {

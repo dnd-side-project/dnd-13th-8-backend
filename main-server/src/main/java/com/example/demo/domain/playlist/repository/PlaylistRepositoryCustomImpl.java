@@ -138,6 +138,23 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
     }
 
     @Override
+    public long countPlaylistByTitle(String query) {
+        QPlaylist p = QPlaylist.playlist;
+
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(p.name.containsIgnoreCase(query))
+                .and(p.isPublic.isTrue());
+
+        return Optional.ofNullable(
+                queryFactory
+                        .select(p.id.count())
+                        .from(p)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
+    }
+
+    @Override
     public SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(
             String query,
             PlaylistSortOption sort,
