@@ -8,10 +8,10 @@ public record UpdateProfileResponse(
 
         String userId,
 
-        @Schema(description = "변경된 닉네임", example = "jun_dev")
+        @Schema(description = "변경된 닉네임", example = "지구젤리")
         String nickname,
 
-        @Schema(description = "변경된 프로필 아이디", example = "jun_dev")
+        @Schema(description = "변경된 프로필 아이디", example = "jigu_jelly")
         String shareCode,
 
         @Schema(description = "변경된 소개", example = "안녕하세요~")
