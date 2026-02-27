@@ -9,8 +9,8 @@ public record KakaoLoginResponse(
         @Schema(description = "사용자 ID", example = "0ca97df3-aff8-4e3f-b849-01a53a87dab4")
         String userId,
 
-        @Schema(description = "사용자 이름", example = "홍길동")
-        String username,
+        @Schema(description = "사용자 닉네임", example = "홍길동")
+        String nickname,
 
         @Schema(description = "사용자 아이디", example = "hong_gil")
         String shareCode,

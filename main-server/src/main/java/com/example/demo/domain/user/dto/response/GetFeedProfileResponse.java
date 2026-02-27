@@ -9,7 +9,7 @@ import java.util.List;
 
 @Schema(description = "피드 프로필 응답 DTO")
 public record GetFeedProfileResponse(String userId,
-                                     String username,
+                                     String nickname,
                                      String profileUrl,
                                      String shareCode,
                                      String bio,
