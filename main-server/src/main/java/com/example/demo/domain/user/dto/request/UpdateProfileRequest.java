@@ -15,7 +15,7 @@ public record UpdateProfileRequest(
         MultipartFile profileImage,
 
         @Schema(description = "프로필 이미지 삭제 요청")
-        boolean removeProfileImage,
+        Boolean removeProfileImage,
 
         @Schema(description = "새 프로필 아이디", example = "jigu_jelly")
         String shareCode,
