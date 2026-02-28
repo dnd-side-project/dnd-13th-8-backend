@@ -213,6 +213,23 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
     }
 
     @Override
+    public List<Playlist> findAdminPlaylists(int limit) {
+        QPlaylist p = QPlaylist.playlist;
+        QUsers u = QUsers.users;
+
+        return queryFactory
+                .selectFrom(p)
+                .join(p.users, u).fetchJoin()
+                .where(
+                        u.shareCode.eq("admin"),
+                        p.isPublic.isTrue()
+                )
+                .orderBy(p.id.desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
     public List<Playlist> findLatestPlaylists(String excludeUserId, List<Long> excludePlaylistIds,
                                               int limit) {
         QPlaylist p = QPlaylist.playlist;

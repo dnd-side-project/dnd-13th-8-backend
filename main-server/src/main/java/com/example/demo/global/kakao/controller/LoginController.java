@@ -1,7 +1,5 @@
 package com.example.demo.global.kakao.controller;
 
-import com.example.common.error.code.UserErrorCode;
-import com.example.common.error.exception.UserException;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.domain.user.utils.NicknameGenerator;
@@ -18,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -44,19 +41,6 @@ public class LoginController {
         KakaoLoginResponse out = authService.loginWithKakao(request.code(), request.codeVerifier(), origin);
 
         return ResponseEntity.ok().body(out);
-    }
-
-    @Operation(summary = "관리자 로그인 ", description = "관리자 계정용 Access 토큰 발급")
-    @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
-    @PreAuthorize("hasRole('SUPER')")
-    @GetMapping("/auth/admin")
-    public ResponseEntity<String> adminLogin() {
-
-        Users adminUser = usersRepository.findById("ADMIN")
-                .orElseThrow(()-> new UserException("관리자 계정이 없습니다", UserErrorCode.USER_NOT_FOUND));
-
-        String superToken = jwtAccessIssuer.issueSuperToken(adminUser.getId());
-        return ResponseEntity.ok().body(superToken);
     }
 
     @Operation(summary = "익명 로그인", description = "익명 계정용 Access 토큰 발급")

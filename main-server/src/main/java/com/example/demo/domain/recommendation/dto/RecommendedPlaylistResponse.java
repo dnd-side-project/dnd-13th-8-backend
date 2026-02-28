@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 @Schema(description = "플레이리스트 카드 응답")
-public record PlaylistCardResponse(
+public record RecommendedPlaylistResponse(
 
         @Schema(description = "플레이리스트 ID", example = "101")
         Long playlistId,
@@ -32,14 +32,14 @@ public record PlaylistCardResponse(
 
 
 ) {
-        public static PlaylistCardResponse from(Playlist playlist, List<Song> songs, CdResponse cdResponse) {
+        public static RecommendedPlaylistResponse from(Playlist playlist, List<Song> songs, CdResponse cdResponse) {
                 Users owner = playlist.getUsers(); // 단방향 ManyToOne은 유지됨
 
                 List<SongDto> songDtos = songs.stream()
                         .map(SongDto::from)
                         .toList();
 
-                return new PlaylistCardResponse(
+                return new RecommendedPlaylistResponse(
                         playlist.getId(),
                         playlist.getName(),
                         owner.getId(),
