@@ -1,7 +1,5 @@
 package com.example.demo.global.kakao.controller;
 
-import com.example.common.error.code.UserErrorCode;
-import com.example.common.error.exception.UserException;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.domain.user.utils.NicknameGenerator;
@@ -18,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
