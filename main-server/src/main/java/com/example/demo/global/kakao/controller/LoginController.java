@@ -46,19 +46,6 @@ public class LoginController {
         return ResponseEntity.ok().body(out);
     }
 
-    @Operation(summary = "관리자 로그인 ", description = "관리자 계정용 Access 토큰 발급")
-    @ApiResponse(responseCode = "200", description = "슈퍼 토큰 발급 성공")
-    @PreAuthorize("hasRole('SUPER')")
-    @GetMapping("/auth/admin")
-    public ResponseEntity<String> adminLogin() {
-
-        Users adminUser = usersRepository.findById("ADMIN")
-                .orElseThrow(()-> new UserException("관리자 계정이 없습니다", UserErrorCode.USER_NOT_FOUND));
-
-        String superToken = jwtAccessIssuer.issueSuperToken(adminUser.getId());
-        return ResponseEntity.ok().body(superToken);
-    }
-
     @Operation(summary = "익명 로그인", description = "익명 계정용 Access 토큰 발급")
     @ApiResponse(responseCode = "200", description = "익명 토큰 발급 성공")
     @GetMapping("/auth/anonymous")

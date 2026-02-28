@@ -4,7 +4,7 @@ import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
-import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.song.entity.Song;
@@ -12,8 +12,10 @@ import com.example.demo.domain.song.repository.SongRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,7 +33,8 @@ public class RecommendationServiceImpl implements RecommendationService {
     private static final int RECOMMENDATION_LIMIT = 3;
 
     @Override
-    public List<PlaylistCardResponse> getRecommendations(String userId) {
+    @Transactional
+    public List<RecommendedPlaylistResponse> getRecommendations(String userId) {
         List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
         List<Playlist> visitCountTop6 = playlistRepository.findByVisitCount(6);
 
@@ -51,7 +54,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
 
         return basePlaylists.stream()
-                .map(p -> PlaylistCardResponse.from(
+                .map(p -> RecommendedPlaylistResponse.from(
                         p,
                         songMap.getOrDefault(p.getId(), List.of()),
                         cdService.getOnlyCdByPlaylistId(p.getId())
@@ -60,7 +63,8 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     @Override
-    public List<PlaylistCardResponse> recommendFromLikedPlaylists(String myUserId) {
+    @Transactional
+    public List<RecommendedPlaylistResponse> recommendFromLikedPlaylists(String myUserId) {
         List<Long> basePlaylistIds = playlistRepository.findFollowedPlaylistIds(myUserId);
         List<Playlist> resultPlaylists;
 
@@ -87,7 +91,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .collect(Collectors.groupingBy(song -> song.getPlaylist().getId()));
 
         return resultPlaylists.stream()
-                .map(p -> PlaylistCardResponse.from(p, songMap.getOrDefault(p.getId(), List.of()), cdService.getOnlyCdByPlaylistId(p.getId())))
+                .map(p -> RecommendedPlaylistResponse.from(p, songMap.getOrDefault(p.getId(), List.of()), cdService.getOnlyCdByPlaylistId(p.getId())))
                 .toList();
     }
 
@@ -126,5 +130,80 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
 
         return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RecommendedPlaylistResponse> getAdminRecommendation(int limit) {
+
+        List<Playlist> adminPlaylists = playlistRepository.findAdminPlaylists(limit);
+
+        if (adminPlaylists.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> playlistIds = adminPlaylists.stream()
+                .map(Playlist::getId)
+                .toList();
+
+        Map<Long, List<Song>> songMap =
+                songRepository.findAllByPlaylistIdIn(playlistIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                song -> song.getPlaylist().getId()
+                        ));
+
+        return adminPlaylists.stream()
+                .map(p -> RecommendedPlaylistResponse.from(
+                        p,
+                        songMap.getOrDefault(p.getId(), List.of()),
+                        cdService.getOnlyCdByPlaylistId(p.getId())
+                ))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RecommendedPlaylistResponse> getWeeklyTopRecommendation(int limit) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        LinkedHashMap<Long, Playlist> result = new LinkedHashMap<>();
+
+        userPlaylistHistoryRepository
+                .findWeeklyTopPlaylists(now.minusDays(7), limit)
+                .forEach(p -> result.putIfAbsent(p.getId(), p));
+
+        if (result.size() < limit) {
+            int remain = limit - result.size();
+
+            userPlaylistHistoryRepository
+                    .findLatestPlayedPlaylists(remain)
+                    .forEach(p -> result.putIfAbsent(p.getId(), p));
+        }
+
+        List<Playlist> playlists = result.values()
+                .stream()
+                .limit(limit)
+                .toList();
+
+        if (playlists.isEmpty()) return List.of();
+
+        List<Long> ids = playlists.stream()
+                .map(Playlist::getId)
+                .toList();
+
+        Map<Long, List<Song>> songMap =
+                songRepository.findAllByPlaylistIdIn(ids)
+                        .stream()
+                        .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
+
+        return playlists.stream()
+                .map(p -> RecommendedPlaylistResponse.from(
+                        p,
+                        songMap.getOrDefault(p.getId(), List.of()),
+                        cdService.getOnlyCdByPlaylistId(p.getId())
+                ))
+                .toList();
     }
 }

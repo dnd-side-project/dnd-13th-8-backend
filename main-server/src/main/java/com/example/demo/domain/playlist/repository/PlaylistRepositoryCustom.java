@@ -15,4 +15,5 @@ public interface PlaylistRepositoryCustom {
     SearchResult<PlaylistSearchDto> searchPlaylistsByTitleWithOffset(String query, PlaylistSortOption sort, int offset, int limit);
     List<Playlist> findByVisitCount(int limit);
     long countPlaylistByTitle(String query);
+    List<Playlist> findAdminPlaylists(int limit);
 }
