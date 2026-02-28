@@ -66,6 +66,18 @@ public class UsersService {
                 user.changeNickname(req.nickname());
             }
 
+            // 프로필 삭제 요청
+            if (Boolean.TRUE.equals(req.removeProfileImage())) {
+
+                String oldImageKey = r2Service.extractKey(user.getProfileUrl());
+                if (oldImageKey != null && !oldImageKey.isBlank()) {
+                    r2Service.delete(oldImageKey);
+                }
+
+                user.changeProfileImage("NULL");
+            }
+
+
             // 프로필 이미지 업데이트
             if (req.profileImage() != null && !req.profileImage().isEmpty()) {
 
