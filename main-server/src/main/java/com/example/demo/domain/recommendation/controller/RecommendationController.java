@@ -1,6 +1,6 @@
 package com.example.demo.domain.recommendation.controller;
 
-import com.example.demo.domain.recommendation.dto.PlaylistCardResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.service.RecommendationService;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -37,14 +38,50 @@ public class RecommendationController {
     @ApiResponse(
             responseCode = "200",
             description = "추천 플레이리스트 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCardResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedPlaylistResponse.class)))
     )
     @GetMapping("/playlist")
-    public ResponseEntity<List<PlaylistCardResponse>> getRecommendations(
+    public ResponseEntity<List<RecommendedPlaylistResponse>> getRecommendations(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<PlaylistCardResponse> response = recommendationService.getRecommendations(user.getId());
+        List<RecommendedPlaylistResponse> response = recommendationService.getRecommendations(user.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "관리자 계정 추천",
+            description = "관리자가 업로드한 플레이리스트를 추천합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "추천 플레이리스트 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedPlaylistResponse.class)))
+    )
+    @GetMapping("/admin")
+    public ResponseEntity<List<RecommendedPlaylistResponse>> getAdminRecommendation(
+            @Parameter(description = "가져올 개수", example = "10")
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<RecommendedPlaylistResponse> response = recommendationService.getAdminRecommendation(limit);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "주간 인기 플리 추천",
+            description = "주간 가장 조회수가 많은 플레이리스트를 추천합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "추천 플레이리스트 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedPlaylistResponse.class)))
+    )
+    @GetMapping("/weekly")
+    public ResponseEntity<List<RecommendedPlaylistResponse>> getWeeklyRecommendation(
+            @Parameter(description = "가져올 개수", example = "10")
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<RecommendedPlaylistResponse> response = recommendationService.getWeeklyTopRecommendation(limit);
         return ResponseEntity.ok(response);
     }
 
@@ -55,14 +92,14 @@ public class RecommendationController {
     @ApiResponse(
             responseCode = "200",
             description = "추천된 플레이리스트 카드 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistCardResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedPlaylistResponse.class)))
     )
     @GetMapping("/follow")
-    public ResponseEntity<List<PlaylistCardResponse>> recommendFromLikedPlaylists(
+    public ResponseEntity<List<RecommendedPlaylistResponse>> recommendFromLikedPlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        List<PlaylistCardResponse> response = recommendationService.recommendFromLikedPlaylists(user.getId());
+        List<RecommendedPlaylistResponse> response = recommendationService.recommendFromLikedPlaylists(user.getId());
         return ResponseEntity.ok(response);
     }
 

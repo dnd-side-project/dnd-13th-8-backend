@@ -8,6 +8,7 @@ import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -73,4 +74,38 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .fetch();
     }
 
+    @Override
+    public List<Playlist> findWeeklyTopPlaylists(LocalDateTime since, int limit) {
+        QUsers u = QUsers.users;
+
+        return queryFactory
+                .select(history.playlist)
+                .from(history)
+                .join(history.playlist, playlist)
+                .join(playlist.users, u).fetchJoin()
+                .where(
+                        playlist.isPublic.isTrue(),
+                        history.playedAt.goe(since)
+                )
+                .groupBy(playlist.id)
+                .orderBy(history.count().desc(), playlist.id.desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<Playlist> findLatestPlayedPlaylists(int limit) {
+        QUsers u = QUsers.users;
+
+        return queryFactory
+                .select(history.playlist)
+                .from(history)
+                .join(history.playlist, playlist)
+                .join(playlist.users, u).fetchJoin()
+                .where(playlist.isPublic.isTrue())
+                .groupBy(playlist.id)
+                .orderBy(history.id.max().desc())
+                .limit(limit)
+                .fetch();
+    }
 }
