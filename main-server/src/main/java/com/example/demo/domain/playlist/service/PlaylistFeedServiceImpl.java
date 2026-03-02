@@ -2,6 +2,7 @@ package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
+import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
 import com.example.demo.domain.cd.service.CdService;
 
 import com.example.demo.domain.like.repository.LikesRepository;
@@ -67,11 +68,12 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
                 .toList();
 
         Set<Long> likedSet = new HashSet<>(likesRepository.findLikedPlaylistIdsIn(meId, playlistIds));
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
 
         List<PlaylistCoverResponse> content = page.stream()
                 .map(p -> PlaylistCoverResponse.from(
                         p,
-                        cdService.getOnlyCdByPlaylistId(p.getId()),
+                        cdItemsByPlaylist.cdItemsOf(p.getId()),
                         likedSet.contains(p.getId())
                 ))
                 .toList();
@@ -131,13 +133,13 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
                 .toList();
 
         Set<Long> likedSetByMe = new HashSet<>(
-                likesRepository.findLikedPlaylistIdsIn(meId, playlistIds)
-        );
+                likesRepository.findLikedPlaylistIdsIn(meId, playlistIds));
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
 
         List<PlaylistCoverResponse> content = page.stream()
                 .map(p -> PlaylistCoverResponse.from(
                         p,
-                        cdService.getOnlyCdByPlaylistId(p.getId()),
+                        cdItemsByPlaylist.cdItemsOf(p.getId()),
                         likedSetByMe.contains(p.getId())
                 ))
                 .toList();

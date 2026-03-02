@@ -8,6 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Builder
 public record CdResponse(
         @Schema(description = "CD에 포함된 아이템 리스트")
-        List<CdItemResponse> cdItems
+        List<CdItem> cdItems
 ) {
+        public static CdResponse of(List<CdItem> items) {
+                return new CdResponse(items == null ? List.of() : items);
+        }
 }

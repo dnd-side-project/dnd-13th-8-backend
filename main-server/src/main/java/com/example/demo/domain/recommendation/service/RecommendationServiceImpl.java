@@ -1,5 +1,6 @@
 package com.example.demo.domain.recommendation.service;
 
+import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
@@ -7,8 +8,8 @@ import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
-import com.example.demo.domain.song.entity.Song;
-import com.example.demo.domain.song.repository.SongRepository;
+import com.example.demo.domain.song.dto.SongsByPlaylist;
+import com.example.demo.domain.song.service.SongService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     private final PlaylistRepository playlistRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
-    private final SongRepository songRepository;
+    private final SongService songService;
     private final CdService cdService;
 
     private static final int RECOMMENDATION_LIMIT = 3;
@@ -49,15 +50,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 
         List<Long> playlistIds = basePlaylists.stream().map(Playlist::getId).toList();
 
-        Map<Long, List<Song>> songMap = songRepository.findAllByPlaylistIdIn(playlistIds)
-                .stream()
-                .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
+        SongsByPlaylist songsByPlaylist = songService.findSongsByPlaylistIdsIn(playlistIds);
+
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
 
         return basePlaylists.stream()
                 .map(p -> RecommendedPlaylistResponse.from(
                         p,
-                        songMap.getOrDefault(p.getId(), List.of()),
-                        cdService.getOnlyCdByPlaylistId(p.getId())
+                        songsByPlaylist.songsOf(p.getId()),
+                        cdItemsByPlaylist.cdItemsOf(p.getId())
                 ))
                 .toList();
     }
@@ -87,11 +88,15 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
 
         List<Long> ids = resultPlaylists.stream().map(Playlist::getId).toList();
-        Map<Long, List<Song>> songMap = songRepository.findAllByPlaylistIdIn(ids).stream()
-                .collect(Collectors.groupingBy(song -> song.getPlaylist().getId()));
+        SongsByPlaylist songsByPlaylist = songService.findSongsByPlaylistIdsIn(ids);
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(ids);
 
         return resultPlaylists.stream()
-                .map(p -> RecommendedPlaylistResponse.from(p, songMap.getOrDefault(p.getId(), List.of()), cdService.getOnlyCdByPlaylistId(p.getId())))
+                .map(p -> RecommendedPlaylistResponse.from(
+                        p,
+                        songsByPlaylist.songsOf(p.getId()),
+                        cdItemsByPlaylist.cdItemsOf(p.getId())
+                ))
                 .toList();
     }
 
@@ -146,18 +151,14 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .map(Playlist::getId)
                 .toList();
 
-        Map<Long, List<Song>> songMap =
-                songRepository.findAllByPlaylistIdIn(playlistIds)
-                        .stream()
-                        .collect(Collectors.groupingBy(
-                                song -> song.getPlaylist().getId()
-                        ));
+        SongsByPlaylist songsByPlaylist = songService.findSongsByPlaylistIdsIn(playlistIds);
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
 
         return adminPlaylists.stream()
                 .map(p -> RecommendedPlaylistResponse.from(
                         p,
-                        songMap.getOrDefault(p.getId(), List.of()),
-                        cdService.getOnlyCdByPlaylistId(p.getId())
+                        songsByPlaylist.songsOf(p.getId()),
+                        cdItemsByPlaylist.cdItemsOf(p.getId())
                 ))
                 .toList();
     }
@@ -193,16 +194,14 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .map(Playlist::getId)
                 .toList();
 
-        Map<Long, List<Song>> songMap =
-                songRepository.findAllByPlaylistIdIn(ids)
-                        .stream()
-                        .collect(Collectors.groupingBy(s -> s.getPlaylist().getId()));
+        SongsByPlaylist songsByPlaylist = songService.findSongsByPlaylistIdsIn(ids);
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(ids);
 
         return playlists.stream()
                 .map(p -> RecommendedPlaylistResponse.from(
                         p,
-                        songMap.getOrDefault(p.getId(), List.of()),
-                        cdService.getOnlyCdByPlaylistId(p.getId())
+                        songsByPlaylist.songsOf(p.getId()),
+                        cdItemsByPlaylist.cdItemsOf(p.getId())
                 ))
                 .toList();
     }
