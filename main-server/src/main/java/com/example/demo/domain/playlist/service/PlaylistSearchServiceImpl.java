@@ -1,10 +1,8 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.CommonErrorCode;
-import com.example.common.error.exception.CdException;
 import com.example.common.error.exception.PlaylistSearchException;
 import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
-import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
