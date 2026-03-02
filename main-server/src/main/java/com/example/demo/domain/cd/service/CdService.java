@@ -4,7 +4,7 @@ import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.PropErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.PropException;
-import com.example.demo.domain.cd.dto.response.CdItemResponse;
+import com.example.demo.domain.cd.dto.response.CdItem;
 import com.example.demo.domain.cd.dto.request.CdItemRequest;
 import com.example.demo.domain.cd.dto.response.*;
 import com.example.demo.domain.cd.entity.Cd;
@@ -33,13 +33,13 @@ public class CdService {
     private final PropRepository propRepository;
 
     @Transactional(readOnly = true)
-    public List<CdItemResponse> findAllCdItemOnCd(Long playlistId) {
+    public List<CdItem> findAllCdItemOnCd(Long playlistId) {
         List<CdItemView> views = cdRepository.findAllByPlaylistWithImageKeys(playlistId);
         Map<String, String> imageKeyCache = new HashMap<>();
 
-        List<CdItemResponse> responses = new ArrayList<>();
+        List<CdItem> responses = new ArrayList<>();
         for (CdItemView view : views) {
-            responses.add(toResponse(view, imageKeyCache));
+            responses.add(toCdItem(view, imageKeyCache));
         }
         return responses;
     }
@@ -53,34 +53,30 @@ public class CdService {
     }
 
     @Transactional(readOnly = true)
-    public CdResponse getOnlyCdByPlaylistId(Long playlistId) { // 다른 도메인에서 호출해서 사용하는 메소드
+    public CdResponse getCdItemsByPlaylistId(Long playlistId) { // 다른 도메인에서 호출해서 사용하는 메소드
         return CdResponse.builder()
                 .cdItems(findAllCdItemOnCd(playlistId))
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public CdListResponse getAllCdByPlaylistIdList(List<Long> playlistIdList) {
+    public CdItemsByPlaylist findCdItemsByPlaylistIdsIn(List<Long> playlistIdList) {
         if (playlistIdList == null || playlistIdList.isEmpty()) {
-            return new CdListResponse(List.of());
+            return CdItemsByPlaylist.empty();
         }
 
         List<CdItemView> views = cdRepository.findAllByPlaylistIdWithImageKeysIn(playlistIdList);
         Map<String, String> imageKeyCache = new HashMap<>();
 
-        Map<Long, List<CdItemResponse>> grouped = new LinkedHashMap<>();
+        Map<Long, List<CdItem>> grouped = new LinkedHashMap<>();
         for (CdItemView view : views) {
             Long playlistId = view.getPlaylistId();
-            CdItemResponse response = toResponse(view, imageKeyCache);
+            CdItem cdItem = toCdItem(view, imageKeyCache);
 
-            grouped.computeIfAbsent(playlistId, k -> new ArrayList<>()).add(response);
+            grouped.computeIfAbsent(playlistId, k -> new ArrayList<>()).add(cdItem);
         }
 
-        List<GetCdResponse> tempCdResponse = grouped.entrySet().stream()
-                .map(entry -> GetCdResponse.from(entry.getKey(), entry.getValue()))
-                .toList();
-
-        return new CdListResponse(tempCdResponse);
+        return new CdItemsByPlaylist(grouped);
     }
 
     @Transactional
@@ -118,11 +114,9 @@ public class CdService {
         saveCdItemList(playlistId, cdItemRequestList);
     }
 
-    // ========================  유틸 메서드 ========================
-
-    private CdItemResponse toResponse(CdItemView view, Map<String, String> imageKeyCache) {
+    private CdItem toCdItem(CdItemView view, Map<String, String> imageKeyCache) {
         String imageUrl = resolveImageUrl(view.getImageKey(), imageKeyCache);
-        return CdItemResponse.from(view, imageUrl);
+        return CdItem.from(view, imageUrl);
     }
 
     private String resolveImageUrl(String imageKey, Map<String, String> cache) {

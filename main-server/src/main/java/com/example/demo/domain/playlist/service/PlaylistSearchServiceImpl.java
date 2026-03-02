@@ -1,9 +1,8 @@
 package com.example.demo.domain.playlist.service;
 
 import com.example.common.error.code.CommonErrorCode;
-import com.example.common.error.exception.CdException;
 import com.example.common.error.exception.PlaylistSearchException;
-import com.example.demo.domain.cd.dto.response.CdResponse;
+import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
@@ -69,21 +68,26 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             SearchResult<Playlist> pages = playlistRepository
                     .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1);
 
+            List<Playlist> results = pages.getResults();
+
+            List<Long> playlistIds = results.stream()
+                    .map(Playlist::getId)
+                    .toList();
+
+            CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
+
             return CursorPageConverter.toCursorResponse(
-                    pages.getResults(),
+                    results,
                     finalLimit,
-                    p -> {
-                        CdResponse cd = cdService.getOnlyCdByPlaylistId(p.getId());
-                        return new PlaylistSearchResponse(
-                                p.getId(),
-                                p.getName(),
-                                p.getUsers().getId(),
-                                p.getUsers().getUsername(),
-                                cd
-                        );
-                    },
-                    PlaylistSearchResponse::playlistId, // 커서 추출
-                    pages.getTotalCount()               // 총 개수
+                    p -> new PlaylistSearchResponse(
+                            p.getId(),
+                            p.getName(),
+                            p.getUsers().getId(),
+                            p.getUsers().getUsername(),
+                            cdItemsByPlaylist.cdItemsOf(p.getId())
+                    ),
+                    PlaylistSearchResponse::playlistId,
+                    pages.getTotalCount()
             );
         } catch (Exception e) {
             throw new PlaylistSearchException("장르 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
@@ -142,19 +146,25 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
     }
 
     private SearchResult<PlaylistSearchDto> fetchPlaylistsWithCd(String query, PlaylistSortOption sort, int offset, int limit) {
-        SearchResult<PlaylistSearchDto> raw = playlistRepository
-                .searchPlaylistsByTitleWithOffset(query, sort, offset, limit);
+        SearchResult<PlaylistSearchDto> raw =
+                playlistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, limit);
 
-        List<PlaylistSearchDto> resolved = new ArrayList<>();
-        for (PlaylistSearchDto item : raw.getResults()) {
-            try {
-                CdResponse cd = cdService.getOnlyCdByPlaylistId(item.playlistId());
-                resolved.add(item.withCdResponse(cd));
-            } catch (Exception e) {
-                log.warn(" CD 정보 조회 실패: playlistId={} / {}", item.playlistId(), e.getMessage());
-                throw new CdException("CD 정보 조회 실패", CommonErrorCode.BAD_REQUEST);
-            }
+        if (raw.getResults().isEmpty()) {
+            return raw;
         }
+
+        List<Long> playlistIds = raw.getResults().stream()
+                .map(PlaylistSearchDto::playlistId)
+                .toList();
+
+        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
+
+        List<PlaylistSearchDto> resolved = raw.getResults().stream()
+                .map(item -> item.withCdResponse(
+                        cdItemsByPlaylist.cdItemsOf(item.playlistId())
+                ))
+                .toList();
+
         return new SearchResult<>(resolved, raw.getTotalCount());
     }
 

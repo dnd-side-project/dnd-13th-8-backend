@@ -5,8 +5,8 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record GetCdResponse(Long playlistId, List<CdItemResponse> cdItems) {
-    public static GetCdResponse from(Long playlistId, List<CdItemResponse> cdItems) {
+public record GetCdResponse(Long playlistId, List<CdItem> cdItems) {
+    public static GetCdResponse from(Long playlistId, List<CdItem> cdItems) {
         return new GetCdResponse(playlistId, cdItems);
     }
 }

@@ -16,7 +16,6 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.song.entity.Song;
 import com.example.demo.domain.song.repository.SongRepository;
-import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
         return all.stream()
                 .map(p -> PlaylistCoverResponse.from(p,
-                        cdService.getOnlyCdByPlaylistId(p.getId()),
+                        cdService.getCdItemsByPlaylistId(p.getId()),
                         likesRepository.existsByUsers_IdAndPlaylist_Id(userId, p.getId())))
                 .toList();
     }
@@ -61,7 +60,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
 
         return likedPlaylists.stream()
                 .map(p -> PlaylistCoverResponse.from(p,
-                        cdService.getOnlyCdByPlaylistId(p.getId()),
+                        cdService.getCdItemsByPlaylistId(p.getId()),
                         likesRepository.existsByUsers_IdAndPlaylist_Id(userId, p.getId())))
                 .toList();
     }
@@ -76,7 +75,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
         List<Song> songs = songRepository.findSongsByPlaylistId(playlistId);
         List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
 
-        return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlistId));
+        return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdService.getCdItemsByPlaylistId(playlistId));
     }
 
     @Override
@@ -109,7 +108,7 @@ public class PlaylistMyPageServiceImpl implements PlaylistMyPageService {
             List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
             List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
             responses.add(
-                    PlaylistDetailResponse.from(playlist, songDtos, cdService.getOnlyCdByPlaylistId(playlist.getId())));
+                    PlaylistDetailResponse.from(playlist, songDtos, cdService.getCdItemsByPlaylistId(playlist.getId())));
         }
         return responses;
     }

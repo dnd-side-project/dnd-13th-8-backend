@@ -59,7 +59,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
         playlistRepository.incrementVisitCount(playlist.getId());
 
-        var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
+        var cdResponse = cdService.getCdItemsByPlaylistId(playlistId);
         return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
     }
 
@@ -85,7 +85,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .map(SongDto::from)
                 .toList();
 
-        var cdResponse = cdService.getOnlyCdByPlaylistId(playlistId);
+        var cdResponse = cdService.getCdItemsByPlaylistId(playlistId);
 
         return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
     }

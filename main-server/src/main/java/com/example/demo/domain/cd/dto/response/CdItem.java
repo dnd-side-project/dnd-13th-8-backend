@@ -1,16 +1,12 @@
 package com.example.demo.domain.cd.dto.response;
 
 import com.example.demo.domain.cd.repository.projection.CdItemView;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-import java.util.List;
-
 @Builder
 @Schema(description = "CD 아이템 정보")
-public record CdItemResponse(
+public record CdItem(
 
         @Schema(description = "CD 아이템 ID", example = "301")
         Long cdItemId,
@@ -45,8 +41,8 @@ public record CdItemResponse(
         @Schema(description = "CD 이미지 Presigned URL", example = "https://r2.bucket.com/cd-image.jpg?signature=abc123")
         String imageUrl
 ) {
-    public static CdItemResponse from(CdItemView v, String imageUrl) {
-        return new CdItemResponse(
+    public static CdItem from(CdItemView v, String imageUrl) {
+        return new CdItem(
                 v.getCdId(),
                 v.getPropId(),
                 v.getTheme(),
@@ -59,14 +55,5 @@ public record CdItemResponse(
                 v.getAngle(),
                 imageUrl
         );
-    }
-
-    public static List<CdItemResponse> fromJsonList(String cdItemsJson) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(cdItemsJson, new TypeReference<>() {});
-        } catch (Exception e) {
-            throw new RuntimeException("CdItemResponse 리스트로 변환 중 오류", e);
-        }
     }
 }
