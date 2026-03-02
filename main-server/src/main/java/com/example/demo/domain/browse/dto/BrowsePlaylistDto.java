@@ -1,6 +1,6 @@
 package com.example.demo.domain.browse.dto;
 
-import com.example.demo.domain.cd.dto.response.CdItemResponse;
+import com.example.demo.domain.cd.dto.response.CdItem;
 import com.example.demo.domain.playlist.dto.common.SongDto;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,7 +38,7 @@ public record BrowsePlaylistDto(
         String shareUrl,
 
         @Schema(description = "CD 이미지 및 위치 정보")
-        List<CdItemResponse> cdItems,
+        List<CdItem> cdItems,
 
         @Schema(description = "전체 곡 재생 시간", example = "09:32")
         String totalTime
