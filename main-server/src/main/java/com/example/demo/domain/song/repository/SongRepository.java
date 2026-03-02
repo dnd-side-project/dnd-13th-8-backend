@@ -11,13 +11,13 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     @Query("SELECT s FROM Song s WHERE s.playlist.id = :playlistId ORDER BY s.orderIndex ASC")
     List<Song> findSongsByPlaylistId(@Param("playlistId") Long playlistId);
 
-    @Query("SELECT s FROM Song s WHERE s.playlist.id IN :playlistIds")
+    @Query("""
+    SELECT s
+    FROM Song s
+    JOIN FETCH s.playlist
+    WHERE s.playlist.id IN :playlistIds
+    """)
     List<Song> findAllByPlaylistIdIn(List<Long> playlistIds);
 
-
     void deleteByPlaylistId(Long playlistId);
-
-    List<Song> findByPlaylistId(Long id);
-
-    void deleteAllByIdIn(List<Long> playlistIds);
 }
