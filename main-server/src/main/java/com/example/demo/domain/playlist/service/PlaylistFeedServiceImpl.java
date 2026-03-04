@@ -1,6 +1,8 @@
 package com.example.demo.domain.playlist.service;
 
+import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;
+import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
 import com.example.demo.domain.cd.service.CdService;
@@ -15,7 +17,6 @@ import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.paging.CursorPageResponse;
-import com.example.demo.global.paging.PlaylistCursorCodec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,11 +37,11 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
 
     @Override
     @Transactional(readOnly = true)
-    public CursorPageResponse<PlaylistCoverResponse, String> getPlaylistsSorted(
+    public CursorPageResponse<PlaylistCoverResponse, Long> getPlaylistsSorted(
             String shareCode,
             String meId,
             PlaylistSortOption sortOption,
-            String opaqueCursor,
+            Long cursor,
             int limit
     ) {
         Users owner = usersRepository.findByShareCode(shareCode)
@@ -49,7 +50,17 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
         String ownerId = owner.getId();
         boolean includePrivate = ownerId.equals(meId);
 
-        PlaylistCursor decodedCursor = PlaylistCursorCodec.decode(opaqueCursor, sortOption);
+        PlaylistCursor decodedCursor = null;
+
+        if (cursor != null) {
+            Playlist pivot = playlistRepository.findById(cursor)
+                    .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+
+            decodedCursor = switch (sortOption) {
+                case RECENT -> new PlaylistCursor(pivot.getId(), null);
+                case POPULAR -> new PlaylistCursor(pivot.getId(), pivot.getVisitCount());
+            };
+        }
 
         List<Playlist> fetched = playlistFeedRepository.findFeedPlaylists(
                 ownerId,
@@ -60,7 +71,6 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
         );
 
         boolean hasNext = fetched.size() > limit;
-
         List<Playlist> page = hasNext ? fetched.subList(0, limit) : fetched;
 
         List<Long> playlistIds = page.stream()
@@ -78,14 +88,9 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
                 ))
                 .toList();
 
-        String nextCursor = null;
+        Long nextCursor = null;
         if (hasNext && !page.isEmpty()) {
-            Playlist last = page.get(page.size() - 1);
-            PlaylistCursor next = switch (sortOption) {
-                case RECENT -> new PlaylistCursor(last.getId(), null);
-                case POPULAR -> new PlaylistCursor(last.getId(), last.getVisitCount());
-            };
-            nextCursor = PlaylistCursorCodec.encode(sortOption, next);
+            nextCursor = page.get(page.size() - 1).getId();
         }
 
         long totalCount = playlistRepository.countByUsers_Id(ownerId);
@@ -101,11 +106,11 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
 
     @Override
     @Transactional(readOnly = true)
-    public CursorPageResponse<PlaylistCoverResponse, String> getLikedPlaylistsSorted(
+    public CursorPageResponse<PlaylistCoverResponse, Long> getLikedPlaylistsSorted(
             String shareCode,
             String meId,
             PlaylistSortOption sortOption,
-            String opaqueCursor,
+            Long cursor,
             int limit
     ) {
 
@@ -115,13 +120,23 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
         String ownerId = owner.getId();
         boolean includePrivate = ownerId.equals(meId);
 
-        PlaylistCursor decodedCursor = PlaylistCursorCodec.decode(opaqueCursor, sortOption);
+        PlaylistCursor decodedCursor = null;
+
+        if (cursor != null) {
+            Playlist pivot = playlistRepository.findById(cursor)
+                    .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+
+            decodedCursor = switch (sortOption) {
+                case RECENT -> new PlaylistCursor(pivot.getId(), null);
+                case POPULAR -> new PlaylistCursor(pivot.getId(), pivot.getVisitCount());
+            };
+        }
 
         List<Playlist> fetched = playlistFeedRepository.findLikedPlaylists(
                 ownerId,
                 sortOption,
                 decodedCursor,
-                limit,
+                limit, // 필요하면 limit + 1 로 변경 (아래 설명 참고)
                 includePrivate
         );
 
@@ -144,14 +159,9 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
                 ))
                 .toList();
 
-        String nextCursor = null;
+        Long nextCursor = null;
         if (hasNext && !page.isEmpty()) {
-            Playlist last = page.get(page.size() - 1);
-            PlaylistCursor next = switch (sortOption) {
-                case RECENT -> new PlaylistCursor(last.getId(), null);
-                case POPULAR -> new PlaylistCursor(last.getId(), last.getVisitCount());
-            };
-            nextCursor = PlaylistCursorCodec.encode(sortOption, next);
+            nextCursor = page.get(page.size() - 1).getId();
         }
 
         long totalCount = likesRepository.countByUsers_Id(ownerId);
