@@ -136,7 +136,7 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
                 ownerId,
                 sortOption,
                 decodedCursor,
-                limit, // 필요하면 limit + 1 로 변경 (아래 설명 참고)
+                limit,
                 includePrivate
         );
 
