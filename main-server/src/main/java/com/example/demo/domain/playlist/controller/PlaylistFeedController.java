@@ -37,11 +37,11 @@ public class PlaylistFeedController {
             content = @Content(schema = @Schema(implementation = FeedPlaylistListResponse.class))
     )
     @GetMapping("/{shareCode}")
-    public ResponseEntity<CursorPageResponse<PlaylistCoverResponse, String>> getFeedPlaylists(
+    public ResponseEntity<CursorPageResponse<PlaylistCoverResponse, Long>> getFeedPlaylists(
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String shareCode,
             @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort,
-            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int limit
     ) {
         return ResponseEntity.ok(
@@ -59,12 +59,12 @@ public class PlaylistFeedController {
             content = @Content(schema = @Schema(implementation = FeedPlaylistListResponse.class))
     )
     @GetMapping("/{shareCode}/likes")
-    public ResponseEntity<CursorPageResponse<PlaylistCoverResponse, String>> getLikedPlaylists(
+    public ResponseEntity<CursorPageResponse<PlaylistCoverResponse, Long>> getLikedPlaylists(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String shareCode,
             @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort,
-            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int limit
     ) {
         return ResponseEntity.ok(
