@@ -116,7 +116,7 @@ public class UsersService {
             if (req.bio() != null) {
                 user.changeBio(req.bio());
             }
-
+            usersRepository.flush();
             return UpdateProfileResponse.from(user);
         }
         catch (DataIntegrityViolationException e) {
