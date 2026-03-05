@@ -9,7 +9,7 @@ import java.util.List;
         name = "FeedPlaylistListResponse",
         description = "플레이리스트 커서 기반 페이지 응답 (스웨거 조회용)"
 )
-public record FeedPlaylistListResponse(
+public record FeedPlaylistResponse(
 
         @Schema(description = "조회된 플레이리스트 목록")
         List<PlaylistCoverResponse> content,

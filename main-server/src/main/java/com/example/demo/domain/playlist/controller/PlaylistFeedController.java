@@ -2,8 +2,12 @@ package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
-import com.example.demo.domain.playlist.dto.feed.FeedPlaylistListResponse;
+import com.example.demo.domain.playlist.dto.feed.CarouselDirection;
+import com.example.demo.domain.playlist.dto.feed.CarouselPlaylistResponse;
+import com.example.demo.domain.playlist.dto.feed.FeedPlaylistResponse;
+import com.example.demo.domain.playlist.service.PlaylistCarouselService;
 import com.example.demo.domain.playlist.service.PlaylistFeedService;
+import com.example.demo.global.paging.BiCursorPageResponse;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistFeedController {
 
     private final PlaylistFeedService playlistFeedService;
+    private final PlaylistCarouselService playlistCarouselService;
 
     @Operation(
             summary = "피드 플레이리스트 목록 조회",
@@ -34,7 +39,7 @@ public class PlaylistFeedController {
     @ApiResponse(
             responseCode = "200",
             description = "피드 플레이리스트 목록",
-            content = @Content(schema = @Schema(implementation = FeedPlaylistListResponse.class))
+            content = @Content(schema = @Schema(implementation = FeedPlaylistResponse.class))
     )
     @GetMapping("/{shareCode}")
     public ResponseEntity<CursorPageResponse<PlaylistCoverResponse, Long>> getFeedPlaylists(
@@ -56,7 +61,7 @@ public class PlaylistFeedController {
     @ApiResponse(
             responseCode = "200",
             description = "피드 플레이리스트 목록",
-            content = @Content(schema = @Schema(implementation = FeedPlaylistListResponse.class))
+            content = @Content(schema = @Schema(implementation = FeedPlaylistResponse.class))
     )
     @GetMapping("/{shareCode}/likes")
     public ResponseEntity<CursorPageResponse<PlaylistCoverResponse, Long>> getLikedPlaylists(
@@ -69,6 +74,65 @@ public class PlaylistFeedController {
     ) {
         return ResponseEntity.ok(
                 playlistFeedService.getLikedPlaylistsSorted(shareCode, me.getId(), sort, cursor, limit)
+        );
+    }
+
+    @Operation(
+            summary = "피드 플레이리스트 캐러셀 조회",
+            description = "피드 플레이리스트를 anchorId를 기준으로 데이터를 조회하거나, 방향(direction)과 커서(cursor)로 추가 로딩합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "피드 플레이리스트 캐러셀",
+            content = @Content(schema = @Schema(implementation = CarouselPlaylistResponse.class))
+    )
+    @GetMapping("/{shareCode}/carousel")
+    public ResponseEntity<BiCursorPageResponse<PlaylistCoverResponse, Long>> getFeedPlaylistsCarousel(
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable String shareCode,
+            @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort,
+            @RequestParam(required = false) Long anchorId,
+            @RequestParam(required = false) CarouselDirection direction,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        if (anchorId != null) {
+            return ResponseEntity.ok(
+                    playlistCarouselService.getFeedCarouselAround(shareCode, me.getId(), sort, anchorId, limit)
+            );
+        }
+        return ResponseEntity.ok(
+                playlistCarouselService.getFeedCarouselMore(shareCode, me.getId(), sort, direction, cursor, limit)
+        );
+    }
+
+    @Operation(
+            summary = "피드 좋아요한 플레이리스트 캐러셀 조회",
+            description = "피드 좋아요한 플레이리스트를 anchorId 기준으로 데이터를 조회하거나, 방향(direction)과 커서(cursor)로 추가 로딩합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "피드 좋아요한 플레이리스트 캐러셀",
+            content = @Content(schema = @Schema(implementation = CarouselPlaylistResponse.class))
+    )
+    @GetMapping("/{shareCode}/likes/carousel")
+    public ResponseEntity<BiCursorPageResponse<PlaylistCoverResponse, Long>> getLikedPlaylistsCarousel(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal CustomUserDetails me,
+            @PathVariable String shareCode,
+            @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort,
+            @RequestParam(required = false) Long anchorId,
+            @RequestParam(required = false) CarouselDirection direction,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        if (anchorId != null) {
+            return ResponseEntity.ok(
+                    playlistCarouselService.getLikedCarouselAround(shareCode, me.getId(), sort, anchorId, limit)
+            );
+        }
+        return ResponseEntity.ok(
+                playlistCarouselService.getLikedCarouselMore(shareCode, me.getId(), sort, direction, cursor, limit)
         );
     }
 }
