@@ -4,6 +4,7 @@ import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.feed.CarouselDirection;
 import com.example.demo.domain.playlist.dto.feed.CarouselPlaylistResponse;
+import com.example.demo.domain.playlist.dto.feed.CarouselRequest;
 import com.example.demo.domain.playlist.dto.feed.FeedPlaylistResponse;
 import com.example.demo.domain.playlist.service.PlaylistCarouselService;
 import com.example.demo.domain.playlist.service.PlaylistFeedService;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -90,19 +92,29 @@ public class PlaylistFeedController {
     public ResponseEntity<BiCursorPageResponse<PlaylistCoverResponse, Long>> getFeedPlaylistsCarousel(
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String shareCode,
-            @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort,
-            @RequestParam(required = false) Long anchorId,
-            @RequestParam(required = false) CarouselDirection direction,
-            @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int limit
+            @Valid @ModelAttribute CarouselRequest request
     ) {
-        if (anchorId != null) {
+        if (request.anchorId() != null) {
             return ResponseEntity.ok(
-                    playlistCarouselService.getFeedCarouselAround(shareCode, me.getId(), sort, anchorId, limit)
+                    playlistCarouselService.getFeedCarouselAround(
+                            shareCode,
+                            me.getId(),
+                            request.sort(),
+                            request.anchorId(),
+                            request.limit()
+                    )
             );
         }
+
         return ResponseEntity.ok(
-                playlistCarouselService.getFeedCarouselMore(shareCode, me.getId(), sort, direction, cursor, limit)
+                playlistCarouselService.getFeedCarouselMore(
+                        shareCode,
+                        me.getId(),
+                        request.sort(),
+                        request.direction(),
+                        request.cursor(),
+                        request.limit()
+                )
         );
     }
 
@@ -120,19 +132,29 @@ public class PlaylistFeedController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String shareCode,
-            @RequestParam(defaultValue = "POPULAR") PlaylistSortOption sort,
-            @RequestParam(required = false) Long anchorId,
-            @RequestParam(required = false) CarouselDirection direction,
-            @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int limit
+            @Valid @ModelAttribute CarouselRequest request
     ) {
-        if (anchorId != null) {
+        if (request.anchorId() != null) {
             return ResponseEntity.ok(
-                    playlistCarouselService.getLikedCarouselAround(shareCode, me.getId(), sort, anchorId, limit)
+                    playlistCarouselService.getLikedCarouselAround(
+                            shareCode,
+                            me.getId(),
+                            request.sort(),
+                            request.anchorId(),
+                            request.limit()
+                    )
             );
         }
+
         return ResponseEntity.ok(
-                playlistCarouselService.getLikedCarouselMore(shareCode, me.getId(), sort, direction, cursor, limit)
+                playlistCarouselService.getLikedCarouselMore(
+                        shareCode,
+                        me.getId(),
+                        request.sort(),
+                        request.direction(),
+                        request.cursor(),
+                        request.limit()
+                )
         );
     }
 }
