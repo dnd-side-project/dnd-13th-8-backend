@@ -2,7 +2,6 @@ package com.example.demo.domain.playlist.controller;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
-import com.example.demo.domain.playlist.dto.feed.CarouselDirection;
 import com.example.demo.domain.playlist.dto.feed.CarouselPlaylistResponse;
 import com.example.demo.domain.playlist.dto.feed.CarouselRequest;
 import com.example.demo.domain.playlist.dto.feed.FeedPlaylistResponse;
