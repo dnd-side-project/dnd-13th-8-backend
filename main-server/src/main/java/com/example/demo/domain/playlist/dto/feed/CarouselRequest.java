@@ -21,4 +21,13 @@ public record CarouselRequest(
         @Schema(description = "조회 개수", example = "3", defaultValue = "3")
         Integer limit
 ) {
+        public CarouselRequest {
+                if (sort == null) {
+                        sort = PlaylistSortOption.POPULAR;
+                }
+
+                if (limit == null) {
+                        limit = 3;
+                }
+        }
 }
