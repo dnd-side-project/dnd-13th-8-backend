@@ -106,7 +106,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         boolean hasMore = fetched.size() > limit;
         List<Playlist> page = hasMore ? fetched.subList(0, limit) : fetched;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             Collections.reverse(page);
         }
 
@@ -115,7 +115,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         boolean hasPrev = false;
         boolean hasNext = false;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             hasPrev = hasMore;
             if (hasPrev && !page.isEmpty()) prevCursor = page.get(0).getId();
         } else {
@@ -200,7 +200,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         boolean hasMore = fetched.size() > limit;
         List<Playlist> page = hasMore ? fetched.subList(0, limit) : fetched;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             Collections.reverse(page);
         }
 
@@ -209,7 +209,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         boolean hasPrev = false;
         boolean hasNext = false;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             hasPrev = hasMore;
             if (hasPrev && !page.isEmpty()) prevCursor = page.get(0).getId();
         } else {
