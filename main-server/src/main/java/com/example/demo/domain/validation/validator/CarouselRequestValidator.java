@@ -15,14 +15,15 @@ public class CarouselRequestValidator implements ConstraintValidator<ValidCarous
         boolean hasDirection = value.direction() != null;
         boolean hasCursor = value.cursor() != null;
 
-        boolean isInit = hasAnchor && !hasDirection && !hasCursor;
+        boolean isInit = !hasAnchor && !hasDirection && !hasCursor;
+        boolean isAnchor = hasAnchor && !hasDirection && !hasCursor;
         boolean isMove = !hasAnchor && hasDirection && hasCursor;
 
-        if (isInit || isMove) return true;
+        if (isInit || isAnchor || isMove) return true;
 
         ctx.disableDefaultConstraintViolation();
         ctx.buildConstraintViolationWithTemplate(
-                "요청은 anchorId만 포함하거나 direction+cursor만 포함해야 합니다."
+                "요청은 비어 있거나, anchorId만 포함하거나, direction+cursor만 포함해야 합니다."
         ).addConstraintViolation();
 
         return false;

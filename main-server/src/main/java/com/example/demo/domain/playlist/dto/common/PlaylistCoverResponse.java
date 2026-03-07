@@ -18,6 +18,9 @@ public record PlaylistCoverResponse(
         @Schema(description = "플레이리스트 제작자 이름", example = "김들락")
         String creatorNickname,
 
+        @Schema(description = "플레이리스트 제작자 이름", example = "김들락")
+        String creatorShareCode,
+
         @Schema(description = "플레이리스트 장르", example = "JAZZ")
         PlaylistGenre genre,
 
@@ -37,6 +40,7 @@ public record PlaylistCoverResponse(
                 .playlistName(playlist.getName())
                 .genre(playlist.getGenre())
                 .creatorNickname(playlist.getUsers().getUsername())
+                .creatorShareCode(playlist.getUsers().getShareCode())
                 .isPublic(playlist.isPublic())
                 .isLiked(isLiked)
                 .cdResponse(cd)

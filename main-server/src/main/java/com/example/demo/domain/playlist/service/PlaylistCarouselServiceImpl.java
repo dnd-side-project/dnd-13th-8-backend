@@ -88,6 +88,9 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long cursor,
             int limit
     ) {
+        CarouselDirection resolvedDirection =
+                cursor == null ? CarouselDirection.NEXT : direction;
+
         Users owner = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -97,7 +100,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         PlaylistCursor decoded = decodeCursor(cursor, sort);
 
         List<Playlist> fetched = carouselRepository.findFeedCarousel(
-                ownerId, decoded, limit, sort, includePrivate, direction
+                ownerId, decoded, limit, sort, includePrivate, resolvedDirection
         );
 
         boolean hasMore = fetched.size() > limit;
@@ -178,6 +181,10 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long cursor,
             int limit
     ) {
+
+        CarouselDirection resolvedDirection =
+                cursor == null ? CarouselDirection.NEXT : direction;
+
         Users owner = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -187,7 +194,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         PlaylistCursor decoded = decodeCursor(cursor, sort);
 
         List<Playlist> fetched = carouselRepository.findLikedCarousel(
-                ownerId, decoded, limit, sort, includePrivate, direction
+                ownerId, decoded, limit, sort, includePrivate, resolvedDirection
         );
 
         boolean hasMore = fetched.size() > limit;
