@@ -103,4 +103,24 @@ public class PlaylistFeedRepository {
                 .distinct()
                 .fetch();
     }
+
+    public long countFeedPlaylists(String ownerId, boolean includePrivate) {
+
+        QPlaylist playlist = QPlaylist.playlist;
+
+        BooleanExpression visibility = includePrivate
+                ? null
+                : playlist.isPublic.isTrue();
+
+        Long count = queryFactory
+                .select(playlist.count())
+                .from(playlist)
+                .where(
+                        playlist.users.id.eq(ownerId),
+                        visibility
+                )
+                .fetchOne();
+
+        return count != null ? count : 0L;
+    }
 }

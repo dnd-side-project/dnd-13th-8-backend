@@ -93,7 +93,7 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
             nextCursor = page.get(page.size() - 1).getId();
         }
 
-        long totalCount = playlistRepository.countByUsers_Id(ownerId);
+        long totalCount = playlistFeedRepository.countFeedPlaylists(ownerId, includePrivate);
 
         return new CursorPageResponse<>(
                 content,
@@ -164,7 +164,7 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
             nextCursor = page.get(page.size() - 1).getId();
         }
 
-        long totalCount = likesRepository.countByUsers_Id(ownerId);
+        long totalCount = likesRepository.countLikedPlaylists(ownerId, includePrivate);
 
         return new CursorPageResponse<>(
                 content,

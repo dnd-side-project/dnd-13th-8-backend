@@ -88,6 +88,9 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long cursor,
             int limit
     ) {
+        CarouselDirection resolvedDirection =
+                cursor == null ? CarouselDirection.NEXT : direction;
+
         Users owner = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -97,13 +100,13 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         PlaylistCursor decoded = decodeCursor(cursor, sort);
 
         List<Playlist> fetched = carouselRepository.findFeedCarousel(
-                ownerId, decoded, limit, sort, includePrivate, direction
+                ownerId, decoded, limit, sort, includePrivate, resolvedDirection
         );
 
         boolean hasMore = fetched.size() > limit;
         List<Playlist> page = hasMore ? fetched.subList(0, limit) : fetched;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             Collections.reverse(page);
         }
 
@@ -112,7 +115,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         boolean hasPrev = false;
         boolean hasNext = false;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             hasPrev = hasMore;
             if (hasPrev && !page.isEmpty()) prevCursor = page.get(0).getId();
         } else {
@@ -178,6 +181,10 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long cursor,
             int limit
     ) {
+
+        CarouselDirection resolvedDirection =
+                cursor == null ? CarouselDirection.NEXT : direction;
+
         Users owner = usersRepository.findByShareCode(shareCode)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -187,13 +194,13 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         PlaylistCursor decoded = decodeCursor(cursor, sort);
 
         List<Playlist> fetched = carouselRepository.findLikedCarousel(
-                ownerId, decoded, limit, sort, includePrivate, direction
+                ownerId, decoded, limit, sort, includePrivate, resolvedDirection
         );
 
         boolean hasMore = fetched.size() > limit;
         List<Playlist> page = hasMore ? fetched.subList(0, limit) : fetched;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             Collections.reverse(page);
         }
 
@@ -202,7 +209,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         boolean hasPrev = false;
         boolean hasNext = false;
 
-        if (direction == CarouselDirection.PREV) {
+        if (resolvedDirection == CarouselDirection.PREV) {
             hasPrev = hasMore;
             if (hasPrev && !page.isEmpty()) prevCursor = page.get(0).getId();
         } else {
