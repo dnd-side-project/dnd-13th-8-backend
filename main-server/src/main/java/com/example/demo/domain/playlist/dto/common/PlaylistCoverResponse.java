@@ -15,10 +15,10 @@ public record PlaylistCoverResponse(
         @Schema(description = "플레이리스트 이름", example = "여름 드라이브 플레이리스트")
         String playlistName,
 
-        @Schema(description = "플레이리스트 제작자 이름", example = "김들락")
+        @Schema(description = "플레이리스트 제작자 이름", example = "지구젤리")
         String creatorNickname,
 
-        @Schema(description = "플레이리스트 제작자 이름", example = "김들락")
+        @Schema(description = "플레이리스트 제작자 공유코드", example = "jigu_jelly")
         String creatorShareCode,
 
         @Schema(description = "플레이리스트 장르", example = "JAZZ")
