@@ -6,6 +6,7 @@ import com.example.demo.domain.playlist.entity.QPlaylist;
 import com.example.demo.domain.user.entity.QUsers;
 import com.example.demo.domain.like.entity.QLikes;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -58,5 +59,27 @@ public class LikesRepositoryCustomImpl implements LikesRepositoryCustom {
                 .limit(limit)
                 .distinct()
                 .fetch();
+    }
+
+    @Override
+    public long countLikedPlaylists(String userId, boolean includePrivate) {
+        QLikes l = QLikes.likes;
+        QPlaylist p = QPlaylist.playlist;
+
+        BooleanExpression visibilityCondition = includePrivate
+                ? null
+                : p.isPublic.isTrue();
+
+        Long count = queryFactory
+                .select(p.id.countDistinct())
+                .from(l)
+                .join(l.playlist, p)
+                .where(
+                        l.users.id.eq(userId),
+                        visibilityCondition
+                )
+                .fetchOne();
+
+        return count != null ? count : 0L;
     }
 }

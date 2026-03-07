@@ -22,9 +22,6 @@ public record CarouselPlaylistResponse(
         boolean hasPrev,
 
         @Schema(description = "다음(오른쪽) 페이지 존재 여부", example = "true")
-        boolean hasNext,
-
-        @Schema(description = "총 검색 결과 수", example = "42")
-        long totalCount
+        boolean hasNext
 ) {
 }

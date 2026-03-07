@@ -30,8 +30,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long>, Playl
 
     Optional<Playlist> findByIdAndUsers_Id(Long playlistId, String userId);
 
-    long countByUsers_Id(String userId);
-
     @Query(value = "SELECT * FROM playlist " +
             "WHERE user_id = :userId AND id <> :excludePlaylistId " +
             "ORDER BY created_at DESC LIMIT 1", nativeQuery = true)
