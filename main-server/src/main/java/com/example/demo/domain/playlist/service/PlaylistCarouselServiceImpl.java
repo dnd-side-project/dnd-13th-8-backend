@@ -35,7 +35,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
 
     @Override
     @Transactional(readOnly = true)
-    public BiCursorPageResponse<PlaylistCoverResponse, Long> getFeedCarouselAround(
+    public BiCursorPageResponse<PlaylistCoverResponse, Long> getFeedCarousel(
             String shareCode,
             String meId,
             PlaylistSortOption sort,
@@ -48,7 +48,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         String ownerId = owner.getId();
         boolean includePrivate = ownerId.equals(meId);
 
-        Playlist anchor = playlistRepository.findById(anchorId)
+        Playlist anchor = carouselRepository.findFeedAnchor(ownerId, anchorId, includePrivate)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         PlaylistCursor anchorCursor = toCursor(anchor, sort);
@@ -128,7 +128,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
 
     @Override
     @Transactional(readOnly = true)
-    public BiCursorPageResponse<PlaylistCoverResponse, Long> getLikedCarouselAround(
+    public BiCursorPageResponse<PlaylistCoverResponse, Long> getLikedCarousel(
             String shareCode,
             String meId,
             PlaylistSortOption sort,
@@ -141,7 +141,7 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         String ownerId = owner.getId();
         boolean includePrivate = ownerId.equals(meId);
 
-        Playlist anchor = playlistRepository.findById(anchorId)
+        Playlist anchor = carouselRepository.findLikedAnchor(ownerId, anchorId, includePrivate)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
 
         PlaylistCursor anchorCursor = toCursor(anchor, sort);
