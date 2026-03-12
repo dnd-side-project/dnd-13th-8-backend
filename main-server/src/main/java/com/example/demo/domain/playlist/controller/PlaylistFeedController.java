@@ -95,7 +95,7 @@ public class PlaylistFeedController {
     ) {
         if (request.anchorId() != null) {
             return ResponseEntity.ok(
-                    playlistCarouselService.getFeedCarouselAround(
+                    playlistCarouselService.getFeedCarousel(
                             shareCode,
                             me.getId(),
                             request.sort(),
@@ -135,7 +135,7 @@ public class PlaylistFeedController {
     ) {
         if (request.anchorId() != null) {
             return ResponseEntity.ok(
-                    playlistCarouselService.getLikedCarouselAround(
+                    playlistCarouselService.getLikedCarousel(
                             shareCode,
                             me.getId(),
                             request.sort(),
