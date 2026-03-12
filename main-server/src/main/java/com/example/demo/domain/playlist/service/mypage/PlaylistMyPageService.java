@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.service;
+package com.example.demo.domain.playlist.service.mypage;
 
 import com.example.demo.domain.follow.dto.response.FollowedPlaylistsResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;

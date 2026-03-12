@@ -3,7 +3,7 @@ package com.example.demo.domain.playlist.controller;
 import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
-import com.example.demo.domain.playlist.service.PlaylistService;
+import com.example.demo.domain.playlist.service.common.PlaylistService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

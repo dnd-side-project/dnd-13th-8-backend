@@ -4,7 +4,7 @@ import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResp
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
-import com.example.demo.domain.playlist.service.PlaylistMyPageService;
+import com.example.demo.domain.playlist.service.mypage.PlaylistMyPageService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
