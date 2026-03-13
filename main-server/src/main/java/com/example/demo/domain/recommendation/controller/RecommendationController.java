@@ -1,8 +1,10 @@
 package com.example.demo.domain.recommendation.controller;
 
+import com.example.demo.domain.recommendation.dto.GetTimeRecommendationResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
+import com.example.demo.domain.recommendation.entity.bundle.BundleTimeSlot;
 import com.example.demo.domain.recommendation.service.RecommendationService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -122,10 +124,26 @@ public class RecommendationController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedUserResponse.class)))
     )
     @GetMapping("/users")
-    public ResponseEntity<List<RecommendedUserResponse>> recommendUsers(
+    public ResponseEntity<List<RecommendedUserResponse>> getUserRecommendation(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
             @RequestParam(defaultValue = "10") int limit
     ) {
         return ResponseEntity.ok(recommendationService.recommendTopFollowedUsers(user.getId(), limit));
+    }
+
+    @Operation(summary = "시간대 추천 플레이리스트")
+    @ApiResponse(
+            responseCode = "200",
+            description = "시간대 추천 결과",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = GetTimeRecommendationResponse.class)))
+    )
+    @GetMapping("/time")
+    public ResponseEntity<List<GetTimeRecommendationResponse>> getTimeRecommendation(
+            @RequestParam(defaultValue = "DAWN") BundleTimeSlot timeSlot,
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        return ResponseEntity.ok(
+                recommendationService.getTimeRecommendation(timeSlot, user.getId())
+        );
     }
 }
