@@ -24,4 +24,15 @@ public interface BundlePlaylistRepository extends JpaRepository<BundlePlaylist, 
     order by b.id asc, bp.orderIndex asc, bp.id asc
 """)
     List<BundlePlaylist> findAllWithBundleAndPlaylist();
+
+    @Query("""
+    select bp
+    from BundlePlaylist bp
+    join fetch bp.playlist p
+    join fetch p.users u
+    join fetch bp.bundle b
+    where b.id in :bundleIds
+    order by b.id asc, bp.orderIndex asc
+""")
+    List<BundlePlaylist> findByBundleIdsWithPlaylistAndUser(List<Long> bundleIds);
 }
