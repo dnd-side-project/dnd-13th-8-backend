@@ -1,6 +1,5 @@
 package com.example.demo.domain.recommendation.dto;
 
-import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.recommendation.entity.bundle.BundleTimeSlot;
 import io.swagger.v3.oas.annotations.media.Schema;
 
