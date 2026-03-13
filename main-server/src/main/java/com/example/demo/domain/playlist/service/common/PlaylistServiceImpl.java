@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.service;
+package com.example.demo.domain.playlist.service.common;
 
 import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.code.UserErrorCode;

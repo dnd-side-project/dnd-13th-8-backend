@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.service;
+package com.example.demo.domain.playlist.service.search;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.global.paging.CursorPageResponse;

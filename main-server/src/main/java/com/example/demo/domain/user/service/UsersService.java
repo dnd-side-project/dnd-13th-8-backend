@@ -6,6 +6,7 @@ import com.example.demo.domain.follow.dto.response.FollowCount;
 import com.example.demo.domain.follow.service.FollowService;
 import com.example.demo.domain.user.dto.request.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.response.GetFeedProfileResponse;
+import com.example.demo.domain.user.dto.response.IsAdminResponse;
 import com.example.demo.domain.user.dto.response.IsFeedOwnerResponse;
 import com.example.demo.domain.user.dto.response.UpdateProfileResponse;
 import com.example.demo.domain.user.entity.MusicKeyword;
@@ -13,6 +14,7 @@ import com.example.demo.domain.user.entity.UserMusicKeyword;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UserMusicKeywordRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
+import com.example.demo.global.jwt.JwtRoleType;
 import com.example.demo.global.r2.R2Service;
 import java.io.IOException;
 import java.util.List;
@@ -136,5 +138,13 @@ public class UsersService {
         }
 
         usersRepository.delete(user);
+    }
+
+    @Transactional(readOnly = true)
+    public IsAdminResponse isAdmin(String userId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        return new IsAdminResponse(user.getRole() == JwtRoleType.SUPER);
     }
 }

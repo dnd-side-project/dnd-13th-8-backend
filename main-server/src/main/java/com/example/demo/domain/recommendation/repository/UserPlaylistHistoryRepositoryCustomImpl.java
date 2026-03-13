@@ -3,14 +3,19 @@ package com.example.demo.domain.recommendation.repository;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.entity.QPlaylist;
+import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
 import com.example.demo.domain.recommendation.entity.QUserPlaylistHistory;
 import com.example.demo.domain.song.entity.QSong;
 import com.example.demo.domain.user.entity.QUsers;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+
+import static com.example.demo.domain.follow.entity.QFollow.follow;
 
 @RequiredArgsConstructor
 public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHistoryRepositoryCustom {
@@ -108,4 +113,37 @@ public class UserPlaylistHistoryRepositoryCustomImpl implements UserPlaylistHist
                 .limit(limit)
                 .fetch();
     }
+
+    @Override
+    public List<RecommendedUserResponse> findTopFollowedUsers(String userId, int limit) {
+        QUsers u = QUsers.users;
+
+        NumberExpression<Long> followerCount = follow.id.count();
+
+        return queryFactory
+                .select(Projections.constructor(
+                        RecommendedUserResponse.class,
+                        u.id,
+                        u.username,
+                        u.profileUrl,
+                        u.shareCode
+                ))
+                .from(u)
+                .leftJoin(follow).on(follow.followee.id.eq(u.id))
+                .where(u.id.ne(userId))
+                .groupBy(
+                        u.id,
+                        u.username,
+                        u.profileUrl,
+                        u.shareCode
+                )
+                .having(followerCount.gt(0L))
+                .orderBy(
+                        followerCount.desc(),
+                        u.id.asc()
+                )
+                .limit(limit)
+                .fetch();
+    }
+
 }

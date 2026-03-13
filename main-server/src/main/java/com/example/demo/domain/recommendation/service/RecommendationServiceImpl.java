@@ -7,6 +7,7 @@ import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.song.dto.SongsByPlaylist;
 import com.example.demo.domain.song.service.SongService;
@@ -204,5 +205,11 @@ public class RecommendationServiceImpl implements RecommendationService {
                         cdItemsByPlaylist.cdItemsOf(p.getId())
                 ))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RecommendedUserResponse> recommendTopFollowedUsers(String userId, int limit) {
+        return userPlaylistHistoryRepository.findTopFollowedUsers(userId, limit);
     }
 }
