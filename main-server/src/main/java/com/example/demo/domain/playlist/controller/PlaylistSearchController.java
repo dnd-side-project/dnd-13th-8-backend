@@ -5,7 +5,7 @@ import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.global.paging.PageResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
-import com.example.demo.domain.playlist.service.PlaylistSearchService;
+import com.example.demo.domain.playlist.service.search.PlaylistSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -2,6 +2,8 @@ package com.example.demo.domain.recommendation.repository;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
+import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,4 +19,6 @@ public interface UserPlaylistHistoryRepositoryCustom {
     List<Playlist> findWeeklyTopPlaylists(LocalDateTime since, int limit);
 
     List<Playlist> findLatestPlayedPlaylists(int limit);
+
+    List<RecommendedUserResponse> findTopFollowedUsers(String userId, int limit);
 }

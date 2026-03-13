@@ -2,6 +2,7 @@ package com.example.demo.domain.user.controller;
 
 import com.example.demo.domain.user.dto.request.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.response.GetFeedProfileResponse;
+import com.example.demo.domain.user.dto.response.IsAdminResponse;
 import com.example.demo.domain.user.dto.response.IsFeedOwnerResponse;
 import com.example.demo.domain.user.dto.response.UpdateProfileResponse;
 import com.example.demo.domain.user.service.UsersService;
@@ -78,6 +79,19 @@ public class UsersController {
             @AuthenticationPrincipal CustomUserDetails me,
             @PathVariable String shareCode) {
         IsFeedOwnerResponse response = usersService.isUserFeedOwner(me.getId(),shareCode);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "관리자 권한 확인",
+            description = "현재 로그인한 사용자가 관리자(SUPER)인지 확인합니다."
+    )
+    @ApiResponse(content = @Content(schema = @Schema(implementation = IsAdminResponse.class)))
+    @GetMapping("/admin")
+    public ResponseEntity<IsAdminResponse> isAdmin(
+            @AuthenticationPrincipal CustomUserDetails me
+    ) {
+        IsAdminResponse response = usersService.isAdmin(me.getId());
         return ResponseEntity.ok(response);
     }
 }

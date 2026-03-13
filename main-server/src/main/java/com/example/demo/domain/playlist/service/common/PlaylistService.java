@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.service;
+package com.example.demo.domain.playlist.service.common;
 
 import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;

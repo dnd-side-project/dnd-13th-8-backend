@@ -6,7 +6,7 @@ import com.example.demo.domain.cd.dto.request.SaveCdRequest;
 import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
-import com.example.demo.domain.playlist.service.PlaylistService;
+import com.example.demo.domain.playlist.service.common.PlaylistService;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;

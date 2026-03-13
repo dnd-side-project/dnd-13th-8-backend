@@ -2,6 +2,7 @@ package com.example.demo.domain.recommendation.service;
 
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
 
 import java.util.List;
 
@@ -16,4 +17,6 @@ public interface RecommendationService {
     List<RecommendedPlaylistResponse> getAdminRecommendation(int limit);
 
     List<RecommendedPlaylistResponse> getWeeklyTopRecommendation(int limit);
+
+    List<RecommendedUserResponse> recommendTopFollowedUsers(String userId, int limit);
 }

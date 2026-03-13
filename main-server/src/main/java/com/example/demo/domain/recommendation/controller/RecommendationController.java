@@ -2,6 +2,7 @@ package com.example.demo.domain.recommendation.controller;
 
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
+import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
 import com.example.demo.domain.recommendation.service.RecommendationService;
 import com.example.demo.global.security.filter.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,7 +87,7 @@ public class RecommendationController {
     }
 
     @Operation(
-            summary = "팔로우 기반 추천",
+            summary = "팔로우 기반 추천 (레거시 예정)",
             description = "사용자가 아직 팔로우하지 않은 최신 플레이리스트를 추천합니다."
     )
     @ApiResponse(
@@ -112,5 +113,19 @@ public class RecommendationController {
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user
     ) {
         return ResponseEntity.ok(recommendationService.recommendGenres(user.getId()));
+    }
+
+    @Operation(summary = "인기 있는 유저 목록")
+    @ApiResponse(
+            responseCode = "200",
+            description = "추천 유저 목록",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedUserResponse.class)))
+    )
+    @GetMapping("/users")
+    public ResponseEntity<List<RecommendedUserResponse>> recommendUsers(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(recommendationService.recommendTopFollowedUsers(user.getId(), limit));
     }
 }

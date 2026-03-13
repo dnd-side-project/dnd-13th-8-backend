@@ -1,4 +1,4 @@
-package com.example.demo.domain.playlist.service;
+package com.example.demo.domain.playlist.service.carousel;
 
 import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
