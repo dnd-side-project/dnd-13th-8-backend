@@ -5,10 +5,16 @@ import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.recommendation.dto.GetTimeRecommendationResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedUserResponse;
+import com.example.demo.domain.recommendation.entity.bundle.Bundle;
+import com.example.demo.domain.recommendation.entity.bundle.BundlePlaylist;
+import com.example.demo.domain.recommendation.entity.bundle.BundleTimeSlot;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
+import com.example.demo.domain.recommendation.repository.bundle.BundlePlaylistRepository;
+import com.example.demo.domain.recommendation.repository.bundle.BundleRepository;
 import com.example.demo.domain.song.dto.SongsByPlaylist;
 import com.example.demo.domain.song.service.SongService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +35,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     private final PlaylistRepository playlistRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
+    private final BundlePlaylistRepository bundlePlaylistRepository;
+    private final BundleRepository bundleRepository;
     private final SongService songService;
     private final CdService cdService;
 
@@ -211,5 +219,63 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Transactional(readOnly = true)
     public List<RecommendedUserResponse> recommendTopFollowedUsers(String userId, int limit) {
         return userPlaylistHistoryRepository.findTopFollowedUsers(userId, limit);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GetTimeRecommendationResponse> getTimeRecommendation(BundleTimeSlot timeSlot, String userId) {
+
+        List<Bundle> bundles = bundleRepository.findByTimeSlotOrderByIdAsc(timeSlot);
+
+        if (bundles.isEmpty()) return List.of();
+
+        List<Long> bundleIds = bundles.stream()
+                .map(Bundle::getId)
+                .toList();
+
+        List<BundlePlaylist> bundlePlaylists =
+                bundlePlaylistRepository.findByBundleIdsWithPlaylistAndUser(bundleIds);
+
+        List<Playlist> playlists = bundlePlaylists.stream()
+                .map(BundlePlaylist::getPlaylist)
+                .toList();
+
+        List<Long> playlistIds = playlists.stream()
+                .map(Playlist::getId)
+                .distinct()
+                .toList();
+
+        SongsByPlaylist songsByPlaylist =
+                songService.findSongsByPlaylistIdsIn(playlistIds);
+
+        CdItemsByPlaylist cdItemsByPlaylist =
+                cdService.findCdItemsByPlaylistIdsIn(playlistIds);
+
+        Map<Long, List<RecommendedPlaylistResponse>> playlistMap = new LinkedHashMap<>();
+
+        for (BundlePlaylist bp : bundlePlaylists) {
+
+            Playlist playlist = bp.getPlaylist();
+            Long bundleId = bp.getBundle().getId();
+
+            RecommendedPlaylistResponse response =
+                    RecommendedPlaylistResponse.from(
+                            playlist,
+                            songsByPlaylist.songsOf(playlist.getId()),
+                            cdItemsByPlaylist.cdItemsOf(playlist.getId())
+                    );
+
+            playlistMap.computeIfAbsent(bundleId, k -> new ArrayList<>())
+                    .add(response);
+        }
+
+        return bundles.stream()
+                .map(bundle -> new GetTimeRecommendationResponse(
+                        bundle.getId(),
+                        bundle.getTitle(),
+                        bundle.getTimeSlot(),
+                        playlistMap.getOrDefault(bundle.getId(), List.of())
+                ))
+                .toList();
     }
 }
