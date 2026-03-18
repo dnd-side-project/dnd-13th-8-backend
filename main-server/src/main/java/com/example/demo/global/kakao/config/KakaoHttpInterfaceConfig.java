@@ -1,7 +1,5 @@
 package com.example.demo.global.kakao.config;
 
-import com.example.demo.global.kakao.controller.KakaoApiHttp;
-import com.example.demo.global.kakao.controller.KakaoAuthHttp;
 import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

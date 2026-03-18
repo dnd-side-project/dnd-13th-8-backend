@@ -1,4 +1,4 @@
-package com.example.demo.global.kakao.controller;
+package com.example.demo.global.kakao.config;
 
 import com.example.demo.global.kakao.dto.KakaoTokenResponse;
 import org.springframework.web.bind.annotation.RequestParam;
