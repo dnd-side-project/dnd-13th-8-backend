@@ -110,7 +110,7 @@ public class BundleController {
     @ApiResponse(
             responseCode = "200",
             description = "플레이리스트 목록 전체 조회 성공",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = GetAllBundlesResponse.class)))
+            content = @Content(schema = @Schema(implementation = GetAllPlaylistsResponse.class))
     )
     @GetMapping("/playlist")
     public ResponseEntity<GetAllPlaylistsResponse> getAllPlaylists() {
