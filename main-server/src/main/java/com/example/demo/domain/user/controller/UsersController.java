@@ -97,8 +97,8 @@ public class UsersController {
     }
 
     @Operation(
-            summary = "관리자 권한 확인",
-            description = "현재 로그인한 사용자가 관리자(SUPER)인지 확인합니다."
+            summary = "피드백 제출",
+            description = "사용자의 피드백을 제출합니다."
     )
     @PostMapping("/feedback")
     public ResponseEntity<String> submitFeedback(@RequestBody FeedbackRequest request) {
