@@ -11,4 +11,5 @@ public interface BundleService {
     void deleteBundle(Long bundleId);
     GetBundleResponse getBundle(Long bundleId);
     List<GetAllBundlesResponse> getAllBundles();
+    GetAllPlaylistsResponse getAllPlaylists();
 }
