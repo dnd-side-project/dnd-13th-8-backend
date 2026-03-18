@@ -127,4 +127,12 @@ public class BundleServiceImpl implements BundleService {
                 ))
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public GetAllPlaylistsResponse getAllPlaylists() {
+        return GetAllPlaylistsResponse.from(
+                playlistRepository.findAll()
+        );
+    }
 }
