@@ -4,6 +4,7 @@ import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.follow.dto.response.FollowCount;
 import com.example.demo.domain.follow.service.FollowService;
+import com.example.demo.domain.user.dto.request.FeedbackRequest;
 import com.example.demo.domain.user.dto.request.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.response.GetFeedProfileResponse;
 import com.example.demo.domain.user.dto.response.IsAdminResponse;
@@ -14,6 +15,7 @@ import com.example.demo.domain.user.entity.UserMusicKeyword;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UserMusicKeywordRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
+import com.example.demo.global.discord.service.DiscordWebhookService;
 import com.example.demo.global.jwt.JwtRoleType;
 import com.example.demo.global.r2.R2Service;
 import java.io.IOException;
@@ -32,6 +34,7 @@ public class UsersService {
     private final UserMusicKeywordRepository userMusicKeywordRepository;
     private final FollowService followService;
     private final R2Service r2Service;
+    private final DiscordWebhookService discordWebhookService;
 
     @Transactional(readOnly = true)
     public GetFeedProfileResponse getFeedProfileByShareCode(String shareCode) {
@@ -146,5 +149,24 @@ public class UsersService {
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         return new IsAdminResponse(user.getRole() == JwtRoleType.SUPER);
+    }
+
+    public void submitFeedback(FeedbackRequest request) {
+
+        String message = """
+                📥 새로운 유저 피드백
+
+                - 개인정보 동의: %s
+                - 만족도: %s
+                - 연락처: %s
+                - 의견: %s
+                """.formatted(
+                request.privacyConsent(),
+                request.satisfaction(),
+                request.phoneNumber(),
+                request.opinion()
+        );
+
+        discordWebhookService.sendMessage(message);
     }
 }

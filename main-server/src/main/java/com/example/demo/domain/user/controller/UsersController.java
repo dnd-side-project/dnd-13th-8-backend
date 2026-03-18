@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.controller;
 
+import com.example.demo.domain.user.dto.request.FeedbackRequest;
 import com.example.demo.domain.user.dto.request.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.response.GetFeedProfileResponse;
 import com.example.demo.domain.user.dto.response.IsAdminResponse;
@@ -93,5 +94,15 @@ public class UsersController {
     ) {
         IsAdminResponse response = usersService.isAdmin(me.getId());
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "피드백 제출",
+            description = "사용자의 피드백을 제출합니다."
+    )
+    @PostMapping("/feedback")
+    public ResponseEntity<String> submitFeedback(@RequestBody FeedbackRequest request) {
+        usersService.submitFeedback(request);
+        return ResponseEntity.ok("피드백 메시지 발송 완료");
     }
 }
