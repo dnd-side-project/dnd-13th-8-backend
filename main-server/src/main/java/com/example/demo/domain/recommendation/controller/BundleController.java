@@ -102,4 +102,19 @@ public class BundleController {
         List<GetAllBundlesResponse> response = bundleService.getAllBundles();
         return ResponseEntity.ok(response);
     }
+
+    @Operation(
+            summary = "플레이리스트 목록 전체 조회",
+            description = "플레이리스트 목록 전체를 조회합니다"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "플레이리스트 목록 전체 조회 성공",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = GetAllBundlesResponse.class)))
+    )
+    @GetMapping("/playlist")
+    public ResponseEntity<GetAllPlaylistsResponse> getAllPlaylists() {
+        GetAllPlaylistsResponse response = bundleService.getAllPlaylists();
+        return ResponseEntity.ok(response);
+    }
 }

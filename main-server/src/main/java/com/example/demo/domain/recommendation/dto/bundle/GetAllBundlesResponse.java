@@ -26,7 +26,7 @@ public record GetAllBundlesResponse(
             Long playlistId,
 
             @Schema(description = "플레이리스트 제목")
-            String title
+            String playlistName
 
     ) {
     }

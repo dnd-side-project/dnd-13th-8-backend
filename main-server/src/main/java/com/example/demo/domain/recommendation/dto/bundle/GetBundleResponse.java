@@ -14,7 +14,7 @@ public record GetBundleResponse(
         BundleTimeSlot timeSlot,
 
         @Schema(description = "모음집 제목")
-        String title,
+        String name,
 
         @Schema(description = "플레이리스트 목록")
         List<BundlePlaylistItem> playlists
