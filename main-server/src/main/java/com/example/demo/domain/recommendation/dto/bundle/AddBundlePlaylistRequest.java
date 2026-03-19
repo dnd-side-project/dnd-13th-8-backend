@@ -6,9 +6,9 @@ import java.util.List;
 
 public record AddBundlePlaylistRequest(
         @Schema(description = "추가할 플레이리스트 목록")
-        List<BundlePlaylistItem> playlists
+        List<AddBundlePlaylistItem> playlists
 ) {
-    public record BundlePlaylistItem(
+    public record AddBundlePlaylistItem(
 
             @Schema(description = "플레이리스트 ID")
             Long playlistId,

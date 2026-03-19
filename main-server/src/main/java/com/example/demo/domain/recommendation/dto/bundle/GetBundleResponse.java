@@ -17,16 +17,16 @@ public record GetBundleResponse(
         String title,
 
         @Schema(description = "플레이리스트 목록")
-        List<BundlePlaylistItem> playlists
+        List<GetBundlePlaylistItem> playlists
 
 ) {
-    public record BundlePlaylistItem(
+    public record GetBundlePlaylistItem(
 
             @Schema(description = "플레이리스트 ID")
             Long playlistId,
 
             @Schema(description = "플레이리스트 제목")
-            String playlistTitle,
+            String playlistName,
 
             @Schema(description = "순서")
             Integer orderIndex

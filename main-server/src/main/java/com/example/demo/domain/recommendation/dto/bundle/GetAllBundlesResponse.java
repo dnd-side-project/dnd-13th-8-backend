@@ -17,10 +17,10 @@ public record GetAllBundlesResponse(
         String title,
 
         @Schema(description = "모음집에 포함된 플레이리스트 목록")
-        List<BundlePlaylistItem> playlists
+        List<GetAllBundlePlaylistItem> playlists
 
 ) {
-    public record BundlePlaylistItem(
+    public record GetAllBundlePlaylistItem(
 
             @Schema(description = "플레이리스트 ID")
             Long playlistId,
