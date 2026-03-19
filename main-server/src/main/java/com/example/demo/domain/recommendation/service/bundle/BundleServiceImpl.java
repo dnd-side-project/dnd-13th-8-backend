@@ -48,7 +48,7 @@ public class BundleServiceImpl implements BundleService {
 
         List<AddBundlePlaylistResponse.BundlePlaylistResult> results = new ArrayList<>();
 
-        for (AddBundlePlaylistRequest.BundlePlaylistItem item : request.playlists()) {
+        for (AddBundlePlaylistRequest.AddBundlePlaylistItem item : request.playlists()) {
 
             Long playlistId = item.playlistId();
             Integer orderIndex = item.orderIndex();
@@ -79,8 +79,8 @@ public class BundleServiceImpl implements BundleService {
 
         List<BundlePlaylist> bundlePlaylists = bundlePlaylistRepository.findByBundleIdWithPlaylist(bundleId);
 
-        List<GetBundleResponse.BundlePlaylistItem> playlists = bundlePlaylists.stream()
-                .map(bundlePlaylist -> new GetBundleResponse.BundlePlaylistItem(
+        List<GetBundleResponse.GetBundlePlaylistItem> playlists = bundlePlaylists.stream()
+                .map(bundlePlaylist -> new GetBundleResponse.GetBundlePlaylistItem(
                         bundlePlaylist.getPlaylist().getId(),
                         bundlePlaylist.getPlaylist().getName(),
                         bundlePlaylist.getOrderIndex()
@@ -106,13 +106,13 @@ public class BundleServiceImpl implements BundleService {
 
         List<BundlePlaylist> bundlePlaylists = bundlePlaylistRepository.findAllWithBundleAndPlaylist();
 
-        Map<Long, List<GetAllBundlesResponse.BundlePlaylistItem>> playlistMap = new LinkedHashMap<>();
+        Map<Long, List<GetAllBundlesResponse.GetAllBundlePlaylistItem>> playlistMap = new LinkedHashMap<>();
 
         for (BundlePlaylist bundlePlaylist : bundlePlaylists) {
             Long bundleId = bundlePlaylist.getBundle().getId();
 
             playlistMap.computeIfAbsent(bundleId, key -> new ArrayList<>())
-                    .add(new GetAllBundlesResponse.BundlePlaylistItem(
+                    .add(new GetAllBundlesResponse.GetAllBundlePlaylistItem(
                             bundlePlaylist.getPlaylist().getId(),
                             bundlePlaylist.getPlaylist().getName()
                     ));
