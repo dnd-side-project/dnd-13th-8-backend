@@ -132,7 +132,7 @@ public class BundleServiceImpl implements BundleService {
     @Transactional
     public GetAllPlaylistsResponse getAllPlaylists() {
         return GetAllPlaylistsResponse.from(
-                playlistRepository.findAll()
+                playlistRepository.findByIsPublicTrue()
         );
     }
 }

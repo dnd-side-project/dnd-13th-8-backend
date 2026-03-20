@@ -32,6 +32,7 @@ public interface BundlePlaylistRepository extends JpaRepository<BundlePlaylist, 
     join fetch p.users u
     join fetch bp.bundle b
     where b.id in :bundleIds
+    AND p.isPublic = true
     order by b.id asc, bp.orderIndex asc
 """)
     List<BundlePlaylist> findByBundleIdsWithPlaylistAndUser(List<Long> bundleIds);
