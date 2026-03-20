@@ -21,7 +21,7 @@ public class BrowseViewCountSyncBatch {
     private final StringRedisTemplate redisTemplate;
     private final PlaylistRepository playlistRepository;
 
-    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Seoul")
     public void syncViewCountsToDatabase() {
         log.info("[Batch] Browse 조회수 동기화 시작: {}", LocalDateTime.now());
 
@@ -50,6 +50,15 @@ public class BrowseViewCountSyncBatch {
                 })
                 .filter(p -> p != null)
                 .collect(Collectors.toList());
+
+        log.warn("[Batch] === Redis Keys Dump START ===");
+
+        int count = 0;
+        for (String key : keys) {
+            log.warn("[Batch][KEY][{}] {}", count++, key);
+        }
+
+        log.warn("[Batch] === Redis Keys Dump END. total={} ===", count);
 
         playlistRepository.saveAll(playlistsToUpdate);
 
