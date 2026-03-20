@@ -68,6 +68,7 @@ public class BrowsePlaylistService {
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     }
 
+    @Transactional
     public void confirmAndLogPlayback(String id, Long playlistId) {
         browseViewCountService.confirmView(id, playlistId);
 
