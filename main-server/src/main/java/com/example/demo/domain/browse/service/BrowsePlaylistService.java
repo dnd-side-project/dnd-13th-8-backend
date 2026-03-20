@@ -70,8 +70,6 @@ public class BrowsePlaylistService {
 
     @Transactional
     public void confirmAndLogPlayback(String id, Long playlistId) {
-        browseViewCountService.confirmView(id, playlistId);
-
         Users user = usersRepository.findById(id)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
@@ -80,7 +78,7 @@ public class BrowsePlaylistService {
                         "플레이리스트가 존재하지 않습니다. id=" + playlistId,
                         PlaylistErrorCode.PLAYLIST_NOT_FOUND
                 ));
-
+        playlistRepository.incrementVisitCount(playlist.getId());
         UserPlaylistHistory history = UserPlaylistHistory.of(user, playlist);
         userPlaylistHistoryRepository.save(history);
     }
