@@ -35,20 +35,30 @@ public class BrowseViewCountSyncBatch {
                 log.warn("[Cleanup][KEY][{}] {}", count++, key);
             }
 
-            deleteInChunks(keys, 500);
+            deleteIndividually(keys, 500);
 
             log.warn("[Cleanup] Browse Redis 키 삭제 완료. total={}", count);
+
         } catch (Exception e) {
             log.error("[Cleanup] Browse Redis 키 삭제 중 오류", e);
         }
     }
 
-    private void deleteInChunks(Set<String> keys, int batchSize) {
+    private void deleteIndividually(Set<String> keys, int batchSize) {
         List<String> keyList = List.copyOf(keys);
+
         for (int i = 0; i < keyList.size(); i += batchSize) {
             List<String> batch = keyList.subList(i, Math.min(i + batchSize, keyList.size()));
-            redisTemplate.delete(batch);
-            log.info("[Cleanup] deletedBatchSize={}", batch.size());
+
+            int deleted = 0;
+            for (String key : batch) {
+                Boolean result = redisTemplate.delete(key);
+                if (Boolean.TRUE.equals(result)) {
+                    deleted++;
+                }
+            }
+
+            log.info("[Cleanup] deletedBatchSize={}", deleted);
         }
     }
 }
