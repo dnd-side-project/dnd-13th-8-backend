@@ -17,27 +17,30 @@ public class BrowseViewCountSyncBatch {
 
     private static final String VIEW_COUNT_PREFIX = "BROWSE_VIEW_COUNT:";
     private final StringRedisTemplate redisTemplate;
-    private final PlaylistRepository playlistRepository;
 
     @PostConstruct
     public void cleanup() {
-        Set<String> keys = redisTemplate.keys(VIEW_COUNT_PREFIX + "*");
+        try {
+            Set<String> keys = redisTemplate.keys(VIEW_COUNT_PREFIX + "*");
 
-        if (keys == null || keys.isEmpty()) {
-            log.info("[Cleanup] 삭제할 Browse Redis 키가 없습니다.");
-            return;
+            if (keys == null || keys.isEmpty()) {
+                log.info("[Cleanup] 삭제할 Browse Redis 키가 없습니다.");
+                return;
+            }
+
+            log.warn("[Cleanup] 삭제 대상 키 개수={}", keys.size());
+
+            int count = 0;
+            for (String key : keys) {
+                log.warn("[Cleanup][KEY][{}] {}", count++, key);
+            }
+
+            deleteInChunks(keys, 500);
+
+            log.warn("[Cleanup] Browse Redis 키 삭제 완료. total={}", count);
+        } catch (Exception e) {
+            log.error("[Cleanup] Browse Redis 키 삭제 중 오류", e);
         }
-
-        log.warn("[Cleanup] 삭제 대상 키 개수={}", keys.size());
-
-        int count = 0;
-        for (String key : keys) {
-            log.warn("[Cleanup][KEY][{}] {}", count++, key);
-        }
-
-        deleteInChunks(keys, 500);
-
-        log.warn("[Cleanup] Browse Redis 키 삭제 완료. total={}", count);
     }
 
     private void deleteInChunks(Set<String> keys, int batchSize) {
