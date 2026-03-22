@@ -2,8 +2,9 @@ package com.example.demo.controller;
 
 
 import com.example.demo.dto.ChatCountResponse;
-import com.example.demo.dto.ChatHistoryResponseDto;
+import com.example.demo.dto.ChatHistoryResponse;
 import com.example.demo.dto.ChatUserProfile;
+import com.example.demo.dto.ReportChatRequest;
 import com.example.demo.dto.chat.ChatInbound;
 import com.example.demo.global.redis.ChatRedisCounter;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -77,17 +78,17 @@ public class ChatController {
                             responseCode = "200",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = ChatHistoryResponseDto.class)
+                                    schema = @Schema(implementation = ChatHistoryResponse.class)
                             )
                     )
             }
     )
-    public ResponseEntity<ChatHistoryResponseDto> history(
+    public ResponseEntity<ChatHistoryResponse> history(
             @PathVariable String roomId,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "50") int limit
     ) {
-        ChatHistoryResponseDto dto = chatService.loadRecent(roomId, cursor, limit);
+        ChatHistoryResponse dto = chatService.loadRecent(roomId, cursor, limit);
         return ResponseEntity.ok(dto);
     }
 
@@ -121,5 +122,20 @@ public class ChatController {
         return ResponseEntity.ok(ChatCountResponse.builder()
                         .totalCount(total)
                 .build());
+    }
+
+    @PostMapping("/chat/rooms/{roomId}/messages/{messageId}/report")
+    @Operation(
+            summary = "채팅 메시지 신고",
+            description = "특정 채팅 메시지를 신고합니다."
+    )
+    public ResponseEntity<String> reportChat(
+            @PathVariable String roomId,
+            @PathVariable String messageId,
+            @RequestBody @Valid ReportChatRequest request,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        chatService.reportMessage(roomId, messageId, request, user.getId());
+        return ResponseEntity.ok("신고 접수 완료");
     }
 }

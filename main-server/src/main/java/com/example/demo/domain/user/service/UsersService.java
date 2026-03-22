@@ -15,7 +15,7 @@ import com.example.demo.domain.user.entity.UserMusicKeyword;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UserMusicKeywordRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
-import com.example.demo.global.discord.service.DiscordWebhookService;
+import com.example.common.discord.service.DiscordWebhookService;
 import com.example.demo.global.jwt.JwtRoleType;
 import com.example.demo.global.r2.R2Service;
 import java.io.IOException;
