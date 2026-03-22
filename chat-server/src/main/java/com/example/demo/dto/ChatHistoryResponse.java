@@ -6,5 +6,5 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record ChatHistoryResponseDto(List<ChatOutbound> messages, String nextCursor) {
+public record ChatHistoryResponse(List<ChatOutbound> messages, String nextCursor) {
 }

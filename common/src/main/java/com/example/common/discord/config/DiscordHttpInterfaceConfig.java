@@ -1,4 +1,4 @@
-package com.example.demo.global.discord.config;
+package com.example.common.discord.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
