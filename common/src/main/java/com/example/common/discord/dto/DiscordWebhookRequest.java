@@ -1,4 +1,4 @@
-package com.example.demo.global.discord.dto;
+package com.example.common.discord.dto;
 
 public record DiscordWebhookRequest(
         String content

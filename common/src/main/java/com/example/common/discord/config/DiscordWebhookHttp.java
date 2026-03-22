@@ -1,6 +1,6 @@
-package com.example.demo.global.discord.config;
+package com.example.common.discord.config;
 
-import com.example.demo.global.discord.dto.DiscordWebhookRequest;
+import com.example.common.discord.dto.DiscordWebhookRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.HttpExchange;

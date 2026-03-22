@@ -1,12 +1,16 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ChatHistoryResponseDto;
+import com.example.common.discord.service.DiscordWebhookService;
+import com.example.demo.dto.ChatHistoryResponse;
 import com.example.demo.dto.ChatUserProfile;
+import com.example.demo.dto.ReportChatRequest;
 import com.example.demo.dto.chat.ChatInbound;
 import com.example.demo.dto.chat.ChatMapper;
 import com.example.demo.dto.chat.ChatOutbound;
 import com.example.demo.entity.Chat;
+import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
+import com.example.demo.entity.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +28,8 @@ public class ChatService {
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepository;
     private final ChatProfileService chatProfileService;
+    private final DiscordWebhookService discordWebhookService;
+    private final UsersRepository usersRepository;
 
     @Value("${chat.redis.topic-prefix:chat.room.}")
     private String topicPrefix;
@@ -65,7 +71,7 @@ public class ChatService {
         }
     }
 
-    public ChatHistoryResponseDto loadRecent(String roomId, String before, int limit) {
+    public ChatHistoryResponse loadRecent(String roomId, String before, int limit) {
         int pageSize = Math.min(Math.max(limit, 1), 50); // 1~50 가드
 
         var slice = chatRepository.queryRecentSlice(roomId, before, pageSize);
@@ -83,7 +89,7 @@ public class ChatService {
                         .build()
                 ).toList();
 
-        return ChatHistoryResponseDto.builder()
+        return ChatHistoryResponse.builder()
                 .messages(messages)
                 .nextCursor(slice.nextCursor()) // 마지막 페이지면 null
                 .build();
@@ -92,11 +98,6 @@ public class ChatService {
     public void deleteMessage(String roomId, String messageId, String userId) {
         Chat chat = chatRepository.findOneByMessageId(roomId, messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
-
-        // 2) 본인 확인
-        if (!userId.equals(chat.getSenderId())) {
-            throw new IllegalStateException("id 불일치");
-        }
 
         // 3) PK(roomId) + SK(sentAt)로 삭제
         chatRepository.deleteAndDecrementCount(roomId, chat.getSentAt());
@@ -108,5 +109,44 @@ public class ChatService {
 
     public void deleteAllByRoomId(String roomId) {
         chatRepository.deleteAllByRoomId(roomId);
+    }
+
+    public void reportMessage(
+            String roomId,
+            String messageId,
+            ReportChatRequest request,
+            String reporterId
+    ) {
+        Chat chat = chatRepository.findOneByMessageId(roomId, messageId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅을 찾을 수 없습니다."));
+
+        Users reporter = usersRepository.findById(reporterId)
+                .orElseThrow(() -> new IllegalArgumentException("신고자를 찾을 수 없습니다."));
+
+        Users writer = usersRepository.findById(chat.getSenderId())
+                .orElseThrow(() -> new IllegalArgumentException("작성자를 찾을 수 없습니다."));
+
+        String content = request.content();
+        if (content != null && content.length() > 300) {
+            content = content.substring(0, 300) + "...";
+        }
+
+        String message = """
+            🚨 채팅 신고 접수
+
+            - 플레이리스트: %s
+            - 채팅 내용: %s
+            - 신고자: %s (%s)
+            - 작성자: %s (%s)
+            """.formatted(
+                request.playlistName(),
+                content == null ? "-" : content,
+                reporter.getUsername(),
+                reporter.getId(),
+                writer.getUsername(),
+                writer.getId()
+        );
+
+        discordWebhookService.sendMessage(message);
     }
 }

@@ -1,7 +1,7 @@
-package com.example.demo.global.discord.service;
+package com.example.common.discord.service;
 
-import com.example.demo.global.discord.config.DiscordWebhookHttp;
-import com.example.demo.global.discord.dto.DiscordWebhookRequest;
+import com.example.common.discord.config.DiscordWebhookHttp;
+import com.example.common.discord.dto.DiscordWebhookRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
