@@ -93,11 +93,6 @@ public class ChatService {
         Chat chat = chatRepository.findOneByMessageId(roomId, messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
 
-        // 2) 본인 확인
-        if (!userId.equals(chat.getSenderId())) {
-            throw new IllegalStateException("id 불일치");
-        }
-
         // 3) PK(roomId) + SK(sentAt)로 삭제
         chatRepository.deleteAndDecrementCount(roomId, chat.getSentAt());
     }
