@@ -152,6 +152,18 @@ public class ChatRepository {
         return Optional.of(first.items().get(0));
     }
 
+    public Optional<Chat> findByRoomIdAndSentAt(String roomId, String sentAt) {
+        DynamoDbTable<Chat> t = table();
+
+        Key key = Key.builder()
+                .partitionValue(roomId)
+                .sortValue(sentAt)
+                .build();
+
+        Chat chat = t.getItem(r -> r.key(key));
+        return Optional.ofNullable(chat);
+    }
+
     public void deleteAndDecrementCount(String roomId, String sentAt) {
 
         Map<String, AttributeValue> msgKey = Map.of(
