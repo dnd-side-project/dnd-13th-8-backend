@@ -4,7 +4,6 @@ package com.example.demo.controller;
 import com.example.demo.dto.ChatCountResponse;
 import com.example.demo.dto.ChatHistoryResponse;
 import com.example.demo.dto.ChatUserProfile;
-import com.example.demo.dto.ReportChatRequest;
 import com.example.demo.dto.chat.ChatInbound;
 import com.example.demo.global.redis.ChatRedisCounter;
 import com.example.demo.global.security.filter.CustomUserDetails;
@@ -132,10 +131,9 @@ public class ChatController {
     public ResponseEntity<String> reportChat(
             @PathVariable String roomId,
             @PathVariable String messageId,
-            @RequestBody @Valid ReportChatRequest request,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        chatService.reportMessage(roomId, messageId, request, user.getId());
+        chatService.reportMessage(roomId, messageId, user.getId());
         return ResponseEntity.ok("신고 접수 완료");
     }
 }

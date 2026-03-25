@@ -3,13 +3,14 @@ package com.example.demo.service;
 import com.example.common.discord.service.DiscordWebhookService;
 import com.example.demo.dto.ChatHistoryResponse;
 import com.example.demo.dto.ChatUserProfile;
-import com.example.demo.dto.ReportChatRequest;
 import com.example.demo.dto.chat.ChatInbound;
 import com.example.demo.dto.chat.ChatMapper;
 import com.example.demo.dto.chat.ChatOutbound;
 import com.example.demo.entity.Chat;
+import com.example.demo.entity.Playlist;
 import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.ChatRepository;
+import com.example.demo.entity.repository.PlaylistRepository;
 import com.example.demo.entity.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class ChatService {
     private final ChatProfileService chatProfileService;
     private final DiscordWebhookService discordWebhookService;
     private final UsersRepository usersRepository;
+    private final PlaylistRepository playlistRepository;
 
     @Value("${chat.redis.topic-prefix:chat.room.}")
     private String topicPrefix;
@@ -145,40 +147,45 @@ public class ChatService {
         chatRepository.deleteAllByRoomId(roomId);
     }
 
-    public void reportMessage(
-            String roomId,
-            String messageId,
-            ReportChatRequest request,
-            String reporterId
-    ) {
-        Chat chat = chatRepository.findOneByMessageId(roomId, messageId)
+    @Transactional
+    public void reportMessage(String roomId, String messageId, String reporterId) {
+        // 1) GSI 조회로 PK/SK 확보
+        Chat indexedChat = chatRepository.findOneByMessageId(roomId, messageId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅을 찾을 수 없습니다."));
 
+        // 2) 본 테이블 PK/SK 조회
+        Chat chat = chatRepository.findByRoomIdAndSentAt(roomId, indexedChat.getSentAt())
+                .orElseThrow(() -> new IllegalArgumentException("채팅 원문을 찾을 수 없습니다."));
+
+        // 3) 플레이리스트 조회 (roomId = playlistId)
+        Playlist playlist = playlistRepository.findById(Long.valueOf(roomId))
+                .orElseThrow(() -> new IllegalArgumentException("플레이리스트를 찾을 수 없습니다."));
+
+        // 4) 신고자 조회
         Users reporter = usersRepository.findById(reporterId)
                 .orElseThrow(() -> new IllegalArgumentException("신고자를 찾을 수 없습니다."));
 
-        Users writer = usersRepository.findById(chat.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("작성자를 찾을 수 없습니다."));
+        // 5) 작성자 조회 (탈퇴 가능성 고려)
+        Users writer = usersRepository.findById(chat.getSenderId()).orElse(null);
 
-        String content = request.content();
-        if (content != null && content.length() > 300) {
-            content = content.substring(0, 300) + "...";
-        }
+        String writerName = writer != null ? writer.getUsername() : chat.getUsername();
 
         String message = """
             🚨 채팅 신고 접수
-
+            
+            - 플레이리스트 ID: %s
             - 플레이리스트: %s
             - 채팅 내용: %s
             - 신고자: %s (%s)
             - 작성자: %s (%s)
             """.formatted(
-                request.playlistName(),
-                content == null ? "-" : content,
+                roomId,
+                playlist.getName(),
+                chat.getContent() == null ? "-" : chat.getContent(),
                 reporter.getUsername(),
                 reporter.getId(),
-                writer.getUsername(),
-                writer.getId()
+                writerName == null ? "(알 수 없음)" : writerName,
+                chat.getSenderId()
         );
 
         discordWebhookService.sendMessage(message);
