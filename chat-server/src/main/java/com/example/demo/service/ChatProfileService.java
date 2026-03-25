@@ -7,10 +7,16 @@ import com.example.demo.entity.Users;
 import com.example.demo.entity.repository.UsersRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,5 +63,24 @@ public class ChatProfileService {
         }
 
         return profile;
+    }
+
+    public Map<String, ChatUserProfile> getProfiles(Set<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Users> users = usersRepository.findAllById(userIds);
+
+        return users.stream()
+                .collect(Collectors.toMap(
+                        Users::getId,
+                        user -> new ChatUserProfile(
+                                user.getId(),
+                                user.getUsername(),
+                                user.getProfileUrl(),
+                                user.getShareCode()
+                        )
+                ));
     }
 }
