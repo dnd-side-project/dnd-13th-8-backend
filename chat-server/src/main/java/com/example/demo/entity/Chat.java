@@ -13,6 +13,7 @@ public class Chat {
     private String sentAt;        // 정렬 키
     private String messageId;
     private String senderId;
+    private String shareCode;
     private String username;
     private String content;
     private String profileImage;
