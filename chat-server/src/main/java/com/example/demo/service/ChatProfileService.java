@@ -11,6 +11,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,10 +28,8 @@ public class ChatProfileService {
     private static final Duration TTL = Duration.ofMinutes(10);
 
     public ChatUserProfile getOrLoad(String userId) {
+        String key = "chat:user:" + userId + ":profile";
 
-        String key = "chat:user" + userId + ":profile";
-
-        // 1) Redis 캐시 조회
         String cached = stringRedisTemplate.opsForValue().get(key);
         if (cached != null && !cached.isBlank()) {
             try {
@@ -36,17 +39,11 @@ public class ChatProfileService {
             }
         }
 
-        // 2) DB 조회 (miss)
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        ChatUserProfile profile = ChatUserProfile.builder()
-                .userId(userId)
-                .username(user.getUsername())
-                .profileImage(user.getProfileUrl())
-                .build();
+        ChatUserProfile profile = ChatUserProfile.from(user);
 
-        // 3) Redis 저장 + TTL 10분
         try {
             stringRedisTemplate.opsForValue().set(
                     key,
@@ -57,5 +54,19 @@ public class ChatProfileService {
         }
 
         return profile;
+    }
+
+    public Map<String, ChatUserProfile> getProfiles(Set<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Users> users = usersRepository.findAllById(userIds);
+
+        return users.stream()
+                .collect(Collectors.toMap(
+                        Users::getId,
+                        ChatUserProfile::from
+                ));
     }
 }

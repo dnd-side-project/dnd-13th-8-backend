@@ -16,9 +16,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +56,7 @@ public class ChatService {
                 .content(chatInbound.getContent())
                 .sentAt(Instant.now().toString())
                 .profileImage(profile.profileImage())
+                .shareCode(profile.shareCode())
                 .systemMessage(chatInbound.isSystemMessage())
                 .build();
 
@@ -71,27 +77,55 @@ public class ChatService {
         }
     }
 
+    @Transactional(readOnly = true)
     public ChatHistoryResponse loadRecent(String roomId, String before, int limit) {
-        int pageSize = Math.min(Math.max(limit, 1), 50); // 1~50 가드
+        int pageSize = Math.min(Math.max(limit, 1), 50);
 
         var slice = chatRepository.queryRecentSlice(roomId, before, pageSize);
+        var chats = slice.items();
 
-        var messages = slice.items().stream()
-                .map(chat -> ChatOutbound.builder()
-                        .roomId(chat.getRoomId())
-                        .messageId(chat.getMessageId())
-                        .senderId(chat.getSenderId())
-                        .username(chat.getUsername())
-                        .content(chat.getContent())
-                        .sentAt(chat.getSentAt())
-                        .profileImage(chat.getProfileImage())
-                        .systemMessage(chat.isSystemMessage())
-                        .build()
-                ).toList();
+        Set<String> senderIds = chats.stream()
+                .filter(chat -> !chat.isSystemMessage())
+                .map(Chat::getSenderId)
+                .filter(Objects::nonNull)
+                .filter(id -> !id.isBlank())
+                .collect(Collectors.toSet());
+
+        Map<String, ChatUserProfile> profileMap = chatProfileService.getProfiles(senderIds);
+
+        var messages = chats.stream()
+                .map(chat -> {
+                    ChatUserProfile profile = profileMap.get(chat.getSenderId());
+
+                    String username = profile != null && profile.username() != null
+                            ? profile.username()
+                            : chat.getUsername();
+
+                    String profileImage = profile != null && profile.profileImage() != null
+                            ? profile.profileImage()
+                            : chat.getProfileImage();
+
+                    String shareCode = profile != null
+                            ? profile.shareCode()
+                            : null;
+
+                    return ChatOutbound.builder()
+                            .roomId(chat.getRoomId())
+                            .messageId(chat.getMessageId())
+                            .senderId(chat.getSenderId())
+                            .username(username)
+                            .content(chat.getContent())
+                            .sentAt(chat.getSentAt())
+                            .profileImage(profileImage)
+                            .shareCode(shareCode)
+                            .systemMessage(chat.isSystemMessage())
+                            .build();
+                })
+                .toList();
 
         return ChatHistoryResponse.builder()
                 .messages(messages)
-                .nextCursor(slice.nextCursor()) // 마지막 페이지면 null
+                .nextCursor(slice.nextCursor())
                 .build();
     }
 
