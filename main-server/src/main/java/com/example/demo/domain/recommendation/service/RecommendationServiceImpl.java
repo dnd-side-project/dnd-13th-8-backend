@@ -270,11 +270,12 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
 
         return bundles.stream()
+                .filter(bundle -> playlistMap.containsKey(bundle.getId()))
                 .map(bundle -> new GetTimeRecommendationResponse(
                         bundle.getId(),
                         bundle.getTitle(),
                         bundle.getTimeSlot(),
-                        playlistMap.getOrDefault(bundle.getId(), List.of())
+                        playlistMap.get(bundle.getId())
                 ))
                 .toList();
     }
