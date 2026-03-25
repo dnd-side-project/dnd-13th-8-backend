@@ -28,10 +28,8 @@ public class ChatProfileService {
     private static final Duration TTL = Duration.ofMinutes(10);
 
     public ChatUserProfile getOrLoad(String userId) {
+        String key = "chat:user:" + userId + ":profile";
 
-        String key = "chat:user" + userId + ":profile";
-
-        // 1) Redis 캐시 조회
         String cached = stringRedisTemplate.opsForValue().get(key);
         if (cached != null && !cached.isBlank()) {
             try {
@@ -41,17 +39,11 @@ public class ChatProfileService {
             }
         }
 
-        // 2) DB 조회 (miss)
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        ChatUserProfile profile = ChatUserProfile.builder()
-                .userId(userId)
-                .username(user.getUsername())
-                .profileImage(user.getProfileUrl())
-                .build();
+        ChatUserProfile profile = ChatUserProfile.from(user);
 
-        // 3) Redis 저장 + TTL 10분
         try {
             stringRedisTemplate.opsForValue().set(
                     key,
@@ -74,12 +66,7 @@ public class ChatProfileService {
         return users.stream()
                 .collect(Collectors.toMap(
                         Users::getId,
-                        user -> new ChatUserProfile(
-                                user.getId(),
-                                user.getUsername(),
-                                user.getProfileUrl(),
-                                user.getShareCode()
-                        )
+                        ChatUserProfile::from
                 ));
     }
 }

@@ -56,6 +56,7 @@ public class ChatService {
                 .content(chatInbound.getContent())
                 .sentAt(Instant.now().toString())
                 .profileImage(profile.profileImage())
+                .shareCode(profile.shareCode())
                 .systemMessage(chatInbound.isSystemMessage())
                 .build();
 
