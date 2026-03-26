@@ -126,21 +126,23 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
             int limit
     ) {
         QPlaylist p = QPlaylist.playlist;
-
-        BooleanBuilder builder = new BooleanBuilder()
-                .and(p.genre.eq(genre))
-                .and(p.isPublic.isTrue())
-                .and(cursorCondition(p, cursor, sort));
+        QUsers u = QUsers.users;
 
         List<Playlist> results = queryFactory
                 .selectFrom(p)
-                .where(builder)
+                .join(p.users, u).fetchJoin()
+                .where(
+                        p.genre.eq(genre),
+                        p.isPublic.isTrue(),
+                        cursorCondition(p, cursor, sort)
+                )
                 .orderBy(orderBy(p, sort))
                 .limit(limit + 1L)
                 .fetch();
 
         long totalCount = Optional.ofNullable(
-                queryFactory.select(p.count())
+                queryFactory
+                        .select(p.count())
                         .from(p)
                         .where(
                                 p.genre.eq(genre),
