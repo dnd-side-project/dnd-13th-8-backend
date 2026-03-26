@@ -4,6 +4,7 @@ import com.example.demo.domain.cd.dto.response.CdResponse;
 import com.example.demo.domain.follow.entity.QFollow;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.feed.PlaylistCursor;
 import com.example.demo.domain.playlist.dto.search.PlaylistSearchDto;
 import com.example.demo.domain.playlist.dto.search.SearchResult;
 import com.example.demo.domain.playlist.dto.search.SearchType;
@@ -14,6 +15,7 @@ import com.example.demo.domain.user.entity.QUsers;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -35,6 +37,28 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
         return switch (sort) {
             case RECENT -> new OrderSpecifier<?>[]{ p.id.desc() };
             case POPULAR -> new OrderSpecifier<?>[]{ p.visitCount.desc(), p.id.desc() };
+        };
+    }
+
+    private BooleanExpression cursorCondition(QPlaylist p,
+                                              PlaylistCursor cursor,
+                                              PlaylistSortOption sort) {
+        if (cursor == null) return null;
+
+        return switch (sort) {
+            case RECENT -> cursor.id() == null
+                    ? null
+                    : p.id.lt(cursor.id());
+
+            case POPULAR -> {
+                if (cursor.visitCount() == null || cursor.id() == null) yield null;
+
+                yield p.visitCount.lt(cursor.visitCount())
+                        .or(
+                                p.visitCount.eq(cursor.visitCount())
+                                        .and(p.id.lt(cursor.id()))
+                        );
+            }
         };
     }
 
@@ -99,38 +123,30 @@ public class PlaylistRepositoryCustomImpl implements PlaylistRepositoryCustom {
     public SearchResult<Playlist> findByGenreWithCursor(
             PlaylistGenre genre,
             PlaylistSortOption sort,
-            Long cursorId,
+            PlaylistCursor cursor,
             int limit
     ) {
         QPlaylist p = QPlaylist.playlist;
 
         BooleanBuilder builder = new BooleanBuilder()
                 .and(p.genre.eq(genre))
-                .and(p.isPublic.isTrue());
-        if (cursorId != null && cursorId > 0) {
-            builder.and(p.id.lt(cursorId)); // 커서는 p.id 기준
-        }
+                .and(p.isPublic.isTrue())
+                .and(cursorCondition(p, cursor, sort));
 
-        // 쿼리를 변수로 받아서 orderBy를 개별 호출 (제네릭 유지)
-        JPAQuery<Playlist> q = queryFactory
+        List<Playlist> results = queryFactory
                 .selectFrom(p)
-                .where(builder);
-
-        if (sort == PlaylistSortOption.POPULAR) {
-            q.orderBy(p.visitCount.desc());
-        } else {
-            q.orderBy(p.createdAt.desc());
-        }
-        q.orderBy(p.id.desc()); // tie-breaker
-
-        List<Playlist> results = q
-                .limit(limit + 1) // 슬라이싱 용
+                .where(builder)
+                .orderBy(orderBy(p, sort))
+                .limit(limit + 1L)
                 .fetch();
 
         long totalCount = Optional.ofNullable(
-                queryFactory.select(p.id.count())
+                queryFactory.select(p.count())
                         .from(p)
-                        .where(builder)
+                        .where(
+                                p.genre.eq(genre),
+                                p.isPublic.isTrue()
+                        )
                         .fetchOne()
         ).orElse(0L);
 
