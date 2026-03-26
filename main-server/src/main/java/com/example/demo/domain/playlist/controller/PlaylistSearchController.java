@@ -47,7 +47,7 @@ public class PlaylistSearchController {
             @RequestParam(name = "cursorId", required = false) Long cursorId,
 
             @Parameter(description = "한 페이지에 가져올 개수", example = "10")
-            @RequestParam(name = "limit", defaultValue = "10") Integer limit
+            @RequestParam(name = "limit", defaultValue = "20") Integer limit
     ) {
         CursorPageResponse<PlaylistSearchResponse, Long> response =
                 playlistSearchService.searchByGenre(genre, sort, cursorId, limit);
