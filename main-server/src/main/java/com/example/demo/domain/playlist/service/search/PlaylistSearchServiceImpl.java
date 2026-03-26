@@ -13,7 +13,6 @@ import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
-import com.example.demo.global.paging.CursorPageConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
