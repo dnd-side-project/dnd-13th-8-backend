@@ -6,13 +6,13 @@ import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
+import com.example.demo.domain.playlist.dto.feed.PlaylistCursor;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.global.paging.PageResponse;
 import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.repository.PlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
-import com.example.demo.global.paging.CursorPageConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -62,33 +62,61 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
             Integer limit
     ) {
         int finalLimit = validateLimit(limit);
-        cursorId = (cursorId == null || cursorId < 1L) ? Long.MAX_VALUE : cursorId;
 
         try {
+            PlaylistCursor decodedCursor = null;
+
+            if (cursorId != null) {
+                Playlist pivot = playlistRepository.findById(cursorId)
+                        .orElseThrow(() -> new PlaylistSearchException(
+                                "커서 플레이리스트를 찾을 수 없습니다.",
+                                CommonErrorCode.BAD_REQUEST
+                        ));
+
+                decodedCursor = switch (sort) {
+                    case RECENT -> new PlaylistCursor(pivot.getId(), null);
+                    case POPULAR -> new PlaylistCursor(pivot.getId(), pivot.getVisitCount());
+                };
+            }
+
             SearchResult<Playlist> pages = playlistRepository
-                    .findByGenreWithCursor(genre, sort, cursorId, finalLimit + 1);
+                    .findByGenreWithCursor(genre, sort, decodedCursor, finalLimit);
 
-            List<Playlist> results = pages.getResults();
+            List<Playlist> fetched = pages.getResults();
 
-            List<Long> playlistIds = results.stream()
+            boolean hasNext = fetched.size() > finalLimit;
+            List<Playlist> page = hasNext ? fetched.subList(0, finalLimit) : fetched;
+
+            List<Long> playlistIds = page.stream()
                     .map(Playlist::getId)
                     .toList();
 
             CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(playlistIds);
 
-            return CursorPageConverter.toCursorResponse(
-                    results,
-                    finalLimit,
-                    p -> new PlaylistSearchResponse(
+            List<PlaylistSearchResponse> content = page.stream()
+                    .map(p -> new PlaylistSearchResponse(
                             p.getId(),
                             p.getName(),
                             p.getUsers().getId(),
                             p.getUsers().getUsername(),
                             cdItemsByPlaylist.cdItemsOf(p.getId())
-                    ),
-                    PlaylistSearchResponse::playlistId,
+                    ))
+                    .toList();
+
+            Long nextCursor = null;
+            if (hasNext && !page.isEmpty()) {
+                nextCursor = page.get(page.size() - 1).getId();
+            }
+
+            return new CursorPageResponse<>(
+                    content,
+                    nextCursor,
+                    content.size(),
+                    hasNext,
                     pages.getTotalCount()
             );
+        } catch (PlaylistSearchException e) {
+            throw e;
         } catch (Exception e) {
             throw new PlaylistSearchException("장르 기반 검색 중 오류 발생", CommonErrorCode.BAD_REQUEST);
         }

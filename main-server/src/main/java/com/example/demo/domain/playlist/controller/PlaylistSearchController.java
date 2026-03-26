@@ -43,7 +43,7 @@ public class PlaylistSearchController {
             @Parameter(description = "플레이리스트 장르", example = "SLEEP")
             @RequestParam(name = "genre") PlaylistGenre genre,
 
-            @Parameter(description = "마지막으로 조회한 playlistId(최초 요청은 생략)", example = "123")
+            @Parameter(description = "마지막으로 조회한 playlistId", example = "123")
             @RequestParam(name = "cursorId", required = false) Long cursorId,
 
             @Parameter(description = "한 페이지에 가져올 개수", example = "10")
