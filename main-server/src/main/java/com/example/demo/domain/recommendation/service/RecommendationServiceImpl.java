@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -111,39 +110,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
     public List<RecommendedGenreResponse> recommendGenres(String userId) {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        Set<PlaylistGenre> genres = new LinkedHashSet<>();
+        List<PlaylistGenre> all = new ArrayList<>(Arrays.asList(PlaylistGenre.values()));
 
-        List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
-        for (Playlist playlist : genreBased) {
-            if (genres.size() >= 5) break;
-            genres.add(playlist.getGenre());
-        }
+        Collections.shuffle(all);
 
-        List<PlaylistGenre> topGenres = userPlaylistHistoryRepository.findTopGenresByDate(yesterday);
-        for (PlaylistGenre genre : topGenres) {
-            if (genres.size() >= 5) break;
-            genres.add(genre);
-        }
-
-        List<PlaylistGenre> userGenres = userPlaylistHistoryRepository.findMostPlayedGenresByUser(userId);
-        for (PlaylistGenre genre : userGenres) {
-            if (genres.size() >= 5) break;
-            genres.add(genre);
-        }
-
-        for (PlaylistGenre genre : PlaylistGenre.values()) {
-            if (genres.size() >= 5) break;
-            genres.add(genre);
-        }
-
-        List<RecommendedGenreResponse> result = new ArrayList<>();
-        for (PlaylistGenre genre : genres) {
-            if (result.size() >= 5) break;
-            result.add(RecommendedGenreResponse.from(genre));
-        }
-
-        return result;
+        return all.stream()
+                .limit(5)
+                .map(RecommendedGenreResponse::from)
+                .toList();
     }
 
     @Override
