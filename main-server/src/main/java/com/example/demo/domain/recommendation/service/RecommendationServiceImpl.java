@@ -109,7 +109,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     @Override
-    public List<RecommendedGenreResponse> recommendGenres(String userId) {
+    public List<RecommendedGenreResponse> recommendGenres() {
         List<PlaylistGenre> all = new ArrayList<>(Arrays.asList(PlaylistGenre.values()));
 
         Collections.shuffle(all);
