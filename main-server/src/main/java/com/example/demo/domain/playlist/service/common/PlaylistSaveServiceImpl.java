@@ -88,7 +88,7 @@ public class PlaylistSaveServiceImpl implements PlaylistSaveService {
     ) {
         validateUserExists(usersId);
 
-        Playlist playlist = getPlaylist(playlistId);
+        Playlist playlist = getOwnedPlaylist(playlistId, usersId);
         updatePlaylist(playlist, request);
 
         replaceSongs(playlistId, toSortedSongs(request, playlist));
@@ -105,11 +105,6 @@ public class PlaylistSaveServiceImpl implements PlaylistSaveService {
 
     private void validateUserExists(String usersId) {
         getUser(usersId);
-    }
-
-    private Playlist getPlaylist(Long playlistId) {
-        return playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
     }
 
     private List<Song> toSongs(SavePlaylistRequest request, Playlist playlist) {
@@ -191,6 +186,14 @@ public class PlaylistSaveServiceImpl implements PlaylistSaveService {
         return songRepository.findSongsByPlaylistId(playlistId).stream()
                 .map(SongMapper::toDto)
                 .toList();
+    }
+
+    private Playlist getOwnedPlaylist(Long playlistId, String userId) {
+        return playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() -> new PlaylistException(
+                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
     }
 
 }
