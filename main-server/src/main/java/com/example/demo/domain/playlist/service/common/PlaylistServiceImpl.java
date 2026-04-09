@@ -14,7 +14,7 @@ import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.event.PlaylistDeleteEvent;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.song.entity.Song;

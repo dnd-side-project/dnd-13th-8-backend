@@ -3,7 +3,7 @@ package com.example.demo.domain.recommendation.service.bundle;
 import com.example.common.error.code.PlaylistErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.recommendation.dto.bundle.*;
 import com.example.demo.domain.recommendation.entity.bundle.Bundle;
 import com.example.demo.domain.recommendation.entity.bundle.BundlePlaylist;

@@ -5,7 +5,7 @@ import com.example.common.error.code.UserErrorCode;
 import com.example.common.error.exception.PlaylistException;
 import com.example.common.error.exception.UserException;
 import com.example.demo.domain.like.repository.LikesRepository;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -12,8 +12,8 @@ import com.example.demo.domain.playlist.dto.common.PlaylistCoverResponse;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.feed.PlaylistCursor;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistFeedRepository;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.query.PlaylistFeedQueryRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.paging.CursorPageResponse;
@@ -29,7 +29,7 @@ import java.util.Set;
 @Service
 public class PlaylistFeedServiceImpl implements PlaylistFeedService{
 
-    private final PlaylistFeedRepository playlistFeedRepository;
+    private final PlaylistFeedQueryRepository playlistFeedQueryRepository;
     private final UsersRepository usersRepository;
     private final LikesRepository likesRepository;
     private final CdService cdService;
@@ -62,7 +62,7 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
             };
         }
 
-        List<Playlist> fetched = playlistFeedRepository.findFeedPlaylists(
+        List<Playlist> fetched = playlistFeedQueryRepository.findFeedPlaylists(
                 ownerId,
                 decodedCursor,
                 limit,
@@ -93,7 +93,7 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
             nextCursor = page.get(page.size() - 1).getId();
         }
 
-        long totalCount = playlistFeedRepository.countFeedPlaylists(ownerId, includePrivate);
+        long totalCount = playlistFeedQueryRepository.countFeedPlaylists(ownerId, includePrivate);
 
         return new CursorPageResponse<>(
                 content,
@@ -132,7 +132,7 @@ public class PlaylistFeedServiceImpl implements PlaylistFeedService{
             };
         }
 
-        List<Playlist> fetched = playlistFeedRepository.findLikedPlaylists(
+        List<Playlist> fetched = playlistFeedQueryRepository.findLikedPlaylists(
                 ownerId,
                 sortOption,
                 decodedCursor,
