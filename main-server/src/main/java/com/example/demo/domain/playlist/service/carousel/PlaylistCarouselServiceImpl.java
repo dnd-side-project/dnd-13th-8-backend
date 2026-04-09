@@ -42,40 +42,14 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long anchorId,
             int limit
     ) {
-        Users owner = usersRepository.findByShareCode(shareCode)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        String ownerId = owner.getId();
-        boolean includePrivate = ownerId.equals(meId);
-
-        Playlist anchor = carouselRepository.findFeedAnchor(ownerId, anchorId, includePrivate)
-                .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
-
-        PlaylistCursor anchorCursor = toCursor(anchor, sort);
-
-        List<Playlist> prevFetched = carouselRepository.findFeedCarousel(
-                ownerId, anchorCursor, limit, sort, includePrivate, CarouselDirection.PREV
+        return getAnchorCarousel(
+                shareCode,
+                meId,
+                sort,
+                anchorId,
+                limit,
+                new FeedCarouselStrategy()
         );
-        List<Playlist> nextFetched = carouselRepository.findFeedCarousel(
-                ownerId, anchorCursor, limit, sort, includePrivate, CarouselDirection.NEXT
-        );
-
-        boolean hasPrev = prevFetched.size() > limit;
-        boolean hasNext = nextFetched.size() > limit;
-
-        List<Playlist> prevPage = hasPrev ? prevFetched.subList(0, limit) : prevFetched;
-        List<Playlist> nextPage = hasNext ? nextFetched.subList(0, limit) : nextFetched;
-
-        List<Playlist> merged = new ArrayList<>(prevPage.size() + 1 + nextPage.size());
-        Collections.reverse(prevPage);
-        merged.addAll(prevPage);
-        merged.add(anchor);
-        merged.addAll(nextPage);
-
-        Long prevCursor = hasPrev && !prevPage.isEmpty() ? prevPage.get(0).getId() : null;
-        Long nextCursor = hasNext && !nextPage.isEmpty() ? nextPage.get(nextPage.size() - 1).getId() : null;
-
-        return toBiCursorResponse(meId, merged, prevCursor, nextCursor, hasPrev, hasNext);
     }
 
     @Override
@@ -88,42 +62,15 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long cursor,
             int limit
     ) {
-        CarouselDirection resolvedDirection =
-                cursor == null ? CarouselDirection.NEXT : direction;
-
-        Users owner = usersRepository.findByShareCode(shareCode)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        String ownerId = owner.getId();
-        boolean includePrivate = ownerId.equals(meId);
-
-        PlaylistCursor decoded = decodeCursor(cursor, sort);
-
-        List<Playlist> fetched = carouselRepository.findFeedCarousel(
-                ownerId, decoded, limit, sort, includePrivate, resolvedDirection
+        return getCarouselMore(
+                shareCode,
+                meId,
+                sort,
+                direction,
+                cursor,
+                limit,
+                new FeedCarouselStrategy()
         );
-
-        boolean hasMore = fetched.size() > limit;
-        List<Playlist> page = hasMore ? fetched.subList(0, limit) : fetched;
-
-        if (resolvedDirection == CarouselDirection.PREV) {
-            Collections.reverse(page);
-        }
-
-        Long prevCursor = null;
-        Long nextCursor = null;
-        boolean hasPrev = false;
-        boolean hasNext = false;
-
-        if (resolvedDirection == CarouselDirection.PREV) {
-            hasPrev = hasMore;
-            if (hasPrev && !page.isEmpty()) prevCursor = page.get(0).getId();
-        } else {
-            hasNext = hasMore;
-            if (hasNext && !page.isEmpty()) nextCursor = page.get(page.size() - 1).getId();
-        }
-
-        return toBiCursorResponse(meId, page, prevCursor, nextCursor, hasPrev, hasNext);
     }
 
     @Override
@@ -135,40 +82,14 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long anchorId,
             int limit
     ) {
-        Users owner = usersRepository.findByShareCode(shareCode)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
-
-        String ownerId = owner.getId();
-        boolean includePrivate = ownerId.equals(meId);
-
-        Playlist anchor = carouselRepository.findLikedAnchor(ownerId, anchorId, includePrivate)
-                .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
-
-        PlaylistCursor anchorCursor = toCursor(anchor, sort);
-
-        List<Playlist> prevFetched = carouselRepository.findLikedCarousel(
-                ownerId, anchorCursor, limit, sort, includePrivate, CarouselDirection.PREV
+        return getAnchorCarousel(
+                shareCode,
+                meId,
+                sort,
+                anchorId,
+                limit,
+                new LikedCarouselStrategy()
         );
-        List<Playlist> nextFetched = carouselRepository.findLikedCarousel(
-                ownerId, anchorCursor, limit, sort, includePrivate, CarouselDirection.NEXT
-        );
-
-        boolean hasPrev = prevFetched.size() > limit;
-        boolean hasNext = nextFetched.size() > limit;
-
-        List<Playlist> prevPage = hasPrev ? prevFetched.subList(0, limit) : prevFetched;
-        List<Playlist> nextPage = hasNext ? nextFetched.subList(0, limit) : nextFetched;
-
-        List<Playlist> merged = new ArrayList<>(prevPage.size() + 1 + nextPage.size());
-        Collections.reverse(prevPage);
-        merged.addAll(prevPage);
-        merged.add(anchor);
-        merged.addAll(nextPage);
-
-        Long prevCursor = hasPrev && !prevPage.isEmpty() ? prevPage.get(0).getId() : null;
-        Long nextCursor = hasNext && !nextPage.isEmpty() ? nextPage.get(nextPage.size() - 1).getId() : null;
-
-        return toBiCursorResponse(meId, merged, prevCursor, nextCursor, hasPrev, hasNext);
     }
 
     @Override
@@ -181,47 +102,188 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             Long cursor,
             int limit
     ) {
+        return getCarouselMore(
+                shareCode,
+                meId,
+                sort,
+                direction,
+                cursor,
+                limit,
+                new LikedCarouselStrategy()
+        );
+    }
 
+    private BiCursorPageResponse<PlaylistCoverResponse, Long> getAnchorCarousel(
+            String shareCode,
+            String meId,
+            PlaylistSortOption sort,
+            Long anchorId,
+            int limit,
+            CarouselStrategy strategy
+    ) {
+        OwnerContext context = resolveOwnerContext(shareCode, meId);
+
+        Playlist anchor = strategy.findAnchor(
+                carouselRepository,
+                context.ownerId(),
+                anchorId,
+                context.includePrivate()
+        ).orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+
+        PlaylistCursor anchorCursor = toCursor(anchor, sort);
+
+        SliceResult prevSlice = fetchSlice(
+                context,
+                sort,
+                limit,
+                CarouselDirection.PREV,
+                anchorCursor,
+                strategy
+        );
+
+        SliceResult nextSlice = fetchSlice(
+                context,
+                sort,
+                limit,
+                CarouselDirection.NEXT,
+                anchorCursor,
+                strategy
+        );
+
+        List<Playlist> merged = mergeAroundAnchor(
+                prevSlice.page(),
+                anchor,
+                nextSlice.page()
+        );
+
+        Long prevCursor = resolvePrevCursor(prevSlice.page(), prevSlice.hasMore());
+        Long nextCursor = resolveNextCursor(nextSlice.page(), nextSlice.hasMore());
+
+        return toBiCursorResponse(
+                meId,
+                merged,
+                prevCursor,
+                nextCursor,
+                prevSlice.hasMore(),
+                nextSlice.hasMore()
+        );
+    }
+
+    private BiCursorPageResponse<PlaylistCoverResponse, Long> getCarouselMore(
+            String shareCode,
+            String meId,
+            PlaylistSortOption sort,
+            CarouselDirection direction,
+            Long cursor,
+            int limit,
+            CarouselStrategy strategy
+    ) {
         CarouselDirection resolvedDirection =
                 cursor == null ? CarouselDirection.NEXT : direction;
 
-        Users owner = usersRepository.findByShareCode(shareCode)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        OwnerContext context = resolveOwnerContext(shareCode, meId);
+        PlaylistCursor decodedCursor = decodeCursor(cursor, sort);
 
-        String ownerId = owner.getId();
-        boolean includePrivate = ownerId.equals(meId);
+        SliceResult slice = fetchSlice(
+                context,
+                sort,
+                limit,
+                resolvedDirection,
+                decodedCursor,
+                strategy
+        );
 
-        PlaylistCursor decoded = decodeCursor(cursor, sort);
+        CursorState cursorState = toCursorState(resolvedDirection, slice);
 
-        List<Playlist> fetched = carouselRepository.findLikedCarousel(
-                ownerId, decoded, limit, sort, includePrivate, resolvedDirection
+        return toBiCursorResponse(
+                meId,
+                slice.page(),
+                cursorState.prevCursor(),
+                cursorState.nextCursor(),
+                cursorState.hasPrev(),
+                cursorState.hasNext()
+        );
+    }
+
+    private SliceResult fetchSlice(
+            OwnerContext context,
+            PlaylistSortOption sort,
+            int limit,
+            CarouselDirection direction,
+            PlaylistCursor cursor,
+            CarouselStrategy strategy
+    ) {
+        List<Playlist> fetched = strategy.findCarousel(
+                carouselRepository,
+                context.ownerId(),
+                cursor,
+                limit,
+                sort,
+                context.includePrivate(),
+                direction
         );
 
         boolean hasMore = fetched.size() > limit;
-        List<Playlist> page = hasMore ? fetched.subList(0, limit) : fetched;
+        List<Playlist> page = hasMore ? new ArrayList<>(fetched.subList(0, limit)) : new ArrayList<>(fetched);
 
-        if (resolvedDirection == CarouselDirection.PREV) {
+        if (direction == CarouselDirection.PREV) {
             Collections.reverse(page);
         }
 
-        Long prevCursor = null;
-        Long nextCursor = null;
-        boolean hasPrev = false;
-        boolean hasNext = false;
+        return new SliceResult(page, hasMore);
+    }
 
-        if (resolvedDirection == CarouselDirection.PREV) {
-            hasPrev = hasMore;
-            if (hasPrev && !page.isEmpty()) prevCursor = page.get(0).getId();
-        } else {
-            hasNext = hasMore;
-            if (hasNext && !page.isEmpty()) nextCursor = page.get(page.size() - 1).getId();
-        }
+    private List<Playlist> mergeAroundAnchor(
+            List<Playlist> prevPage,
+            Playlist anchor,
+            List<Playlist> nextPage
+    ) {
+        List<Playlist> merged = new ArrayList<>(prevPage.size() + 1 + nextPage.size());
+        merged.addAll(prevPage);
+        merged.add(anchor);
+        merged.addAll(nextPage);
+        return merged;
+    }
 
-        return toBiCursorResponse(meId, page, prevCursor, nextCursor, hasPrev, hasNext);
+    private CursorState toCursorState(CarouselDirection direction, SliceResult slice) {
+        return direction == CarouselDirection.PREV
+                ? new CursorState(
+                resolvePrevCursor(slice.page(), slice.hasMore()),
+                null,
+                slice.hasMore(),
+                false
+        )
+                : new CursorState(
+                null,
+                resolveNextCursor(slice.page(), slice.hasMore()),
+                false,
+                slice.hasMore()
+        );
+    }
+
+    private Long resolvePrevCursor(List<Playlist> page, boolean hasPrev) {
+        return hasPrev && !page.isEmpty()
+                ? page.get(0).getId()
+                : null;
+    }
+
+    private Long resolveNextCursor(List<Playlist> page, boolean hasNext) {
+        return hasNext && !page.isEmpty()
+                ? page.get(page.size() - 1).getId()
+                : null;
+    }
+
+    private OwnerContext resolveOwnerContext(String shareCode, String meId) {
+        Users owner = usersRepository.findByShareCode(shareCode)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        return new OwnerContext(owner.getId(), owner.getId().equals(meId));
     }
 
     private PlaylistCursor decodeCursor(Long cursorId, PlaylistSortOption sort) {
-        if (cursorId == null) return null;
+        if (cursorId == null) {
+            return null;
+        }
 
         Playlist pivot = playlistRepository.findById(cursorId)
                 .orElseThrow(() -> new PlaylistException(PlaylistErrorCode.PLAYLIST_NOT_FOUND));
@@ -229,10 +291,10 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
         return toCursor(pivot, sort);
     }
 
-    private PlaylistCursor toCursor(Playlist p, PlaylistSortOption sort) {
+    private PlaylistCursor toCursor(Playlist playlist, PlaylistSortOption sort) {
         return switch (sort) {
-            case RECENT -> new PlaylistCursor(p.getId(), null);
-            case POPULAR -> new PlaylistCursor(p.getId(), p.getVisitCount());
+            case RECENT -> new PlaylistCursor(playlist.getId(), null);
+            case POPULAR -> new PlaylistCursor(playlist.getId(), playlist.getVisitCount());
         };
     }
 
@@ -244,7 +306,9 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
             boolean hasPrev,
             boolean hasNext
     ) {
-        List<Long> playlistIds = page.stream().map(Playlist::getId).toList();
+        List<Long> playlistIds = page.stream()
+                .map(Playlist::getId)
+                .toList();
 
         Set<Long> likedSet = playlistIds.isEmpty()
                 ? Collections.emptySet()
@@ -255,13 +319,97 @@ public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
                 : cdService.findCdItemsByPlaylistIdsIn(playlistIds);
 
         List<PlaylistCoverResponse> content = page.stream()
-                .map(p -> PlaylistCoverResponse.from(
-                        p,
-                        cdItemsByPlaylist.cdItemsOf(p.getId()),
-                        likedSet.contains(p.getId())
+                .map(playlist -> PlaylistCoverResponse.from(
+                        playlist,
+                        cdItemsByPlaylist.cdItemsOf(playlist.getId()),
+                        likedSet.contains(playlist.getId())
                 ))
                 .toList();
 
-        return new BiCursorPageResponse<>(content, prevCursor, nextCursor, content.size(), hasPrev, hasNext);
+        return new BiCursorPageResponse<>(
+                content,
+                prevCursor,
+                nextCursor,
+                content.size(),
+                hasPrev,
+                hasNext
+        );
+    }
+
+    private record OwnerContext(String ownerId, boolean includePrivate) {}
+    private record SliceResult(List<Playlist> page, boolean hasMore) {}
+    private record CursorState(Long prevCursor, Long nextCursor, boolean hasPrev, boolean hasNext) {}
+
+    private interface CarouselStrategy {
+        java.util.Optional<Playlist> findAnchor(
+                PlaylistCarouselQueryRepository repository,
+                String ownerId,
+                Long anchorId,
+                boolean includePrivate
+        );
+
+        List<Playlist> findCarousel(
+                PlaylistCarouselQueryRepository repository,
+                String ownerId,
+                PlaylistCursor cursor,
+                int limit,
+                PlaylistSortOption sort,
+                boolean includePrivate,
+                CarouselDirection direction
+        );
+    }
+
+    private static class FeedCarouselStrategy implements CarouselStrategy {
+        @Override
+        public java.util.Optional<Playlist> findAnchor(
+                PlaylistCarouselQueryRepository repository,
+                String ownerId,
+                Long anchorId,
+                boolean includePrivate
+        ) {
+            return repository.findFeedAnchor(ownerId, anchorId, includePrivate);
+        }
+
+        @Override
+        public List<Playlist> findCarousel(
+                PlaylistCarouselQueryRepository repository,
+                String ownerId,
+                PlaylistCursor cursor,
+                int limit,
+                PlaylistSortOption sort,
+                boolean includePrivate,
+                CarouselDirection direction
+        ) {
+            return repository.findFeedCarousel(
+                    ownerId, cursor, limit, sort, includePrivate, direction
+            );
+        }
+    }
+
+    private static class LikedCarouselStrategy implements CarouselStrategy {
+        @Override
+        public java.util.Optional<Playlist> findAnchor(
+                PlaylistCarouselQueryRepository repository,
+                String ownerId,
+                Long anchorId,
+                boolean includePrivate
+        ) {
+            return repository.findLikedAnchor(ownerId, anchorId, includePrivate);
+        }
+
+        @Override
+        public List<Playlist> findCarousel(
+                PlaylistCarouselQueryRepository repository,
+                String ownerId,
+                PlaylistCursor cursor,
+                int limit,
+                PlaylistSortOption sort,
+                boolean includePrivate,
+                CarouselDirection direction
+        ) {
+            return repository.findLikedCarousel(
+                    ownerId, cursor, limit, sort, includePrivate, direction
+            );
+        }
     }
 }
