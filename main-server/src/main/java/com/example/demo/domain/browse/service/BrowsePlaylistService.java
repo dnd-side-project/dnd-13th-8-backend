@@ -7,7 +7,7 @@ import com.example.common.error.exception.UserException;
 import com.example.demo.domain.browse.repository.BrowsePlaylistRepository;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.recommendation.entity.UserPlaylistHistory;
 import com.example.demo.domain.recommendation.repository.UserPlaylistHistoryRepository;
 import com.example.demo.domain.user.entity.Users;

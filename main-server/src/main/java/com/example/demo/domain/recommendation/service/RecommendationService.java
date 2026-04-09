@@ -12,9 +12,7 @@ public interface RecommendationService {
 
     List<RecommendedPlaylistResponse> getRecommendations(String userId);
 
-    List<RecommendedPlaylistResponse> recommendFromLikedPlaylists(String myUserId);
-
-    List<RecommendedGenreResponse> recommendGenres(String userId);
+    List<RecommendedGenreResponse> recommendGenres();
 
     List<RecommendedPlaylistResponse> getAdminRecommendation(int limit);
 

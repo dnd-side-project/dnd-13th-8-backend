@@ -88,33 +88,13 @@ public class RecommendationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "팔로우 기반 추천 (레거시 예정)",
-            description = "사용자가 아직 팔로우하지 않은 최신 플레이리스트를 추천합니다."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "추천된 플레이리스트 카드 목록",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedPlaylistResponse.class)))
-    )
-    @GetMapping("/follow")
-    public ResponseEntity<List<RecommendedPlaylistResponse>> recommendFromLikedPlaylists(
-            @Parameter(hidden = true)
-            @AuthenticationPrincipal CustomUserDetails user
-    ) {
-        List<RecommendedPlaylistResponse> response = recommendationService.recommendFromLikedPlaylists(user.getId());
-        return ResponseEntity.ok(response);
-    }
-
-
-    @Operation(summary = "추천 장르 기반 대표 플레이리스트 목록")
+    @Operation(summary = "추천 장르 목록")
     @ApiResponse(responseCode = "200", description = "추천 플레이리스트 상세 목록",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecommendedGenreResponse.class))))
     @GetMapping("/genres")
     public ResponseEntity<List<RecommendedGenreResponse>> recommendGenres(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user
     ) {
-        return ResponseEntity.ok(recommendationService.recommendGenres(user.getId()));
+        return ResponseEntity.ok(recommendationService.recommendGenres());
     }
 
     @Operation(summary = "인기 있는 유저 목록")

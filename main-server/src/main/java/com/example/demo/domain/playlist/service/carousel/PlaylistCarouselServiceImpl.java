@@ -12,8 +12,8 @@ import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.feed.CarouselDirection;
 import com.example.demo.domain.playlist.dto.feed.PlaylistCursor;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistCarouselRepository;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.query.PlaylistCarouselQueryRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 import com.example.demo.global.paging.BiCursorPageResponse;
@@ -27,7 +27,7 @@ import java.util.*;
 @Service
 public class PlaylistCarouselServiceImpl implements PlaylistCarouselService {
 
-    private final PlaylistCarouselRepository carouselRepository;
+    private final PlaylistCarouselQueryRepository carouselRepository;
     private final UsersRepository usersRepository;
     private final LikesRepository likesRepository;
     private final CdService cdService;

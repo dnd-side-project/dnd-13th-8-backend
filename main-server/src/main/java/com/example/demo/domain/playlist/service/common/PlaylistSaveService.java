@@ -10,7 +10,7 @@ import com.example.demo.domain.playlist.dto.save.PlaylistMapper;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.song.dto.SongMapper;
 import com.example.demo.domain.song.dto.SongResponseDto;
 import com.example.demo.domain.song.dto.YouTubeVideoInfoDto;

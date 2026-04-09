@@ -4,7 +4,7 @@ import com.example.demo.domain.cd.dto.response.CdItemsByPlaylist;
 import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.query.PlaylistRecommendationQueryRepository;
 import com.example.demo.domain.recommendation.dto.GetTimeRecommendationResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedPlaylistResponse;
 import com.example.demo.domain.recommendation.dto.RecommendedGenreResponse;
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
 
-    private final PlaylistRepository playlistRepository;
+    private final PlaylistRecommendationQueryRepository playlistRecommendationQueryRepository;
     private final UserPlaylistHistoryRepository userPlaylistHistoryRepository;
     private final BundlePlaylistRepository bundlePlaylistRepository;
     private final BundleRepository bundleRepository;
@@ -45,7 +45,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Transactional
     public List<RecommendedPlaylistResponse> getRecommendations(String userId) {
         List<Playlist> genreBased = userPlaylistHistoryRepository.findByUserRecentGenre(userId, 3);
-        List<Playlist> visitCountTop6 = playlistRepository.findByVisitCount(6);
+        List<Playlist> visitCountTop6 = playlistRecommendationQueryRepository.findByVisitCount(6);
 
         Set<Long> genreIds = genreBased.stream()
                 .map(Playlist::getId)
@@ -72,44 +72,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     @Override
-    @Transactional
-    public List<RecommendedPlaylistResponse> recommendFromLikedPlaylists(String myUserId) {
-        List<Long> basePlaylistIds = playlistRepository.findFollowedPlaylistIds(myUserId);
-        List<Playlist> resultPlaylists;
-
-        if (basePlaylistIds.isEmpty()) {
-            resultPlaylists = playlistRepository.findLatestPlaylists(myUserId, List.of(), RECOMMENDATION_LIMIT);
-        } else {
-            List<Playlist> basePlaylists = playlistRepository.findPlaylistsBySimilarSongs(
-                    basePlaylistIds, myUserId, basePlaylistIds, RECOMMENDATION_LIMIT);
-
-            int remain = RECOMMENDATION_LIMIT - basePlaylists.size();
-            if (remain > 0) {
-                List<Long> excludeIds = new ArrayList<>(basePlaylistIds);
-                excludeIds.addAll(basePlaylists.stream().map(Playlist::getId).toList());
-
-                List<Playlist> fallback = playlistRepository.findLatestPlaylists(
-                        myUserId, excludeIds, remain);
-                basePlaylists.addAll(fallback);
-            }
-            resultPlaylists = basePlaylists;
-        }
-
-        List<Long> ids = resultPlaylists.stream().map(Playlist::getId).toList();
-        SongsByPlaylist songsByPlaylist = songService.findSongsByPlaylistIdsIn(ids);
-        CdItemsByPlaylist cdItemsByPlaylist = cdService.findCdItemsByPlaylistIdsIn(ids);
-
-        return resultPlaylists.stream()
-                .map(p -> RecommendedPlaylistResponse.from(
-                        p,
-                        songsByPlaylist.songsOf(p.getId()),
-                        cdItemsByPlaylist.cdItemsOf(p.getId())
-                ))
-                .toList();
-    }
-
-    @Override
-    public List<RecommendedGenreResponse> recommendGenres(String userId) {
+    public List<RecommendedGenreResponse> recommendGenres() {
         List<PlaylistGenre> all = new ArrayList<>(Arrays.asList(PlaylistGenre.values()));
 
         Collections.shuffle(all);
@@ -124,7 +87,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Transactional(readOnly = true)
     public List<RecommendedPlaylistResponse> getAdminRecommendation(int limit) {
 
-        List<Playlist> adminPlaylists = playlistRepository.findAdminPlaylists(limit);
+        List<Playlist> adminPlaylists = playlistRecommendationQueryRepository.findAdminPlaylists(limit);
 
         if (adminPlaylists.isEmpty()) {
             return List.of();

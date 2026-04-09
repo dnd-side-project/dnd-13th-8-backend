@@ -7,11 +7,12 @@ import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.common.PlaylistGenre;
 import com.example.demo.domain.playlist.dto.common.PlaylistSortOption;
 import com.example.demo.domain.playlist.dto.feed.PlaylistCursor;
+import com.example.demo.domain.playlist.repository.query.PlaylistSearchQueryRepository;
 import com.example.demo.global.paging.CursorPageResponse;
 import com.example.demo.global.paging.PageResponse;
 import com.example.demo.domain.playlist.dto.search.*;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     private final StringRedisTemplate redis;
     private final UsersRepository usersRepository;
+    private final PlaylistSearchQueryRepository playlistSearchQueryRepository;
     private final PlaylistRepository playlistRepository;
     private final CdService cdService;
 
@@ -80,7 +82,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 };
             }
 
-            SearchResult<Playlist> pages = playlistRepository
+            SearchResult<Playlist> pages = playlistSearchQueryRepository
                     .findByGenreWithCursor(genre, sort, decodedCursor, finalLimit);
 
             List<Playlist> fetched = pages.getResults();
@@ -155,7 +157,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
                 merged.addAll(playlistsPage.getResults());
                 playlistsTotal = playlistsPage.getTotalCount();
             } else {
-                playlistsTotal = playlistRepository.countPlaylistByTitle(query);
+                playlistsTotal = playlistSearchQueryRepository.countPlaylistByTitle(query);
             }
 
             long totalCount = usersTotal + playlistsTotal;
@@ -176,7 +178,7 @@ public class PlaylistSearchServiceImpl implements PlaylistSearchService {
 
     private SearchResult<PlaylistSearchDto> fetchPlaylistsWithCd(String query, PlaylistSortOption sort, int offset, int limit) {
         SearchResult<PlaylistSearchDto> raw =
-                playlistRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, limit);
+                playlistSearchQueryRepository.searchPlaylistsByTitleWithOffset(query, sort, offset, limit);
 
         if (raw.getResults().isEmpty()) {
             return raw;

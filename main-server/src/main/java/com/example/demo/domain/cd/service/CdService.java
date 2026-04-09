@@ -11,7 +11,7 @@ import com.example.demo.domain.cd.entity.Cd;
 import com.example.demo.domain.cd.repository.CdRepository;
 import com.example.demo.domain.cd.repository.projection.CdItemView;
 import com.example.demo.domain.playlist.entity.Playlist;
-import com.example.demo.domain.playlist.repository.PlaylistRepository;
+import com.example.demo.domain.playlist.repository.command.PlaylistRepository;
 import com.example.demo.domain.prop.entity.Prop;
 import com.example.demo.domain.prop.repository.PropRepository;
 import com.example.demo.global.r2.R2Service;
