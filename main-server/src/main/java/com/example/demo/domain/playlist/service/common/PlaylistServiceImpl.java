@@ -10,7 +10,6 @@ import com.example.demo.domain.cd.service.CdService;
 import com.example.demo.domain.playlist.dto.save.PlaylistDraft;
 import com.example.demo.domain.playlist.dto.common.PlaylistDetailWithCreatorResponse;
 import com.example.demo.domain.playlist.dto.common.SongDto;
-import com.example.demo.domain.playlist.dto.save.SavePlaylistRequest;
 import com.example.demo.domain.playlist.dto.save.SavePlaylistResponse;
 import com.example.demo.domain.playlist.entity.Playlist;
 import com.example.demo.domain.playlist.event.PlaylistDeleteEvent;
@@ -23,6 +22,8 @@ import com.example.demo.domain.user.entity.Users;
 import com.example.demo.domain.user.repository.UsersRepository;
 
 import java.util.*;
+import java.util.function.Function;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -46,119 +47,158 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     @Transactional
     public PlaylistDetailWithCreatorResponse playPlaylist(Long playlistId, String userId) {
-        Playlist playlist = playlistRepository.findById(playlistId)
-                .filter(Playlist::isPublic)
-                .orElseThrow(() -> new PlaylistException("플레이리스트가 없거나 비공개 상태입니다.", PlaylistErrorCode.PLAYLIST_NOT_FOUND));
+        Playlist playlist = getPublicPlaylist(playlistId);
+        Users user = getUser(userId);
 
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        PlaylistDetailWithCreatorResponse response = buildPlaylistDetailResponse(playlist);
 
-        List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
-        List<SongDto> songDtos = songs.stream().map(SongDto::from).toList();
+        recordPlaylistPlay(user, playlist);
 
-        userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
-        playlistRepository.incrementVisitCount(playlist.getId());
-
-        var cdResponse = cdService.getCdItemsByPlaylistId(playlistId);
-        return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public PlaylistDetailWithCreatorResponse getPlaylistDetail(Long playlistId, String userId) {
+        Playlist playlist = getAccessiblePlaylist(playlistId, userId);
+        return buildPlaylistDetailResponse(playlist);
+    }
 
+    @Override
+    @Transactional
+    public String saveDraftPlaylist(PlaylistDraft playlistDraft) {
+        return playlistSaveService.createDraft(
+                playlistDraft.savePlaylistRequest(),
+                playlistDraft.saveCdRequest()
+        );
+    }
+
+    @Override
+    @Transactional
+    public SavePlaylistResponse saveFinalPlaylist(String usersId, String draftId) {
+        return processDraftPlaylist(
+                draftId,
+                draft -> playlistSaveService.savePlaylistWithSongs(usersId, draft.savePlaylistRequest()),
+                (playlistId, saveCdRequest) -> cdService.saveCdItemList(playlistId, saveCdRequest.cdItems())
+        );
+    }
+
+    @Override
+    @Transactional
+    public SavePlaylistResponse editFinalPlaylist(String usersId, Long playlistId, String draftId) {
+        return processDraftPlaylist(
+                draftId,
+                draft -> playlistSaveService.editPlaylistWithSongs(usersId, playlistId, draft.savePlaylistRequest()),
+                (savedPlaylistId, saveCdRequest) -> cdService.replaceCdItemList(savedPlaylistId, saveCdRequest.cdItems())
+        );
+    }
+
+    @Override
+    @Transactional
+    public void deletePlaylist(String userId, Long playlistId) {
+        Playlist playlist = getOwnedPlaylist(playlistId, userId);
+
+        deletePlaylistReferences(playlistId);
+        playlistRepository.delete(playlist);
+        publishPlaylistDeleteEvent(playlistId);
+    }
+
+    @Override
+    @Transactional
+    public void updateIsPublic(String userId, Long playlistId) {
+        getOwnedPlaylist(playlistId, userId).updateIsPublic();
+    }
+
+    private Users getUser(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    private Playlist getPublicPlaylist(Long playlistId) {
+        return playlistRepository.findById(playlistId)
+                .filter(Playlist::isPublic)
+                .orElseThrow(() -> new PlaylistException(
+                        "플레이리스트가 없거나 비공개 상태입니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
+    }
+
+    private Playlist getAccessiblePlaylist(Long playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new PlaylistException(
                         "플레이리스트가 존재하지 않습니다.",
                         PlaylistErrorCode.PLAYLIST_NOT_FOUND
                 ));
 
+        validatePlaylistAccessible(playlist, userId);
+        return playlist;
+    }
+
+    private Playlist getOwnedPlaylist(Long playlistId, String userId) {
+        return playlistRepository.findByIdAndUsers_Id(playlistId, userId)
+                .orElseThrow(() -> new PlaylistException(
+                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
+                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
+                ));
+    }
+
+    private void validatePlaylistAccessible(Playlist playlist, String userId) {
         if (!playlist.isPublic() && !playlist.getUsers().getId().equals(userId)) {
             throw new PlaylistException(
                     "비공개 플레이리스트입니다.",
                     PlaylistErrorCode.PLAYLIST_NOT_FOUND
             );
         }
+    }
 
-        List<Song> songs = songRepository.findSongsByPlaylistId(playlist.getId());
-        List<SongDto> songDtos = songs.stream()
+    private List<Song> getSongs(Long playlistId) {
+        return songRepository.findSongsByPlaylistId(playlistId);
+    }
+
+    private List<SongDto> toSongDtos(List<Song> songs) {
+        return songs.stream()
                 .map(SongDto::from)
                 .toList();
+    }
 
-        var cdResponse = cdService.getCdItemsByPlaylistId(playlistId);
+    private PlaylistDetailWithCreatorResponse buildPlaylistDetailResponse(Playlist playlist) {
+        List<SongDto> songDtos = toSongDtos(getSongs(playlist.getId()));
+        var cdResponse = cdService.getCdItemsByPlaylistId(playlist.getId());
 
         return PlaylistDetailWithCreatorResponse.from(playlist, songDtos, cdResponse);
     }
 
-    @Override
-    @Transactional
-    public String saveDraftPlaylist(PlaylistDraft playlistDraft) {
-
-        return playlistSaveService.createDraft(playlistDraft.savePlaylistRequest(), playlistDraft.saveCdRequest());
+    private void recordPlaylistPlay(Users user, Playlist playlist) {
+        userPlaylistHistoryRepository.save(UserPlaylistHistory.of(user, playlist));
+        playlistRepository.incrementVisitCount(playlist.getId());
     }
 
-    @Override
-    @Transactional
-    public SavePlaylistResponse saveFinalPlaylist(String usersId, String draftId) {
-
+    private SavePlaylistResponse processDraftPlaylist(
+            String draftId,
+            Function<PlaylistDraft, SavePlaylistResponse> playlistSaver,
+            CdItemCommand cdItemCommand
+    ) {
         PlaylistDraft draft = playlistSaveService.loadDraft(draftId);
-        SavePlaylistRequest savePlaylistRequest = draft.savePlaylistRequest();
-        SaveCdRequest saveCdRequest = draft.saveCdRequest();
+        SavePlaylistResponse response = playlistSaver.apply(draft);
 
-        SavePlaylistResponse response = playlistSaveService.savePlaylistWithSongs(usersId, savePlaylistRequest);
-
-        cdService.saveCdItemList(response.playlistId(), saveCdRequest.cdItems());
-
+        cdItemCommand.execute(response.playlistId(), draft.saveCdRequest());
         playlistSaveService.deleteDraft(draftId);
 
         return response;
     }
 
-    @Override
-    @Transactional
-    public SavePlaylistResponse editFinalPlaylist(String usersId, Long playlistId, String draftId) {
-
-        PlaylistDraft draft = playlistSaveService.loadDraft(draftId);
-        SavePlaylistRequest savePlaylistRequest = draft.savePlaylistRequest();
-        SaveCdRequest saveCdRequest = draft.saveCdRequest();
-
-        SavePlaylistResponse response = playlistSaveService.editPlaylistWithSongs(usersId, playlistId,
-                savePlaylistRequest);
-        cdService.replaceCdItemList(playlistId, saveCdRequest.cdItems());
-
-        playlistSaveService.deleteDraft(draftId);
-
-        return response;
+    private void deletePlaylistReferences(Long playlistId) {
+        cdRepository.deleteByPlaylistId(playlistId);
+        songRepository.deleteByPlaylistId(playlistId);
+        userPlaylistHistoryRepository.deleteByPlaylistId(playlistId);
     }
 
-    @Override
-    @Transactional
-    public void deletePlaylist(String userId, Long playlistId) {
-        // 1. 삭제 대상 검증
-        Playlist toDelete = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
-                .orElseThrow(() -> new PlaylistException(
-                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
-                        PlaylistErrorCode.PLAYLIST_NOT_FOUND
-                ));
-
-        //  2. 참조 테이블 순차 삭제 (중요!)
-        cdRepository.deleteByPlaylistId(playlistId); // CD 테이블
-        songRepository.deleteByPlaylistId(playlistId); // 곡
-        userPlaylistHistoryRepository.deleteByPlaylistId(playlistId); // 재생기록
-
-        // 3. 플레이리스트 삭제
-        playlistRepository.delete(toDelete);
-
+    private void publishPlaylistDeleteEvent(Long playlistId) {
         applicationEventPublisher.publishEvent(new PlaylistDeleteEvent(String.valueOf(playlistId)));
     }
 
-    @Override
-    @Transactional
-    public void updateIsPublic(String userId, Long playlistId) {
-        Playlist target = playlistRepository.findByIdAndUsers_Id(playlistId, userId)
-                .orElseThrow(() ->new PlaylistException(
-                        "해당 플레이리스트가 존재하지 않거나 권한이 없습니다.",
-                        PlaylistErrorCode.PLAYLIST_NOT_FOUND));
-        target.updateIsPublic();
+    @FunctionalInterface
+    private interface CdItemCommand {
+        void execute(Long playlistId, SaveCdRequest saveCdRequest);
     }
 }
